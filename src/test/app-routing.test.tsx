@@ -176,4 +176,86 @@ describe("App routing", () => {
     expect(screen.getByText("Autonomous Collaborative Projects")).toBeDefined();
     expect(screen.getByText("4")).toBeDefined();
   });
+
+  it("switches between Projects and Agents tabs and renders the 6 specified agents with Start chat", () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    // Verify tabs exist
+    const projectsTab = screen.getByRole("tab", { name: "Projects" });
+    const agentsTab = screen.getByRole("tab", { name: "Agents" });
+    expect(projectsTab).toBeDefined();
+    expect(agentsTab).toBeDefined();
+
+    // Default tab is Projects: projects are visible
+    expect(screen.getByText("Personal care brand enters South Asia’s smaller cities")).toBeDefined();
+    expect(screen.queryByText("SBI Customer KYC & Document Verification Agent")).toBeNull();
+
+    // Click Agents tab
+    fireEvent.click(agentsTab);
+
+    // Verify all 6 exact agents are rendered
+    expect(screen.getByText("SBI Customer KYC & Document Verification Agent")).toBeDefined();
+    expect(
+      screen.getByText(
+        "Inspects and verifies uploaded customer documents (Aadhaar, PAN, Passport, DL) for authenticity, data extraction, and regulatory KYC compliance."
+      )
+    ).toBeDefined();
+
+    expect(screen.getByText("SBI Home Loan Monthly Report")).toBeDefined();
+    expect(
+      screen.getByText(
+        "Prepares monthly home-loan counts and disbursement totals for compliance review. Home loans only; excludes auto and land loans."
+      )
+    ).toBeDefined();
+
+    expect(screen.getByText("SBI Auto Loan Monthly Report")).toBeDefined();
+    expect(
+      screen.getByText(
+        "Compiles monthly auto-loan issuance totals for compliance review. Vehicle finance only; excludes home and land loans."
+      )
+    ).toBeDefined();
+
+    expect(screen.getByText(/Apollo Hospital\s+Discharge Summary/i)).toBeDefined();
+    expect(
+      screen.getByText(
+        "Prepares weekly inpatient discharge summaries for authorized hospital reviewers. Inpatient episodes only."
+      )
+    ).toBeDefined();
+
+    expect(screen.getByText("SBI Land Loan Quarterly Report")).toBeDefined();
+    expect(
+      screen.getByText(
+        "Prepares a quarterly land-loan portfolio summary for compliance review. Agricultural and commercial land loans only."
+      )
+    ).toBeDefined();
+
+    expect(screen.getByText("AIIMS ICU Occupancy Report")).toBeDefined();
+    expect(
+      screen.getByText(
+        "Prepares daily ICU occupancy and critical-care summaries for authorized hospital reviewers. ICU ward data only."
+      )
+    ).toBeDefined();
+
+    // Verify Start chat buttons are present
+    const startChatButtons = screen.getAllByRole("button", { name: /start chat/i });
+    expect(startChatButtons.length).toBeGreaterThanOrEqual(6);
+
+    // Click Start chat on the first agent to open workspace
+    fireEvent.click(startChatButtons[0]);
+    expect(screen.getByText("CEO Workspace")).toBeDefined();
+    expect(screen.getAllByText("SBI Customer KYC & Document Verification Agent").length).toBeGreaterThan(0);
+
+    // Return to dashboard
+    const backBtn = screen.getByRole("button", { name: "Back to Home" });
+    fireEvent.click(backBtn);
+    expect(screen.getByText("Autonomous Collaborative Projects")).toBeDefined();
+
+    // Switch back to Projects tab and verify original projects show
+    const returnProjectsTab = screen.getByRole("tab", { name: "Projects" });
+    fireEvent.click(returnProjectsTab);
+    expect(screen.getByText("Personal care brand enters South Asia’s smaller cities")).toBeDefined();
+  });
 });

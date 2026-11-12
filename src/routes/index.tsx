@@ -8,6 +8,7 @@ import {
   ChevronDown,
   LayoutGrid,
   Menu,
+  MessageSquare,
   Mic,
   Moon,
   PanelLeft,
@@ -125,6 +126,51 @@ const initialProjects: ProjectItem[] = [
     description: "Enterprise tier client expansion pipeline and partner distribution network.",
     agents: ["Enterprise Sales", "Regional Expansion", "Account Management"],
     url: "#projects",
+  },
+];
+
+interface AgentItem {
+  id: string;
+  title: string;
+  description: string;
+}
+
+const initialAgents: AgentItem[] = [
+  {
+    id: "agent-sbi-kyc",
+    title: "SBI Customer KYC & Document Verification Agent",
+    description:
+      "Inspects and verifies uploaded customer documents (Aadhaar, PAN, Passport, DL) for authenticity, data extraction, and regulatory KYC compliance.",
+  },
+  {
+    id: "agent-sbi-home-loan",
+    title: "SBI Home Loan Monthly Report",
+    description:
+      "Prepares monthly home-loan counts and disbursement totals for compliance review. Home loans only; excludes auto and land loans.",
+  },
+  {
+    id: "agent-sbi-auto-loan",
+    title: "SBI Auto Loan Monthly Report",
+    description:
+      "Compiles monthly auto-loan issuance totals for compliance review. Vehicle finance only; excludes home and land loans.",
+  },
+  {
+    id: "agent-apollo-discharge",
+    title: "Apollo Hospital  Discharge Summary",
+    description:
+      "Prepares weekly inpatient discharge summaries for authorized hospital reviewers. Inpatient episodes only.",
+  },
+  {
+    id: "agent-sbi-land-loan",
+    title: "SBI Land Loan Quarterly Report",
+    description:
+      "Prepares a quarterly land-loan portfolio summary for compliance review. Agricultural and commercial land loans only.",
+  },
+  {
+    id: "agent-aiims-icu",
+    title: "AIIMS ICU Occupancy Report",
+    description:
+      "Prepares daily ICU occupancy and critical-care summaries for authorized hospital reviewers. ICU ward data only.",
   },
 ];
 
@@ -1091,6 +1137,8 @@ function Index() {
   const [projects, setProjects] = useState<ProjectItem[]>(initialProjects);
   const [projectsCount, setProjectsCount] = useState(initialProjects.length);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState<"projects" | "agents">("projects");
+  const [agents] = useState<AgentItem[]>(initialAgents);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [isCreateAgentView, setIsCreateAgentView] = useState(false);
   const [expandedBadges, setExpandedBadges] = useState<Record<string, boolean>>({});
@@ -1104,6 +1152,15 @@ function Index() {
       agent.toLowerCase().includes(q)
     );
     return inTitle || inDesc || inAgents;
+  });
+
+  const filteredAgents = agents.filter((agent) => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      agent.title.toLowerCase().includes(q) ||
+      agent.description.toLowerCase().includes(q)
+    );
   });
 
   if (isCreateAgentView) {
@@ -1308,127 +1365,301 @@ function Index() {
       <section id="projects" className="aircond-mission mx-auto">
         <span id="mission" aria-hidden="true" className="sr-only" />
         <div className="projects-header">
-          <h2 className="projects-title">Active Projects & Agent Teams</h2>
+          <h2 className="projects-title">
+            {activeTab === "projects" ? "Active Projects & Agent Teams" : "Autonomous Collaborative Agents"}
+          </h2>
 
-          <div className="projects-search-bar">
-            <Search className="search-icon" aria-hidden="true" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search projects..."
-              className="projects-search-input"
-              aria-label="Search projects"
-            />
-            {searchQuery && (
+          <div className="projects-header-toolbar">
+            <div className="projects-tabs" role="tablist" aria-label="Projects and Agents selection">
               <button
                 type="button"
-                onClick={() => setSearchQuery("")}
-                className="search-clear-btn"
-                aria-label="Clear search query"
+                role="tab"
+                aria-selected={activeTab === "projects"}
+                onClick={() => {
+                  setActiveTab("projects");
+                  setSearchQuery("");
+                }}
+                className={`projects-tab-btn ${activeTab === "projects" ? "active" : ""}`}
               >
-                <X className="h-4 w-4" aria-hidden="true" />
+                Projects
               </button>
-            )}
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "agents"}
+                onClick={() => {
+                  setActiveTab("agents");
+                  setSearchQuery("");
+                }}
+                className={`projects-tab-btn ${activeTab === "agents" ? "active" : ""}`}
+              >
+                Agents
+              </button>
+            </div>
+
+            <div className="projects-search-bar">
+              <Search className="search-icon" aria-hidden="true" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={activeTab === "projects" ? "Search projects..." : "Search agents..."}
+                className="projects-search-input"
+                aria-label={activeTab === "projects" ? "Search projects" : "Search agents"}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="search-clear-btn"
+                  aria-label="Clear search query"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="projects-grid">
-          {filteredProjects.map((project) => (
-            <article
-              key={project.id}
-              className={`project-card ${expandedBadges[project.id] ? "expanded" : ""}`}
-              onClick={() => setActiveProjectId(project.id)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  setActiveProjectId(project.id);
-                }
-              }}
-            >
-              <div className="project-card-main">
-                <div className="project-card-header">
-                  <h3 className="project-card-title">
+        {activeTab === "projects" ? (
+          <div className="projects-grid">
+            {filteredProjects.map((project) => (
+              <article
+                key={project.id}
+                className={`project-card ${expandedBadges[project.id] ? "expanded" : ""}`}
+                onClick={() => setActiveProjectId(project.id)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setActiveProjectId(project.id);
+                  }
+                }}
+              >
+                <div className="project-card-main">
+                  <div className="project-card-header">
+                    <h3 className="project-card-title">
+                      <button
+                        type="button"
+                        className="project-title-link"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveProjectId(project.id);
+                        }}
+                      >
+                        {project.title}
+                      </button>
+                    </h3>
                     <button
                       type="button"
-                      className="project-title-link"
+                      className="project-action-btn"
                       onClick={(e) => {
                         e.stopPropagation();
                         setActiveProjectId(project.id);
                       }}
+                      aria-label={`Open project: ${project.title}`}
                     >
-                      {project.title}
+                      <ArrowUpRight aria-hidden="true" />
                     </button>
-                  </h3>
-                  <button
-                    type="button"
-                    className="project-action-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveProjectId(project.id);
-                    }}
-                    aria-label={`Open project: ${project.title}`}
-                  >
-                    <ArrowUpRight aria-hidden="true" />
-                  </button>
-                </div>
-                <p className="project-card-description">{project.description}</p>
-              </div>
-
-              <div className={`project-card-agents ${expandedBadges[project.id] ? "expanded" : ""}`}>
-                <span className="project-card-agents-label">Agents</span>
-                <div className="project-card-agents-row">
-                  {(project.agents.length > 3 ? project.agents.slice(0, 3) : project.agents).map((agent) => (
-                    <span key={agent} className="project-agent-badge">
-                      {agent}
-                    </span>
-                  ))}
-                  {project.agents.length > 3 && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setExpandedBadges((prev) => ({
-                          ...prev,
-                          [project.id]: !prev[project.id],
-                        }));
-                      }}
-                      className={`project-agent-round-badge ${expandedBadges[project.id] ? "active" : ""}`}
-                      title={
-                        expandedBadges[project.id]
-                          ? "Hide extra agents"
-                          : `+${project.agents.length - 3} more`
-                      }
-                      aria-label={
-                        expandedBadges[project.id]
-                          ? "Hide extra agents"
-                          : `+${project.agents.length - 3} more agents`
-                      }
-                    >
-                      {expandedBadges[project.id] ? "−" : `+${project.agents.length - 3}`}
-                    </button>
-                  )}
+                  </div>
+                  <p className="project-card-description">{project.description}</p>
                 </div>
 
-                {expandedBadges[project.id] && project.agents.length > 3 && (
-                  <div className="project-card-agents-extra">
-                    {project.agents.slice(3).map((agent) => (
+                <div className={`project-card-agents ${expandedBadges[project.id] ? "expanded" : ""}`}>
+                  <span className="project-card-agents-label">Agents</span>
+                  <div className="project-card-agents-row">
+                    {(project.agents.length > 3 ? project.agents.slice(0, 3) : project.agents).map((agent) => (
                       <span key={agent} className="project-agent-badge">
                         {agent}
                       </span>
                     ))}
+                    {project.agents.length > 3 && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setExpandedBadges((prev) => ({
+                            ...prev,
+                            [project.id]: !prev[project.id],
+                          }));
+                        }}
+                        className={`project-agent-round-badge ${expandedBadges[project.id] ? "active" : ""}`}
+                        title={
+                          expandedBadges[project.id]
+                            ? "Hide extra agents"
+                            : `+${project.agents.length - 3} more`
+                        }
+                        aria-label={
+                          expandedBadges[project.id]
+                            ? "Hide extra agents"
+                            : `+${project.agents.length - 3} more agents`
+                        }
+                      >
+                        {expandedBadges[project.id] ? "−" : `+${project.agents.length - 3}`}
+                      </button>
+                    )}
                   </div>
-                )}
-              </div>
-            </article>
-          ))}
-        </div>
 
-        {filteredProjects.length === 0 && (
+                  {expandedBadges[project.id] && project.agents.length > 3 && (
+                    <div className="project-card-agents-extra">
+                      {project.agents.slice(3).map((agent) => (
+                        <span key={agent} className="project-agent-badge">
+                          {agent}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="projects-grid">
+            {filteredAgents.map((agent) => (
+              <article
+                key={agent.id}
+                className="project-card agent-card"
+                onClick={() => {
+                  const existing = projects.find((p) => p.title === agent.title);
+                  if (existing) {
+                    setActiveProjectId(existing.id);
+                  } else {
+                    const agentP: ProjectItem = {
+                      id: agent.id,
+                      title: agent.title,
+                      description: agent.description,
+                      agents: [agent.title],
+                      url: `#${agent.id}`,
+                    };
+                    setProjects((prev) => [agentP, ...prev]);
+                    setActiveProjectId(agent.id);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    const existing = projects.find((p) => p.title === agent.title);
+                    if (existing) {
+                      setActiveProjectId(existing.id);
+                    } else {
+                      const agentP: ProjectItem = {
+                        id: agent.id,
+                        title: agent.title,
+                        description: agent.description,
+                        agents: [agent.title],
+                        url: `#${agent.id}`,
+                      };
+                      setProjects((prev) => [agentP, ...prev]);
+                      setActiveProjectId(agent.id);
+                    }
+                  }
+                }}
+              >
+                <div className="project-card-main">
+                  <div className="project-card-header">
+                    <h3 className="project-card-title">
+                      <button
+                        type="button"
+                        className="project-title-link"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const existing = projects.find((p) => p.title === agent.title);
+                          if (existing) {
+                            setActiveProjectId(existing.id);
+                          } else {
+                            const agentP: ProjectItem = {
+                              id: agent.id,
+                              title: agent.title,
+                              description: agent.description,
+                              agents: [agent.title],
+                              url: `#${agent.id}`,
+                            };
+                            setProjects((prev) => [agentP, ...prev]);
+                            setActiveProjectId(agent.id);
+                          }
+                        }}
+                      >
+                        {agent.title}
+                      </button>
+                    </h3>
+                    <button
+                      type="button"
+                      className="project-action-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const existing = projects.find((p) => p.title === agent.title);
+                        if (existing) {
+                          setActiveProjectId(existing.id);
+                        } else {
+                          const agentP: ProjectItem = {
+                            id: agent.id,
+                            title: agent.title,
+                            description: agent.description,
+                            agents: [agent.title],
+                            url: `#${agent.id}`,
+                          };
+                          setProjects((prev) => [agentP, ...prev]);
+                          setActiveProjectId(agent.id);
+                        }
+                      }}
+                      aria-label={`Start chat with ${agent.title}`}
+                    >
+                      <ArrowUpRight aria-hidden="true" />
+                    </button>
+                  </div>
+                  <p className="project-card-description">{agent.description}</p>
+                </div>
+
+                <div className="agent-card-footer">
+                  <button
+                    type="button"
+                    className="agent-start-chat-pill"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const existing = projects.find((p) => p.title === agent.title);
+                      if (existing) {
+                        setActiveProjectId(existing.id);
+                      } else {
+                        const agentP: ProjectItem = {
+                          id: agent.id,
+                          title: agent.title,
+                          description: agent.description,
+                          agents: [agent.title],
+                          url: `#${agent.id}`,
+                        };
+                        setProjects((prev) => [agentP, ...prev]);
+                        setActiveProjectId(agent.id);
+                      }
+                    }}
+                  >
+                    <MessageSquare className="h-4 w-4" aria-hidden="true" />
+                    <span>Start chat</span>
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+
+        {activeTab === "projects" && filteredProjects.length === 0 && (
           <div className="projects-empty-state">
             <p>No projects found matching "{searchQuery}"</p>
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="projects-empty-reset"
+            >
+              Clear search
+            </button>
+          </div>
+        )}
+
+        {activeTab === "agents" && filteredAgents.length === 0 && (
+          <div className="projects-empty-state">
+            <p>No agents found matching "{searchQuery}"</p>
             <button
               type="button"
               onClick={() => setSearchQuery("")}
