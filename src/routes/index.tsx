@@ -357,12 +357,9 @@ function Index() {
 
               <div className="project-card-right">
                 <div className="project-agents-list">
-                  {project.agents.map((agent, index) => (
+                  {project.agents.map((agent) => (
                     <div key={agent} className="project-agent-item">
                       <span className="project-agent-name">{agent}</span>
-                      <span className="project-agent-role">
-                        Specialized Agent • 0{index + 1}
-                      </span>
                     </div>
                   ))}
                 </div>
