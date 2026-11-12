@@ -451,11 +451,346 @@ function ProjectWorkspace({
   );
 }
 
+interface CreateAgentPageProps {
+  onBack: () => void;
+  onCreateAgent: (data: { name: string; role: string }) => void;
+}
+
+function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
+  const [name, setName] = useState("");
+  const [role, setRole] = useState("");
+  const [primaryGoal, setPrimaryGoal] = useState("");
+  const [projectContext, setProjectContext] = useState("");
+  const [responsibilities, setResponsibilities] = useState<string[]>([
+    "Synthesize market dynamics and prioritize expansion milestones",
+  ]);
+  const [researchVariables, setResearchVariables] = useState<string[]>([
+    "Customer demand elasticity across Tier-2/3 cities",
+  ]);
+  const [expectedDeliverables, setExpectedDeliverables] = useState("");
+  const [workingInstructions, setWorkingInstructions] = useState("");
+  const [constraints, setConstraints] = useState("");
+  const [knowledgeSources, setKnowledgeSources] = useState("");
+  const [collaboration, setCollaboration] = useState("");
+  const [testPrompt, setTestPrompt] = useState("");
+
+  const handleAddResponsibility = () => {
+    setResponsibilities((prev) => [...prev, ""]);
+  };
+
+  const handleUpdateResponsibility = (index: number, val: string) => {
+    setResponsibilities((prev) => {
+      const next = [...prev];
+      next[index] = val;
+      return next;
+    });
+  };
+
+  const handleRemoveResponsibility = (index: number) => {
+    setResponsibilities((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
+  };
+
+  const handleAddVariable = () => {
+    setResearchVariables((prev) => [...prev, ""]);
+  };
+
+  const handleUpdateVariable = (index: number, val: string) => {
+    setResearchVariables((prev) => {
+      const next = [...prev];
+      next[index] = val;
+      return next;
+    });
+  };
+
+  const handleRemoveVariable = (index: number) => {
+    setResearchVariables((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      toast.error("Please enter an Agent Name");
+      return;
+    }
+    if (!role.trim()) {
+      toast.error("Please enter an Agent Role");
+      return;
+    }
+    onCreateAgent({ name: name.trim(), role: role.trim() });
+  };
+
+  return (
+    <div className="create-agent-page">
+      <div className="create-agent-container">
+        <header className="create-agent-header">
+          <div className="create-agent-title-row">
+            <h1 className="create-agent-heading">Create Agent</h1>
+            <button
+              type="button"
+              onClick={onBack}
+              className="create-agent-back-btn"
+            >
+              ← Back to Dashboard
+            </button>
+          </div>
+          <div className="create-agent-divider" />
+        </header>
+
+        <form onSubmit={handleSubmit} className="create-agent-form">
+          {/* 1. Agent Name */}
+          <div className="create-agent-section">
+            <label htmlFor="agent-name-input" className="create-agent-section-label">
+              <span className="create-agent-section-num">1.</span> Agent Name
+            </label>
+            <input
+              id="agent-name-input"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Emerging Markets Strategist"
+              className="create-agent-input"
+              required
+            />
+          </div>
+
+          {/* 2. Agent Role */}
+          <div className="create-agent-section">
+            <label htmlFor="agent-role-input" className="create-agent-section-label">
+              <span className="create-agent-section-num">2.</span> Agent Role
+            </label>
+            <input
+              id="agent-role-input"
+              type="text"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              placeholder="e.g. Lead Market Research & Geographic Expansion Specialist"
+              className="create-agent-input"
+              required
+            />
+          </div>
+
+          {/* 3. Primary Goal */}
+          <div className="create-agent-section">
+            <label htmlFor="agent-goal-input" className="create-agent-section-label">
+              <span className="create-agent-section-num">3.</span> Primary Goal
+            </label>
+            <textarea
+              id="agent-goal-input"
+              value={primaryGoal}
+              onChange={(e) => setPrimaryGoal(e.target.value)}
+              placeholder="Define the primary objective and measurable outcome this agent is accountable for..."
+              className="create-agent-textarea"
+              rows={3}
+            />
+          </div>
+
+          {/* 4. Project Context */}
+          <div className="create-agent-section">
+            <label htmlFor="agent-context-input" className="create-agent-section-label">
+              <span className="create-agent-section-num">4.</span> Project Context
+            </label>
+            <textarea
+              id="agent-context-input"
+              value={projectContext}
+              onChange={(e) => setProjectContext(e.target.value)}
+              placeholder="Describe the operational setting, industry background, and broader initiative scope..."
+              className="create-agent-textarea"
+              rows={3}
+            />
+          </div>
+
+          {/* 5. Responsibilities */}
+          <div className="create-agent-section">
+            <div className="create-agent-section-label">
+              <span className="create-agent-section-num">5.</span> Responsibilities
+            </div>
+            <div className="create-agent-list">
+              {responsibilities.map((resp, idx) => (
+                <div key={idx} className="create-agent-list-item">
+                  <input
+                    type="text"
+                    value={resp}
+                    onChange={(e) => handleUpdateResponsibility(idx, e.target.value)}
+                    placeholder={`Responsibility #${idx + 1}`}
+                    className="create-agent-input"
+                  />
+                  {responsibilities.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveResponsibility(idx)}
+                      className="create-agent-item-delete-btn"
+                      title="Remove responsibility"
+                      aria-label="Remove responsibility"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={handleAddResponsibility}
+              className="create-agent-add-btn"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add</span>
+            </button>
+          </div>
+
+          {/* 6. Research Variables */}
+          <div className="create-agent-section">
+            <div className="create-agent-section-label">
+              <span className="create-agent-section-num">6.</span> Research Variables
+            </div>
+            <div className="create-agent-list">
+              {researchVariables.map((variable, idx) => (
+                <div key={idx} className="create-agent-list-item">
+                  <input
+                    type="text"
+                    value={variable}
+                    onChange={(e) => handleUpdateVariable(idx, e.target.value)}
+                    placeholder={`Variable #${idx + 1}`}
+                    className="create-agent-input"
+                  />
+                  {researchVariables.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveVariable(idx)}
+                      className="create-agent-item-delete-btn"
+                      title="Remove variable"
+                      aria-label="Remove variable"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={handleAddVariable}
+              className="create-agent-add-btn"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add Variable</span>
+            </button>
+          </div>
+
+          {/* 7. Expected Deliverables */}
+          <div className="create-agent-section">
+            <label htmlFor="agent-deliverables-input" className="create-agent-section-label">
+              <span className="create-agent-section-num">7.</span> Expected Deliverables
+            </label>
+            <textarea
+              id="agent-deliverables-input"
+              value={expectedDeliverables}
+              onChange={(e) => setExpectedDeliverables(e.target.value)}
+              placeholder="Specify the tangible outputs, reports, data schemas, or decision briefs produced..."
+              className="create-agent-textarea"
+              rows={3}
+            />
+          </div>
+
+          {/* 8. Working Instructions */}
+          <div className="create-agent-section">
+            <label htmlFor="agent-instructions-input" className="create-agent-section-label">
+              <span className="create-agent-section-num">8.</span> Working Instructions
+            </label>
+            <textarea
+              id="agent-instructions-input"
+              value={workingInstructions}
+              onChange={(e) => setWorkingInstructions(e.target.value)}
+              placeholder="Step-by-step reasoning protocol, analytical methodology, and operational procedures..."
+              className="create-agent-textarea"
+              rows={4}
+            />
+          </div>
+
+          {/* 9. Constraints */}
+          <div className="create-agent-section">
+            <label htmlFor="agent-constraints-input" className="create-agent-section-label">
+              <span className="create-agent-section-num">9.</span> Constraints
+            </label>
+            <textarea
+              id="agent-constraints-input"
+              value={constraints}
+              onChange={(e) => setConstraints(e.target.value)}
+              placeholder="Explicit boundaries, compliance restrictions, budget limits, or out-of-scope actions..."
+              className="create-agent-textarea"
+              rows={3}
+            />
+          </div>
+
+          {/* 10. Knowledge Sources */}
+          <div className="create-agent-section">
+            <label htmlFor="agent-sources-input" className="create-agent-section-label">
+              <span className="create-agent-section-num">10.</span> Knowledge Sources
+            </label>
+            <textarea
+              id="agent-sources-input"
+              value={knowledgeSources}
+              onChange={(e) => setKnowledgeSources(e.target.value)}
+              placeholder="Documentation, proprietary data sets, URLs, APIs, or literature repositories..."
+              className="create-agent-textarea"
+              rows={3}
+            />
+          </div>
+
+          {/* 11. Collaboration */}
+          <div className="create-agent-section">
+            <label htmlFor="agent-collab-input" className="create-agent-section-label">
+              <span className="create-agent-section-num">11.</span> Collaboration
+            </label>
+            <textarea
+              id="agent-collab-input"
+              value={collaboration}
+              onChange={(e) => setCollaboration(e.target.value)}
+              placeholder="Cooperating agents, escalation protocols, and human checkpoint requirements..."
+              className="create-agent-textarea"
+              rows={3}
+            />
+          </div>
+
+          {/* 12. Test Prompt */}
+          <div className="create-agent-section">
+            <label htmlFor="agent-test-input" className="create-agent-section-label">
+              <span className="create-agent-section-num">12.</span> Test Prompt
+            </label>
+            <textarea
+              id="agent-test-input"
+              value={testPrompt}
+              onChange={(e) => setTestPrompt(e.target.value)}
+              placeholder="Provide a benchmark scenario or sample question to validate agent capability before deployment..."
+              className="create-agent-textarea"
+              rows={3}
+            />
+          </div>
+
+          {/* Form Actions */}
+          <div className="create-agent-actions">
+            <button
+              type="button"
+              onClick={onBack}
+              className="create-agent-cancel-btn"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="create-agent-submit-btn"
+            >
+              Create Agent
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function Index() {
-  const [isAgentOpen, setIsAgentOpen] = useState(false);
   const [isProjectOpen, setIsProjectOpen] = useState(false);
-  const [agentName, setAgentName] = useState("");
-  const [agentRole, setAgentRole] = useState("");
   const [projectName, setProjectName] = useState("");
   const [projectGoal, setProjectGoal] = useState("");
   const [agentsCount, setAgentsCount] = useState(3);
@@ -463,6 +798,7 @@ function Index() {
   const [projectsCount, setProjectsCount] = useState(initialProjects.length);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+  const [isCreateAgentView, setIsCreateAgentView] = useState(false);
   const [expandedBadges, setExpandedBadges] = useState<Record<string, boolean>>({});
 
   const filteredProjects = projects.filter((project) => {
@@ -475,6 +811,22 @@ function Index() {
     );
     return inTitle || inDesc || inAgents;
   });
+
+  if (isCreateAgentView) {
+    return (
+      <>
+        <CreateAgentPage
+          onBack={() => setIsCreateAgentView(false)}
+          onCreateAgent={(data) => {
+            setAgentsCount((prev) => prev + 1);
+            toast.success(`Agent "${data.name}" created successfully!`);
+            setIsCreateAgentView(false);
+          }}
+        />
+        <Toaster position="top-center" richColors />
+      </>
+    );
+  }
 
   const activeProject = projects.find((p) => p.id === activeProjectId) || projects[0];
 
@@ -505,19 +857,6 @@ function Index() {
       </>
     );
   }
-
-  const handleCreateAgent = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!agentName.trim()) {
-      toast.error("Please enter an agent name");
-      return;
-    }
-    setAgentsCount((prev) => prev + 1);
-    toast.success(`Agent "${agentName}" created successfully!`);
-    setAgentName("");
-    setAgentRole("");
-    setIsAgentOpen(false);
-  };
 
   const handleCreateProject = (e: React.FormEvent) => {
     e.preventDefault();
@@ -584,48 +923,13 @@ function Index() {
               <p className="tile-copy">Build, configure, and deploy AI agents.</p>
             </div>
 
-            <Dialog open={isAgentOpen} onOpenChange={setIsAgentOpen}>
-              <DialogTrigger asChild>
-                <Button className="tile-action-btn">
-                  Create Agent
-                  <ArrowUpRight className="ml-1.5 h-4 w-4" aria-hidden="true" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Create New Agent</DialogTitle>
-                  <DialogDescription>
-                    Configure an autonomous agent with customized capabilities, personality, and instructions.
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleCreateAgent} className="space-y-4 pt-2">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="agent-name">Agent Name</Label>
-                    <Input
-                      id="agent-name"
-                      placeholder="e.g. Research Specialist, Code Reviewer"
-                      value={agentName}
-                      onChange={(e) => setAgentName(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="agent-role">Role & Expertise</Label>
-                    <Input
-                      id="agent-role"
-                      placeholder="e.g. Data extraction, workflow automation"
-                      value={agentRole}
-                      onChange={(e) => setAgentRole(e.target.value)}
-                    />
-                  </div>
-                  <DialogFooter className="pt-2">
-                    <Button type="submit" className="rounded-full bg-foreground text-background hover:bg-foreground/90">
-                      Create Agent
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
+            <Button
+              className="tile-action-btn"
+              onClick={() => setIsCreateAgentView(true)}
+            >
+              Create Agent
+              <ArrowUpRight className="ml-1.5 h-4 w-4" aria-hidden="true" />
+            </Button>
 
             <span className="tile-curve" aria-hidden="true" />
           </div>

@@ -79,4 +79,47 @@ describe("App routing", () => {
     expect(screen.queryByText("Distribution Channel Optimisation")).toBeNull();
     expect(screen.getByText("+1")).toBeDefined();
   });
+
+  it("navigates to Create Agent page with 12 numbered sections and returns to dashboard", () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    // Click "Create Agent" on the hero tile
+    const createAgentTileBtn = screen.getByRole("button", { name: /create agent/i });
+    fireEvent.click(createAgentTileBtn);
+
+    // Verify Create Agent page renders with all 12 sections
+    expect(screen.getByRole("heading", { level: 1, name: "Create Agent" })).toBeDefined();
+    expect(screen.getByText("Agent Name")).toBeDefined();
+    expect(screen.getByText("Agent Role")).toBeDefined();
+    expect(screen.getByText("Primary Goal")).toBeDefined();
+    expect(screen.getByText("Project Context")).toBeDefined();
+    expect(screen.getByText("Responsibilities")).toBeDefined();
+    expect(screen.getByText("Research Variables")).toBeDefined();
+    expect(screen.getByText("Expected Deliverables")).toBeDefined();
+    expect(screen.getByText("Working Instructions")).toBeDefined();
+    expect(screen.getByText("Constraints")).toBeDefined();
+    expect(screen.getByText("Knowledge Sources")).toBeDefined();
+    expect(screen.getByText("Collaboration")).toBeDefined();
+    expect(screen.getByText("Test Prompt")).toBeDefined();
+
+    // Verify Add buttons
+    expect(screen.getByRole("button", { name: "Add" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "Add Variable" })).toBeDefined();
+
+    // Fill required fields and submit
+    const nameInput = screen.getByPlaceholderText("e.g. Emerging Markets Strategist");
+    const roleInput = screen.getByPlaceholderText("e.g. Lead Market Research & Geographic Expansion Specialist");
+    fireEvent.change(nameInput, { target: { value: "Consumer Intelligence Specialist" } });
+    fireEvent.change(roleInput, { target: { value: "Qualitative Data Lead" } });
+
+    // Submit Create Agent form
+    const submitBtn = screen.getByRole("button", { name: "Create Agent" });
+    fireEvent.click(submitBtn);
+
+    // Returns back to dashboard
+    expect(screen.getByText("Autonomous Collaborative Projects")).toBeDefined();
+  });
 });
