@@ -40,12 +40,20 @@ describe("App routing", () => {
     expect(screen.getByText("ARUN PE")).toBeDefined();
     expect(screen.getByText("What I know")).toBeDefined();
     expect(screen.getByPlaceholderText("Reply, attach a file, or tap the mic to talk")).toBeDefined();
+    expect(screen.getByRole("button", { name: "Back to Home" })).toBeDefined();
 
-    // Click "Dashboard" in sidebar to return to the home page
-    const dashboardBtn = screen.getByRole("button", { name: /dashboard/i });
-    fireEvent.click(dashboardBtn);
+    // Click "Back to Home" in topbar to return to the home page
+    const backBtn = screen.getByRole("button", { name: "Back to Home" });
+    fireEvent.click(backBtn);
 
     // Verify back on home page
+    expect(screen.getByText("Autonomous Collaborative Projects")).toBeDefined();
+
+    // Re-enter workspace and test sidebar "Dashboard" navigation
+    fireEvent.click(screen.getByText("Personal care brand enters South Asia’s smaller cities"));
+    expect(screen.getByText("CEO Workspace")).toBeDefined();
+    const dashboardBtn = screen.getByRole("button", { name: /^dashboard$/i });
+    fireEvent.click(dashboardBtn);
     expect(screen.getByText("Autonomous Collaborative Projects")).toBeDefined();
   });
 

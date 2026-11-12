@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
+  ArrowLeft,
   ArrowUp,
   ArrowUpRight,
   BookOpen,
@@ -188,10 +189,10 @@ function ProjectWorkspace({
             type="button"
             onClick={onBackToDashboard}
             className="workspace-brand"
-            title="Return to Dashboard"
+            title="Return to Home"
           >
             <div className="workspace-brand-avatar">
-              <span className="w-2.5 h-2.5 rounded-sm bg-white inline-block" />
+              <span className="w-2.5 h-2.5 rounded-sm bg-black inline-block" />
             </div>
             <span className="workspace-brand-name">CEO Workspace</span>
           </button>
@@ -299,6 +300,16 @@ function ProjectWorkspace({
         {/* Topbar */}
         <header className="workspace-topbar">
           <div className="workspace-topbar-left">
+            <button
+              type="button"
+              onClick={onBackToDashboard}
+              className="workspace-back-btn"
+              title="Back to Home"
+              aria-label="Back to Home"
+            >
+              <ArrowLeft className="h-4 w-4 mr-1.5" />
+              <span>Back to Home</span>
+            </button>
             {isSidebarCollapsed && (
               <button
                 type="button"
@@ -310,6 +321,7 @@ function ProjectWorkspace({
                 <PanelLeft className="h-4 w-4" />
               </button>
             )}
+            <span className="workspace-topbar-divider" aria-hidden="true" />
             <h2 className="workspace-topbar-title">{project.title}</h2>
           </div>
 
@@ -321,23 +333,23 @@ function ProjectWorkspace({
                   <span>What I know</span>
                 </button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
+              <DialogContent className="sm:max-w-md workspace-knowledge-dialog">
                 <DialogHeader>
-                  <DialogTitle>Project Knowledge Base</DialogTitle>
-                  <DialogDescription>
+                  <DialogTitle className="text-white">Project Knowledge Base</DialogTitle>
+                  <DialogDescription className="text-zinc-400">
                     Context and active collaborative agents for {project.title}.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 pt-2">
                   <div>
-                    <h4 className="font-semibold text-foreground mb-1 text-sm">Executive Summary</h4>
-                    <p className="text-muted-foreground leading-relaxed text-sm">{project.description}</p>
+                    <h4 className="font-semibold text-zinc-200 mb-1 text-sm">Executive Summary</h4>
+                    <p className="text-zinc-400 leading-relaxed text-sm">{project.description}</p>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-foreground mb-2 text-sm">Assigned Autonomous Agents</h4>
+                    <h4 className="font-semibold text-zinc-200 mb-2 text-sm">Assigned Autonomous Agents</h4>
                     <div className="flex flex-wrap gap-2">
                       {project.agents.map((agent) => (
-                        <span key={agent} className="px-3 py-1 bg-muted rounded-full font-medium text-sm">
+                        <span key={agent} className="px-3 py-1 bg-zinc-800 text-zinc-200 border border-zinc-700/60 rounded-full font-medium text-sm">
                           {agent}
                         </span>
                       ))}
