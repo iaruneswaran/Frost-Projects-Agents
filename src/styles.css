@@ -630,7 +630,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: flex-start;
   width: 100%;
   height: 240px;
   min-height: 240px;
@@ -645,7 +645,7 @@
 }
 
 .project-card.expanded {
-  height: auto;
+  height: 295px;
   min-height: 295px;
 }
 
@@ -662,7 +662,9 @@
   align-items: flex-start;
   text-align: left;
   width: 100%;
-  padding: 24px 24px 10px;
+  padding: 24px 24px 0;
+  flex: 0 0 144px;
+  height: 144px;
 }
 
 .project-card-eyebrow {
@@ -788,14 +790,14 @@
   flex-wrap: wrap;
   gap: 10px;
   width: 100%;
-  padding-top: 2px;
-  animation: projectFadeIn 0.22s ease-out;
+  padding-top: 10px;
+  animation: projectDropdown 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes projectFadeIn {
+@keyframes projectDropdown {
   from {
     opacity: 0;
-    transform: translateY(-4px);
+    transform: translateY(-8px);
   }
   to {
     opacity: 1;
@@ -2032,8 +2034,8 @@ button:hover,
   .aircond-mission { width: calc(100% - 32px); min-height: 0; padding: 0; margin: 36px auto 60px; border-radius: 0; }
   .projects-title { font-size: 24px; }
   .projects-grid { gap: 18px; }
-  .project-card { border-radius: 24px; height: auto; min-height: auto; align-items: flex-start; }
-  .project-card-main { padding: 26px 20px 14px; text-align: left; align-items: flex-start; }
+  .project-card, .project-card.expanded { border-radius: 24px; height: auto; min-height: auto; align-items: flex-start; }
+  .project-card-main { height: auto; flex: 0 0 auto; padding: 26px 20px 14px; text-align: left; align-items: flex-start; }
   .project-card-title { font-size: 20px; text-align: left; }
   .project-action-btn { width: 38px; height: 38px; }
   .project-action-btn svg { width: 16px; height: 16px; }
