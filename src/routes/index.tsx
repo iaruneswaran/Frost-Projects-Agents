@@ -178,7 +178,7 @@ function Index() {
             Autonomous Collaborative Projects
           </h1>
           <p className="aircond-header-subline">
-            Deploy intelligent autonomous agents and coordinate collaborative initiatives with ease.
+            Deploy intelligent autonomous agents and coordinate collaborative with ease.
           </p>
         </div>
       </header>
