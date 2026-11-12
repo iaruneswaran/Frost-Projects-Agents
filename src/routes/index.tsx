@@ -978,7 +978,7 @@ function Index() {
                     />
                   </div>
                   <DialogFooter className="pt-2">
-                    <Button type="submit" className="rounded-full bg-foreground text-background hover:bg-foreground/90">
+                    <Button type="submit" className="rounded-full bg-foreground text-background">
                       Create Project
                     </Button>
                   </DialogFooter>

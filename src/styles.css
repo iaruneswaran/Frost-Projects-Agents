@@ -247,11 +247,10 @@
   font-size: 14px;
   text-decoration: none;
   opacity: 1;
-  transition: opacity 160ms ease;
 }
 
 .aircond-nav a:hover {
-  opacity: 0.8;
+  opacity: 1;
 }
 
 .aircond-login {
@@ -265,7 +264,9 @@
   box-shadow: none;
 }
 
-.aircond-login:hover { background: var(--aircond-lime-soft); }
+.aircond-login:hover {
+  background: var(--aircond-lime);
+}
 .aircond-login svg { width: 15px; height: 15px; }
 .aircond-mobile-menu { display: none; color: var(--aircond-paper); }
 
@@ -326,10 +327,9 @@
   text-decoration: none;
   isolation: isolate;
   box-shadow: none;
-  transition: transform 220ms ease;
 }
 
-.aircond-tile:hover { transform: translateY(-4px); }
+.aircond-tile:hover { transform: none; }
 .tile-home { background: #c7ebff; color: var(--aircond-ink); }
 .tile-system { background: var(--aircond-lime); color: var(--aircond-ink); }
 .tile-climate { background: var(--aircond-dark-card); color: var(--aircond-paper); }
@@ -400,14 +400,13 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition: transform 160ms ease, opacity 160ms ease;
 }
 
 .tile-action-btn:hover {
-  transform: translateY(-2px);
+  transform: none;
   background: var(--aircond-ink);
   color: var(--aircond-paper);
-  opacity: 0.92;
+  opacity: 1;
 }
 
 .tile-action-btn svg {
@@ -613,11 +612,10 @@
   background: rgba(17, 28, 29, 0.06);
   color: var(--aircond-ink);
   cursor: pointer;
-  transition: background-color 0.2s ease;
 }
 
 .search-clear-btn:hover {
-  background: rgba(17, 28, 29, 0.12);
+  background: rgba(17, 28, 29, 0.06);
 }
 
 .projects-grid {
@@ -642,7 +640,7 @@
   border: 1px solid rgba(17, 28, 29, 0.1);
   isolation: isolate;
   cursor: pointer;
-  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), min-height 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: min-height 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .project-card.expanded {
@@ -650,7 +648,7 @@
 }
 
 .project-card:hover {
-  transform: translateY(-3px);
+  transform: none;
   box-shadow: none;
 }
 
@@ -704,13 +702,12 @@
   font: inherit;
   text-align: left;
   cursor: pointer;
-  transition: color 0.2s ease, opacity 0.2s ease;
 }
 
 .project-card-title a:hover,
 .project-card-title button:hover {
-  color: #181c1f;
-  opacity: 0.8;
+  color: inherit;
+  opacity: 1;
 }
 
 .project-action-btn {
@@ -727,13 +724,12 @@
   text-decoration: none;
   box-shadow: none;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .project-action-btn:hover {
-  background: var(--aircond-lime);
-  color: var(--aircond-ink);
-  transform: translateY(-2px);
+  background: var(--aircond-ink);
+  color: #ffffff;
+  transform: none;
 }
 
 .project-action-btn svg {
@@ -821,12 +817,11 @@
   line-height: 1;
   color: var(--aircond-ink);
   white-space: nowrap;
-  transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .project-agent-badge:hover {
-  background: #d3efff;
-  transform: translateY(-1px);
+  background: #e6f6ff;
+  transform: none;
 }
 
 .project-agent-round-badge {
@@ -846,12 +841,10 @@
   box-shadow: none;
   background: #e6f6ff;
   color: var(--aircond-ink);
-  transition: all 0.2s ease;
 }
 
 .project-agent-round-badge:hover {
-  background: #d3efff;
-  transform: scale(1.06);
+  transform: none;
 }
 
 .project-agent-round-badge.active {
@@ -885,12 +878,11 @@
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: background-color 0.2s ease;
 }
 
 .projects-empty-reset:hover {
-  background: var(--aircond-lime);
-  color: var(--aircond-ink);
+  background: var(--aircond-ink);
+  color: #ffffff;
 }
 
 .aircond-contact {
@@ -988,12 +980,11 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .workspace-collapse-btn:hover {
-  background: rgba(17, 28, 29, 0.06);
-  color: var(--aircond-ink);
+  background: transparent;
+  color: var(--aircond-muted);
 }
 
 .workspace-new-project-wrap {
@@ -1015,11 +1006,10 @@
   border: none;
   cursor: pointer;
   box-shadow: none;
-  transition: opacity 0.15s ease;
 }
 
 .workspace-new-project-btn:hover {
-  opacity: 0.92;
+  opacity: 1;
 }
 
 .workspace-dashboard-btn {
@@ -1037,11 +1027,10 @@
   border: none;
   cursor: pointer;
   text-align: left;
-  transition: background-color 0.15s ease;
 }
 
 .workspace-dashboard-btn:hover {
-  background: rgba(17, 28, 29, 0.05);
+  background: transparent;
 }
 
 .workspace-section-label {
@@ -1070,11 +1059,10 @@
   background: transparent;
   border: 1px solid transparent;
   text-align: left;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .workspace-project-item:hover {
-  background: rgba(17, 28, 29, 0.05);
+  background: transparent;
 }
 
 .workspace-project-item.active {
@@ -1111,11 +1099,10 @@
   border: none;
   cursor: pointer;
   text-align: left;
-  transition: background-color 0.15s ease;
 }
 
 .workspace-chat-btn:hover {
-  background: rgba(17, 28, 29, 0.05);
+  background: transparent;
 }
 
 .workspace-sidebar-footer {
@@ -1141,11 +1128,10 @@
   background: transparent;
   border: none;
   text-align: left;
-  transition: background-color 0.15s ease;
 }
 
 .workspace-settings-btn:hover {
-  background: rgba(17, 28, 29, 0.05);
+  background: transparent;
 }
 
 .workspace-profile-row {
@@ -1197,12 +1183,11 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: color 0.15s ease, background-color 0.15s ease;
 }
 
 .workspace-theme-toggle:hover {
-  color: var(--aircond-ink);
-  background: rgba(17, 28, 29, 0.05);
+  color: var(--aircond-muted);
+  background: transparent;
 }
 
 /* Main Workspace Area */
@@ -1271,11 +1256,10 @@
   gap: 8px;
   cursor: pointer;
   box-shadow: none;
-  transition: background-color 0.15s ease;
 }
 
 .workspace-topbar-btn:hover {
-  background: #f8fafc;
+  background: #ffffff;
 }
 
 .workspace-canvas {
@@ -1346,11 +1330,10 @@
   border: none;
   cursor: pointer;
   box-shadow: none;
-  transition: opacity 0.15s ease;
 }
 
 .workspace-btn-primary:hover {
-  opacity: 0.92;
+  opacity: 1;
 }
 
 .workspace-btn-secondary {
@@ -1367,11 +1350,10 @@
   font-weight: 600;
   cursor: pointer;
   box-shadow: none;
-  transition: background-color 0.15s ease;
 }
 
 .workspace-btn-secondary:hover {
-  background: #f8fafc;
+  background: #ffffff;
 }
 
 .workspace-footnote {
@@ -1475,12 +1457,11 @@
   border: none;
   color: var(--aircond-muted);
   cursor: pointer;
-  transition: color 0.15s ease, background-color 0.15s ease;
 }
 
 .workspace-dock-icon-btn:hover {
-  color: var(--aircond-ink);
-  background: rgba(17, 28, 29, 0.05);
+  color: var(--aircond-muted);
+  background: transparent;
 }
 
 .workspace-dock-send-btn {
@@ -1495,7 +1476,6 @@
   justify-content: center;
   cursor: pointer;
   box-shadow: none;
-  transition: opacity 0.15s ease;
 }
 
 .workspace-dock-send-btn:disabled {
@@ -1504,7 +1484,7 @@
 }
 
 .workspace-dock-send-btn:not(:disabled):hover {
-  opacity: 0.88;
+  opacity: 1;
 }
 
 /* ==========================================================================
@@ -1558,11 +1538,10 @@
   font-weight: 600;
   cursor: pointer;
   box-shadow: none;
-  transition: background-color 0.15s ease;
 }
 
 .create-agent-back-btn:hover {
-  background: #f1f5f9;
+  background: #ffffff;
 }
 
 .create-agent-divider {
@@ -1680,13 +1659,12 @@
   color: var(--aircond-muted);
   cursor: pointer;
   flex-shrink: 0;
-  transition: all 0.15s ease;
 }
 
 .create-agent-item-delete-btn:hover {
-  background: #fee2e2;
-  color: #dc2626;
-  border-color: #fca5a5;
+  background: transparent;
+  color: var(--aircond-muted);
+  border-color: rgba(17, 28, 29, 0.1);
 }
 
 .create-agent-add-btn {
@@ -1704,12 +1682,11 @@
   font-weight: 600;
   cursor: pointer;
   box-shadow: none;
-  transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
 .create-agent-add-btn:hover {
-  background: #c7ebff;
-  transform: translateY(-1px);
+  background: #e6f6ff;
+  transform: none;
 }
 
 /* Form Actions */
@@ -1736,12 +1713,11 @@
   border: none;
   cursor: pointer;
   box-shadow: none;
-  transition: opacity 0.15s ease, transform 0.1s ease;
 }
 
 .create-agent-submit-btn:hover {
-  opacity: 0.92;
-  transform: translateY(-1px);
+  opacity: 1;
+  transform: none;
 }
 
 .create-agent-cancel-btn {
@@ -1757,11 +1733,32 @@
   font-weight: 500;
   border: none;
   cursor: pointer;
-  transition: color 0.15s ease;
 }
 
 .create-agent-cancel-btn:hover {
-  color: var(--aircond-ink);
+  color: var(--aircond-muted);
+}
+
+/* ==========================================================================
+   No-Hover Effects Rule for All Cards and Buttons
+   ========================================================================== */
+
+.project-card:hover,
+.aircond-tile:hover,
+.create-agent-section:hover,
+button:hover,
+[role="button"]:hover,
+.tile-action-btn:hover,
+.project-action-btn:hover,
+.project-agent-badge:hover,
+.project-agent-round-badge:hover,
+.create-agent-add-btn:hover,
+.create-agent-submit-btn:hover,
+.create-agent-back-btn:hover,
+.workspace-btn-primary:hover,
+.workspace-btn-secondary:hover {
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 @media (max-width: 900px) {
