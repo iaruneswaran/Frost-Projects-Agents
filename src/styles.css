@@ -906,11 +906,11 @@
 }
 
 .project-agent-round-badge {
-  width: auto;
+  width: 38px;
   min-width: 38px;
   height: 38px;
-  border-radius: 9999px;
-  padding: 0 10px;
+  border-radius: 50%;
+  padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -934,7 +934,6 @@
 .project-agent-round-badge.active {
   background: #e6f6ff;
   color: var(--aircond-ink);
-  padding: 0 14px;
 }
 
 .project-agent-round-badge.active:hover {
