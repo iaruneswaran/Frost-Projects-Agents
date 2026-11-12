@@ -111,8 +111,8 @@
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
   --aircond-ink: oklch(0.17 0 0);
-  --aircond-lime: oklch(0.88 0.22 112);
-  --aircond-lime-soft: oklch(0.95 0.13 112);
+  --aircond-lime: #fbff55;
+  --aircond-lime-soft: #fdffa8;
   --aircond-blue-soft: oklch(0.965 0.018 235);
   --aircond-paper: oklch(0.99 0.003 250);
   --aircond-muted: oklch(0.56 0.012 250);
