@@ -663,8 +663,8 @@
   text-align: left;
   width: 100%;
   padding: 24px 24px 0;
-  flex: 0 0 144px;
-  height: 144px;
+  flex: 0 0 126px;
+  height: 126px;
 }
 
 .project-card-eyebrow {
@@ -764,10 +764,20 @@
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
-  gap: 10px;
+  gap: 0;
   width: 100%;
   padding: 0 24px 22px;
   box-shadow: none;
+}
+
+.project-card-agents-label {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--aircond-subtle);
+  letter-spacing: 0.01em;
+  margin-bottom: 8px;
+  display: block;
 }
 
 .project-card-agents-row {

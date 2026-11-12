@@ -1252,6 +1252,7 @@ function Index() {
               </div>
 
               <div className={`project-card-agents ${expandedBadges[project.id] ? "expanded" : ""}`}>
+                <span className="project-card-agents-label">Agents</span>
                 <div className="project-card-agents-row">
                   {(project.agents.length > 3 ? project.agents.slice(0, 3) : project.agents).map((agent) => (
                     <span key={agent} className="project-agent-badge">

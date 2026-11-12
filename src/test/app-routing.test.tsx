@@ -63,6 +63,9 @@ describe("App routing", () => {
 
     render(<Component />);
 
+    // Mentions "Agents" label above the badges
+    expect(screen.getAllByText("Agents").length).toBeGreaterThan(0);
+
     // Initial 3 badges are visible
     expect(screen.getByText("Emerging Markets")).toBeDefined();
     expect(screen.getByText("Customer Dynamics")).toBeDefined();
