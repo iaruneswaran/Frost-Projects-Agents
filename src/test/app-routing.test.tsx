@@ -267,7 +267,7 @@ describe("App routing", () => {
     fireEvent.click(screen.getByRole("button", { name: /verify document/i }));
 
     // Return to dashboard
-    const backToAgentsBtn = screen.getByRole("button", { name: /back to agents/i });
+    const backToAgentsBtn = screen.getByRole("button", { name: /^back$/i });
     fireEvent.click(backToAgentsBtn);
     expect(screen.getByText("Autonomous Collaborative Projects")).toBeDefined();
 

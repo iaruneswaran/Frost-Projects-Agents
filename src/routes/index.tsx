@@ -668,14 +668,16 @@ function KycVerificationPage({ onBack, onProceedToWorkspace }: KycVerificationPa
 
         {/* Heading, shortened subline and back navigation inside the header */}
         <div className="aircond-header-bottom text-center">
-          <button
-            type="button"
-            className="kyc-header-back-btn"
-            onClick={onBack}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
-            Back to Agents
-          </button>
+          <div className="kyc-header-back-wrapper">
+            <button
+              type="button"
+              className="kyc-header-back-btn"
+              onClick={onBack}
+            >
+              <ArrowLeft className="h-4 w-4 mr-1.5" aria-hidden="true" />
+              Back
+            </button>
+          </div>
           <h1 className="aircond-header-heading">
             SBI Customer KYC & Document Verification
           </h1>
@@ -685,52 +687,54 @@ function KycVerificationPage({ onBack, onProceedToWorkspace }: KycVerificationPa
         </div>
       </header>
 
-      {/* Attachment card overlaid on the header/menu with negative margin (820px width) */}
-      <div className="kyc-overlay-card">
-        {/* Attachment Field */}
-        <div className="kyc-section">
-          <label className="kyc-section-title">Customer Identification Documents</label>
+      {/* Hidden File Input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileUpload}
+        multiple
+        accept=".pdf,.png,.jpg,.jpeg"
+        className="hidden"
+        id="kyc-file-input"
+      />
+
+      {/* Attachment Bar overlaid on the menu/header (820px width) */}
+      <div className="kyc-attachment-bar-wrapper">
+        <div
+          className="kyc-upload-dropzone"
+          onClick={() => fileInputRef.current?.click()}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+              const files = Array.from(e.dataTransfer.files);
+              const newDocs: AttachedFile[] = files.map((file, idx) => ({
+                id: `drop-${Date.now()}-${idx}`,
+                name: file.name,
+                size: `${(file.size / 1024).toFixed(1)} KB`,
+                type: file.type || "document",
+              }));
+              setDocuments((prev) => [...prev, ...newDocs]);
+              toast.success(`Attached ${newDocs.length} document${newDocs.length > 1 ? "s" : ""}`);
+            }
+          }}
+        >
+          <UploadCloud className="kyc-upload-icon" aria-hidden="true" />
+          <div className="kyc-upload-text">
+            <span className="kyc-upload-prompt">Click to attach documents</span> or drag and drop files here
+          </div>
+          <span className="kyc-upload-formats">Supported: PDF, PNG, JPG, JPEG (Max 25 MB per file)</span>
+        </div>
+      </div>
+
+      {/* Unwrapped content flow below the attachment bar */}
+      <div className="kyc-content-flow">
+        {/* Customer Identification Documents Heading & Description below the attachment bar */}
+        <div className="kyc-docs-header">
+          <h3 className="kyc-section-title">Customer Identification Documents</h3>
           <p className="kyc-section-desc">
             Upload official proof of identity (Aadhaar Card, PAN Card, Passport, or Driving Licence) in PDF, PNG, or JPEG format.
           </p>
-
-          {/* Hidden File Input */}
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileUpload}
-            multiple
-            accept=".pdf,.png,.jpg,.jpeg"
-            className="hidden"
-            id="kyc-file-input"
-          />
-
-          {/* Dropzone Card */}
-          <div
-            className="kyc-upload-dropzone"
-            onClick={() => fileInputRef.current?.click()}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => {
-              e.preventDefault();
-              if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                const files = Array.from(e.dataTransfer.files);
-                const newDocs: AttachedFile[] = files.map((file, idx) => ({
-                  id: `drop-${Date.now()}-${idx}`,
-                  name: file.name,
-                  size: `${(file.size / 1024).toFixed(1)} KB`,
-                  type: file.type || "document",
-                }));
-                setDocuments((prev) => [...prev, ...newDocs]);
-                toast.success(`Attached ${newDocs.length} document${newDocs.length > 1 ? "s" : ""}`);
-              }
-            }}
-          >
-            <UploadCloud className="kyc-upload-icon" aria-hidden="true" />
-            <div className="kyc-upload-text">
-              <span className="kyc-upload-prompt">Click to attach documents</span> or drag and drop files here
-            </div>
-            <span className="kyc-upload-formats">Supported: PDF, PNG, JPG, JPEG (Max 25 MB per file)</span>
-          </div>
 
           {/* Attached Documents List */}
           {documents.length > 0 && (
