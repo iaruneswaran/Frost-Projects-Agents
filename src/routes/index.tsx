@@ -6,6 +6,7 @@ import {
   ArrowUpRight,
   BookOpen,
   ChevronDown,
+  Clock,
   LayoutGrid,
   Menu,
   MessageSquare,
@@ -14,6 +15,7 @@ import {
   PanelLeft,
   PanelLeftClose,
   Paperclip,
+  Pencil,
   Plus,
   Search,
   Settings,
@@ -23,6 +25,7 @@ import {
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import frostAtlasLogo from "@/assets/frost-atlas-Dmpxp6zQ.svg";
 import {
   Dialog,
   DialogContent,
@@ -134,6 +137,7 @@ interface AgentItem {
   id: string;
   title: string;
   description: string;
+  lastUsed?: string;
 }
 
 const initialAgents: AgentItem[] = [
@@ -142,36 +146,42 @@ const initialAgents: AgentItem[] = [
     title: "SBI Customer KYC & Document Verification Agent",
     description:
       "Inspects and verifies uploaded customer documents (Aadhaar, PAN, Passport, DL) for authenticity, data extraction, and regulatory KYC compliance.",
+    lastUsed: "12m ago",
   },
   {
     id: "agent-sbi-home-loan",
     title: "SBI Home Loan Monthly Report",
     description:
       "Prepares monthly home-loan counts and disbursement totals for compliance review. Home loans only; excludes auto and land loans.",
+    lastUsed: "45m ago",
   },
   {
     id: "agent-sbi-auto-loan",
     title: "SBI Auto Loan Monthly Report",
     description:
       "Compiles monthly auto-loan issuance totals for compliance review. Vehicle finance only; excludes home and land loans.",
+    lastUsed: "2h ago",
   },
   {
     id: "agent-apollo-discharge",
     title: "Apollo Hospital  Discharge Summary",
     description:
       "Prepares weekly inpatient discharge summaries for authorized hospital reviewers. Inpatient episodes only.",
+    lastUsed: "Yesterday",
   },
   {
     id: "agent-sbi-land-loan",
     title: "SBI Land Loan Quarterly Report",
     description:
       "Prepares a quarterly land-loan portfolio summary for compliance review. Agricultural and commercial land loans only.",
+    lastUsed: "2 days ago",
   },
   {
     id: "agent-aiims-icu",
     title: "AIIMS ICU Occupancy Report",
     description:
       "Prepares daily ICU occupancy and critical-care summaries for authorized hospital reviewers. ICU ward data only.",
+    lastUsed: "3 days ago",
   },
 ];
 
@@ -289,7 +299,6 @@ function ProjectWorkspace({
                 className={`workspace-project-item ${isActive ? "active" : ""}`}
               >
                 <span className="workspace-project-item-title">{p.title}</span>
-                <span className="workspace-project-item-dash">—</span>
               </button>
             );
           })}
@@ -411,11 +420,10 @@ function ProjectWorkspace({
         {/* Canvas Body */}
         <div className="workspace-canvas">
           <div className="workspace-content-container">
-            <div className="workspace-eyebrow">Let's start with the idea</div>
             <h1 className="workspace-heading">What is this project about?</h1>
             <h3 className="workspace-subheading">What outcome would make this project worthwhile?</h3>
             <p className="workspace-prompt">
-              Reply below in a sentence or two. I'll ask the next question and build the picture with you.
+              Reply below in a sentence or two, and I'll build the picture with you.
             </p>
 
             {/* Action Buttons */}
@@ -437,10 +445,6 @@ function ProjectWorkspace({
                 <span>Attach a plan</span>
               </button>
             </div>
-
-            <p className="workspace-footnote">
-              A rough idea is enough. Costs, benefits, timing and the owner can come later.
-            </p>
 
             {/* Messages Thread */}
             {messages.length > 0 && (
@@ -513,6 +517,8 @@ function ProjectWorkspace({
 interface CreateAgentPageProps {
   onBack: () => void;
   onCreateAgent: (data: { name: string; role: string }) => void;
+  initialData?: { name?: string; role?: string; goal?: string; context?: string };
+  isEdit?: boolean;
 }
 
 interface TeamMember {
@@ -523,12 +529,12 @@ interface TeamMember {
   role: string;
 }
 
-function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
+function CreateAgentPage({ onBack, onCreateAgent, initialData, isEdit }: CreateAgentPageProps) {
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
-  const [name, setName] = useState("");
-  const [role, setRole] = useState("");
-  const [primaryGoal, setPrimaryGoal] = useState("");
-  const [projectContext, setProjectContext] = useState("");
+  const [name, setName] = useState(initialData?.name || "");
+  const [role, setRole] = useState(initialData?.role || "");
+  const [primaryGoal, setPrimaryGoal] = useState(initialData?.goal || "");
+  const [projectContext, setProjectContext] = useState(initialData?.context || "");
   const [inviteEmail, setInviteEmail] = useState("");
   const [members, setMembers] = useState<TeamMember[]>([
     { id: "1", initials: "EA", name: "Guy Hawkins", email: "hello@deserve.studio", role: "Analyst" },
@@ -686,9 +692,9 @@ function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
         {/* Main Title & Subtitle */}
         <div className="dark-agent-header-text">
           <h1 className="dark-agent-heading">
-            {currentStep === 1 && "Create your agent"}
+            {currentStep === 1 && (isEdit ? "Edit your agent" : "Create your agent")}
             {currentStep === 2 && "Configure capabilities"}
-            {currentStep === 3 && "Review & launch instructions"}
+            {currentStep === 3 && (isEdit ? "Review & save instructions" : "Review & launch instructions")}
           </h1>
           <p className="dark-agent-subheading">
             {currentStep === 1 && "You can create more agents later or coordinate collaborative workflows with a single agent"}
@@ -1119,7 +1125,7 @@ function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
                   type="submit"
                   className="dark-agent-primary-btn"
                 >
-                  Create Agent
+                  {isEdit ? "Save Changes" : "Create Agent"}
                 </button>
               </div>
             </div>
@@ -1139,7 +1145,8 @@ function Index() {
   const [projectsCount, setProjectsCount] = useState(initialProjects.length);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"projects" | "agents">("projects");
-  const [agents] = useState<AgentItem[]>(initialAgents);
+  const [agents, setAgents] = useState<AgentItem[]>(initialAgents);
+  const [editingAgent, setEditingAgent] = useState<AgentItem | null>(null);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [isCreateAgentView, setIsCreateAgentView] = useState(false);
   const [expandedBadges, setExpandedBadges] = useState<Record<string, boolean>>({});
@@ -1168,11 +1175,37 @@ function Index() {
     return (
       <>
         <CreateAgentPage
-          onBack={() => setIsCreateAgentView(false)}
-          onCreateAgent={(data) => {
-            setAgentsCount((prev) => prev + 1);
-            toast.success(`Agent "${data.name}" created successfully!`);
+          initialData={
+            editingAgent
+              ? {
+                  name: editingAgent.title,
+                  role: "Domain Specialist",
+                  goal: editingAgent.description,
+                  context: "Automated Enterprise Workspace",
+                }
+              : undefined
+          }
+          isEdit={!!editingAgent}
+          onBack={() => {
             setIsCreateAgentView(false);
+            setEditingAgent(null);
+          }}
+          onCreateAgent={(data) => {
+            if (editingAgent) {
+              setAgents((prev) =>
+                prev.map((a) =>
+                  a.id === editingAgent.id
+                    ? { ...a, title: data.name }
+                    : a
+                )
+              );
+              toast.success(`Agent "${data.name}" updated successfully!`);
+            } else {
+              setAgentsCount((prev) => prev + 1);
+              toast.success(`Agent "${data.name}" created successfully!`);
+            }
+            setIsCreateAgentView(false);
+            setEditingAgent(null);
           }}
         />
         <Toaster position="top-center" richColors />
@@ -1234,11 +1267,15 @@ function Index() {
   };
 
   return (
-    <main className="aircond-page min-h-screen overflow-hidden bg-background text-foreground">
+    <main className="aircond-page min-h-screen bg-background text-foreground">
       <header className="aircond-header mx-auto flex flex-col">
         <div className="aircond-header-top flex items-center justify-between">
-          <a href="#top" className="aircond-wordmark" aria-label="Frost Projects home">
-            Frost Projects
+          <a href="#top" className="aircond-wordmark" aria-label="Frost Atlas home">
+            <img
+              src={frostAtlasLogo}
+              alt="Frost Atlas"
+              className="aircond-logo-img"
+            />
           </a>
           <nav className="aircond-nav" aria-label="Main navigation">
             {navItems.map((item) => (
@@ -1299,8 +1336,6 @@ function Index() {
               Create Agent
               <ArrowUpRight className="ml-1.5 h-4 w-4" aria-hidden="true" />
             </Button>
-
-            <span className="tile-curve" aria-hidden="true" />
           </div>
 
           <div className="aircond-tile tile-system">
@@ -1354,13 +1389,8 @@ function Index() {
                 </form>
               </DialogContent>
             </Dialog>
-
-            <span className="tile-curve" aria-hidden="true" />
           </div>
         </div>
-
-        <span className="aircond-orbit orbit-one" aria-hidden="true" />
-        <span className="aircond-orbit orbit-two" aria-hidden="true" />
       </section>
 
       <section id="projects" className="aircond-mission mx-auto">
@@ -1521,7 +1551,10 @@ function Index() {
               <article
                 key={agent.id}
                 className="project-card agent-card"
-                onClick={() => {
+                onClick={(e) => {
+                  if ((e.target as HTMLElement).closest('button')) {
+                    return;
+                  }
                   const existing = projects.find((p) => p.title === agent.title);
                   if (existing) {
                     setActiveProjectId(existing.id);
@@ -1535,27 +1568,6 @@ function Index() {
                     };
                     setProjects((prev) => [agentP, ...prev]);
                     setActiveProjectId(agent.id);
-                  }
-                }}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    const existing = projects.find((p) => p.title === agent.title);
-                    if (existing) {
-                      setActiveProjectId(existing.id);
-                    } else {
-                      const agentP: ProjectItem = {
-                        id: agent.id,
-                        title: agent.title,
-                        description: agent.description,
-                        agents: [agent.title],
-                        url: `#${agent.id}`,
-                      };
-                      setProjects((prev) => [agentP, ...prev]);
-                      setActiveProjectId(agent.id);
-                    }
                   }
                 }}
               >
@@ -1606,7 +1618,7 @@ function Index() {
                           setActiveProjectId(agent.id);
                         }
                       }}
-                      aria-label={`Start chat with ${agent.title}`}
+                      aria-label={`Open agent: ${agent.title}`}
                     >
                       <ArrowUpRight aria-hidden="true" />
                     </button>
@@ -1615,29 +1627,24 @@ function Index() {
                 </div>
 
                 <div className="agent-card-footer">
+                  <span className="agent-last-used">
+                    <Clock className="agent-clock-icon" aria-hidden="true" />
+                    <span>Last used {agent.lastUsed || "recently"}</span>
+                  </span>
+
                   <button
                     type="button"
-                    className="agent-start-chat-pill"
+                    className="agent-edit-btn"
                     onClick={(e) => {
                       e.stopPropagation();
-                      const existing = projects.find((p) => p.title === agent.title);
-                      if (existing) {
-                        setActiveProjectId(existing.id);
-                      } else {
-                        const agentP: ProjectItem = {
-                          id: agent.id,
-                          title: agent.title,
-                          description: agent.description,
-                          agents: [agent.title],
-                          url: `#${agent.id}`,
-                        };
-                        setProjects((prev) => [agentP, ...prev]);
-                        setActiveProjectId(agent.id);
-                      }
+                      setActiveProjectId(null);
+                      setEditingAgent(agent);
+                      setIsCreateAgentView(true);
                     }}
+                    aria-label={`Edit ${agent.title}`}
                   >
-                    <MessageSquare className="h-4 w-4" aria-hidden="true" />
-                    <span>Start chat</span>
+                    <Pencil className="agent-pencil-icon" aria-hidden="true" />
+                    <span>Edit</span>
                   </button>
                 </div>
               </article>

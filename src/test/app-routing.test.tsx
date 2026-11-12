@@ -24,7 +24,7 @@ describe("App routing", () => {
     render(<Component />);
 
     // Verify initial home page state
-    expect(screen.getByText("Frost Projects")).toBeDefined();
+    expect(screen.getByAltText("Frost Atlas")).toBeDefined();
     expect(screen.getByText("Autonomous Collaborative Projects")).toBeDefined();
 
     // Verify main navigation has Home, Profile, Add Tokens, and Settings
@@ -240,18 +240,31 @@ describe("App routing", () => {
       )
     ).toBeDefined();
 
-    // Verify Start chat buttons are present
-    const startChatButtons = screen.getAllByRole("button", { name: /start chat/i });
-    expect(startChatButtons.length).toBeGreaterThanOrEqual(6);
+    // Verify Start chat buttons are removed and Edit actions are present with Last used info
+    expect(screen.queryByRole("button", { name: /start chat/i })).toBeNull();
+    const editButtons = screen.getAllByRole("button", { name: /edit/i });
+    expect(editButtons.length).toBeGreaterThanOrEqual(6);
+    expect(screen.getAllByText(/last used/i).length).toBeGreaterThanOrEqual(6);
 
-    // Click Start chat on the first agent to open workspace
-    fireEvent.click(startChatButtons[0]);
+    // Click Edit on the first agent to open agent editor
+    fireEvent.click(editButtons[0]);
+    expect(screen.getByText("Edit your agent")).toBeDefined();
+    expect(screen.getByDisplayValue("SBI Customer KYC & Document Verification Agent")).toBeDefined();
+
+    // Return to dashboard
+    const backBtn = screen.getByRole("button", { name: "Back" });
+    fireEvent.click(backBtn);
+    expect(screen.getByText("Autonomous Collaborative Projects")).toBeDefined();
+
+    // Click agent title link to open workspace
+    const agentLink = screen.getByRole("button", { name: "SBI Customer KYC & Document Verification Agent" });
+    fireEvent.click(agentLink);
     expect(screen.getByText("CEO Workspace")).toBeDefined();
     expect(screen.getAllByText("SBI Customer KYC & Document Verification Agent").length).toBeGreaterThan(0);
 
     // Return to dashboard
-    const backBtn = screen.getByRole("button", { name: "Back to Home" });
-    fireEvent.click(backBtn);
+    const homeBtn = screen.getByRole("button", { name: "Back to Home" });
+    fireEvent.click(homeBtn);
     expect(screen.getByText("Autonomous Collaborative Projects")).toBeDefined();
 
     // Switch back to Projects tab and verify original projects show
