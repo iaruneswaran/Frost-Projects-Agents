@@ -834,8 +834,9 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  font-family: var(--font-heading);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 500;
   border: none;
   outline: none;
   box-shadow: none;
