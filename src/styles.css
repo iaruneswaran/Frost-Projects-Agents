@@ -632,7 +632,7 @@
   align-items: flex-start;
   justify-content: space-between;
   width: 100%;
-  min-height: 320px;
+  min-height: 280px;
   background: var(--aircond-paper);
   border-radius: 32px;
   overflow: hidden;
@@ -640,7 +640,7 @@
   border: 1px solid rgba(17, 28, 29, 0.1);
   isolation: isolate;
   cursor: pointer;
-  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), min-height 0.25s ease;
 }
 
 .project-card:hover {
@@ -654,7 +654,7 @@
   left: -8%;
   right: -8%;
   bottom: -25px;
-  height: 185px;
+  height: 145px;
   border-radius: 50% 50% 0 0 / 55px 55px 0 0;
   background: radial-gradient(ellipse 100% 85% at 50% 100%, #c7ebff 0%, rgba(199, 235, 255, 0.72) 45%, rgba(199, 235, 255, 0.15) 80%, transparent 100%);
   pointer-events: none;
@@ -669,7 +669,7 @@
   align-items: flex-start;
   text-align: left;
   width: 100%;
-  padding: 36px 36px 18px;
+  padding: 30px 36px 14px;
 }
 
 .project-card-eyebrow {
@@ -768,13 +768,48 @@
   position: relative;
   z-index: 1;
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   justify-content: flex-start;
-  gap: 10px 12px;
+  gap: 10px;
   width: 100%;
-  padding: 0 36px 32px;
+  padding: 0 36px 26px;
   box-shadow: none;
+}
+
+.project-card-agents-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 10px;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.project-card-agents-row::-webkit-scrollbar {
+  display: none;
+}
+
+.project-card-agents-extra {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+  padding-top: 2px;
+  animation: projectFadeIn 0.22s ease-out;
+}
+
+@keyframes projectFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .project-agent-badge {
@@ -801,6 +836,36 @@
 .project-agent-badge:hover {
   background: #ffffff;
   transform: translateY(-1px);
+}
+
+.project-agent-round-badge {
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--aircond-ink);
+  transition: all 0.2s ease;
+}
+
+.project-agent-round-badge:hover {
+  background: #ffffff;
+  transform: scale(1.06);
+}
+
+.project-agent-round-badge.active {
+  background: var(--aircond-ink);
+  color: #ffffff;
 }
 
 .projects-empty-state {

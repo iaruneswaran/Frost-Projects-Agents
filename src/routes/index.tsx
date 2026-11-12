@@ -463,6 +463,7 @@ function Index() {
   const [projectsCount, setProjectsCount] = useState(initialProjects.length);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+  const [expandedBadges, setExpandedBadges] = useState<Record<string, boolean>>({});
 
   const filteredProjects = projects.filter((project) => {
     const q = searchQuery.toLowerCase().trim();
@@ -761,12 +762,49 @@ function Index() {
                 <p className="project-card-description">{project.description}</p>
               </div>
 
-              <div className="project-card-agents">
-                {project.agents.map((agent) => (
-                  <span key={agent} className="project-agent-badge">
-                    {agent}
-                  </span>
-                ))}
+              <div className={`project-card-agents ${expandedBadges[project.id] ? "expanded" : ""}`}>
+                <div className="project-card-agents-row">
+                  {(project.agents.length > 3 ? project.agents.slice(0, 3) : project.agents).map((agent) => (
+                    <span key={agent} className="project-agent-badge">
+                      {agent}
+                    </span>
+                  ))}
+                  {project.agents.length > 3 && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedBadges((prev) => ({
+                          ...prev,
+                          [project.id]: !prev[project.id],
+                        }));
+                      }}
+                      className={`project-agent-round-badge ${expandedBadges[project.id] ? "active" : ""}`}
+                      title={
+                        expandedBadges[project.id]
+                          ? "Hide extra agents"
+                          : `+${project.agents.length - 3} more`
+                      }
+                      aria-label={
+                        expandedBadges[project.id]
+                          ? "Hide extra agents"
+                          : `+${project.agents.length - 3} more agents`
+                      }
+                    >
+                      {expandedBadges[project.id] ? "−" : `+${project.agents.length - 3}`}
+                    </button>
+                  )}
+                </div>
+
+                {expandedBadges[project.id] && project.agents.length > 3 && (
+                  <div className="project-card-agents-extra">
+                    {project.agents.slice(3).map((agent) => (
+                      <span key={agent} className="project-agent-badge">
+                        {agent}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </article>
           ))}

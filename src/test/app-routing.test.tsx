@@ -48,4 +48,35 @@ describe("App routing", () => {
     // Verify back on home page
     expect(screen.getByText("Autonomous Collaborative Projects")).toBeDefined();
   });
+
+  it("renders badges in a single line with +1 round badge and expands on click", () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    // Initial 3 badges are visible
+    expect(screen.getByText("Emerging Markets")).toBeDefined();
+    expect(screen.getByText("Customer Dynamics")).toBeDefined();
+    expect(screen.getByText("Geographic Expansion")).toBeDefined();
+
+    // Round badge +1 is rendered for the 4th badge
+    const plusOneBtn = screen.getByText("+1");
+    expect(plusOneBtn).toBeDefined();
+
+    // 4th badge is initially not visible
+    expect(screen.queryByText("Distribution Channel Optimisation")).toBeNull();
+
+    // Click +1 round badge to expand bottom
+    fireEvent.click(plusOneBtn);
+
+    // 4th badge is now visible below
+    expect(screen.getByText("Distribution Channel Optimisation")).toBeDefined();
+    expect(screen.getByText("−")).toBeDefined();
+
+    // Click minus to collapse
+    fireEvent.click(screen.getByText("−"));
+    expect(screen.queryByText("Distribution Channel Optimisation")).toBeNull();
+    expect(screen.getByText("+1")).toBeDefined();
+  });
 });
