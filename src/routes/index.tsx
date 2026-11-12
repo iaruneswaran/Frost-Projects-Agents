@@ -457,6 +457,7 @@ interface CreateAgentPageProps {
 }
 
 function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
   const [primaryGoal, setPrimaryGoal] = useState("");
@@ -506,8 +507,7 @@ function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
     setResearchVariables((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleNextFromStep1 = () => {
     if (!name.trim()) {
       toast.error("Please enter an Agent Name");
       return;
@@ -516,273 +516,446 @@ function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
       toast.error("Please enter an Agent Role");
       return;
     }
+    setCurrentStep(2);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      toast.error("Please enter an Agent Name");
+      setCurrentStep(1);
+      return;
+    }
+    if (!role.trim()) {
+      toast.error("Please enter an Agent Role");
+      setCurrentStep(1);
+      return;
+    }
     onCreateAgent({ name: name.trim(), role: role.trim() });
   };
 
   return (
-    <div className="create-agent-page">
-      <div className="create-agent-container">
-        <header className="create-agent-header">
-          <div className="create-agent-title-row">
-            <h1 className="create-agent-heading">Create Agent</h1>
-            <button
-              type="button"
-              onClick={onBack}
-              className="create-agent-back-btn"
-            >
-              ← Back to Dashboard
-            </button>
-          </div>
-          <div className="create-agent-divider" />
-        </header>
+    <div className="dark-agent-page">
+      <div className="dark-agent-container">
+        {/* Top Stepper Capsule matching reference design */}
+        <nav className="dark-agent-stepper" aria-label="Creation Steps">
+          <button
+            type="button"
+            onClick={() => setCurrentStep(1)}
+            className={`dark-step-pill ${currentStep === 1 ? "active" : currentStep > 1 ? "completed" : ""}`}
+          >
+            <span className="dark-step-circle">1</span>
+            <span className="dark-step-title">Agent Identity</span>
+          </button>
 
-        <form onSubmit={handleSubmit} className="create-agent-form">
-          {/* 1. Agent Name */}
-          <div className="create-agent-section">
-            <label htmlFor="agent-name-input" className="create-agent-section-label">
-              <span className="create-agent-section-num">1.</span> Agent Name
-            </label>
-            <input
-              id="agent-name-input"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Emerging Markets Strategist"
-              className="create-agent-input"
-              required
-            />
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              if (!name.trim() || !role.trim()) {
+                toast.error("Please complete Agent Name and Role in Step 1 first");
+              } else {
+                setCurrentStep(2);
+              }
+            }}
+            className={`dark-step-pill ${currentStep === 2 ? "active" : currentStep > 2 ? "completed" : ""}`}
+          >
+            <span className="dark-step-circle">2</span>
+            <span className="dark-step-title">Scope & Variables</span>
+          </button>
 
-          {/* 2. Agent Role */}
-          <div className="create-agent-section">
-            <label htmlFor="agent-role-input" className="create-agent-section-label">
-              <span className="create-agent-section-num">2.</span> Agent Role
-            </label>
-            <input
-              id="agent-role-input"
-              type="text"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              placeholder="e.g. Lead Market Research & Geographic Expansion Specialist"
-              className="create-agent-input"
-              required
-            />
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              if (!name.trim() || !role.trim()) {
+                toast.error("Please complete Agent Name and Role in Step 1 first");
+              } else {
+                setCurrentStep(3);
+              }
+            }}
+            className={`dark-step-pill ${currentStep === 3 ? "active" : ""}`}
+          >
+            <span className="dark-step-circle">3</span>
+            <span className="dark-step-title">Review & Submit</span>
+          </button>
+        </nav>
 
-          {/* 3. Primary Goal */}
-          <div className="create-agent-section">
-            <label htmlFor="agent-goal-input" className="create-agent-section-label">
-              <span className="create-agent-section-num">3.</span> Primary Goal
-            </label>
-            <textarea
-              id="agent-goal-input"
-              value={primaryGoal}
-              onChange={(e) => setPrimaryGoal(e.target.value)}
-              placeholder="Define the primary objective and measurable outcome this agent is accountable for..."
-              className="create-agent-textarea"
-              rows={3}
-            />
-          </div>
+        {/* Hero Icon Badge */}
+        <div className="dark-agent-icon-badge" aria-hidden="true">
+          <Plus className="h-5 w-5" />
+        </div>
 
-          {/* 4. Project Context */}
-          <div className="create-agent-section">
-            <label htmlFor="agent-context-input" className="create-agent-section-label">
-              <span className="create-agent-section-num">4.</span> Project Context
-            </label>
-            <textarea
-              id="agent-context-input"
-              value={projectContext}
-              onChange={(e) => setProjectContext(e.target.value)}
-              placeholder="Describe the operational setting, industry background, and broader initiative scope..."
-              className="create-agent-textarea"
-              rows={3}
-            />
-          </div>
+        {/* Main Title & Subtitle */}
+        <div className="dark-agent-header-text">
+          <h1 className="dark-agent-heading">
+            {currentStep === 1 && "Create your agent"}
+            {currentStep === 2 && "Configure capabilities"}
+            {currentStep === 3 && "Review & launch instructions"}
+          </h1>
+          <p className="dark-agent-subheading">
+            {currentStep === 1 && "Define agent identity, domain role persona, and primary mission goals"}
+            {currentStep === 2 && "Outline core responsibilities, analytical variables, and deliverables"}
+            {currentStep === 3 && "Specify operating constraints, collaboration protocols, and test prompts"}
+          </p>
+        </div>
 
-          {/* 5. Responsibilities */}
-          <div className="create-agent-section">
-            <div className="create-agent-section-label">
-              <span className="create-agent-section-num">5.</span> Responsibilities
+        <form onSubmit={handleSubmit} className="dark-agent-form">
+          {currentStep === 1 && (
+            <div className="dark-step-content">
+              {/* 1. Agent Name */}
+              <div className="dark-agent-field">
+                <label htmlFor="agent-name-input" className="dark-agent-label">
+                  <span className="dark-agent-num">1.</span> Agent Name
+                </label>
+                <input
+                  id="agent-name-input"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Emerging Markets Strategist"
+                  className="dark-agent-input"
+                  required
+                />
+                <span className="dark-agent-hint">
+                  Unique identifier used to address and invoke this agent in multi-agent workflows
+                </span>
+              </div>
+
+              {/* 2. Agent Role */}
+              <div className="dark-agent-field">
+                <label htmlFor="agent-role-input" className="dark-agent-label">
+                  <span className="dark-agent-num">2.</span> Agent Role
+                </label>
+                <input
+                  id="agent-role-input"
+                  type="text"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  placeholder="e.g. Lead Market Research & Geographic Expansion Specialist"
+                  className="dark-agent-input"
+                  required
+                />
+                <span className="dark-agent-hint">
+                  Core domain authority, persona, and functional specialization
+                </span>
+              </div>
+
+              {/* 3. Primary Goal */}
+              <div className="dark-agent-field">
+                <label htmlFor="agent-goal-input" className="dark-agent-label">
+                  <span className="dark-agent-num">3.</span> Primary Goal
+                </label>
+                <textarea
+                  id="agent-goal-input"
+                  value={primaryGoal}
+                  onChange={(e) => setPrimaryGoal(e.target.value)}
+                  placeholder="Define the primary business outcome or mission objective this agent must accomplish..."
+                  className="dark-agent-textarea"
+                  rows={3}
+                />
+                <span className="dark-agent-hint">
+                  Primary strategic milestone or analytical deliverable this agent strives to accomplish
+                </span>
+              </div>
+
+              {/* 4. Project Context */}
+              <div className="dark-agent-field">
+                <label htmlFor="agent-context-input" className="dark-agent-label">
+                  <span className="dark-agent-num">4.</span> Project Context
+                </label>
+                <textarea
+                  id="agent-context-input"
+                  value={projectContext}
+                  onChange={(e) => setProjectContext(e.target.value)}
+                  placeholder="Workspace domain, target audience, market dynamics, or operational backdrop..."
+                  className="dark-agent-textarea"
+                  rows={3}
+                />
+                <span className="dark-agent-hint">
+                  Strategic environment and operational parameters the agent should ground its reasoning in
+                </span>
+              </div>
+
+              {/* Footer Buttons for Step 1 */}
+              <div className="dark-agent-footer">
+                <button
+                  type="button"
+                  onClick={onBack}
+                  className="dark-agent-secondary-btn"
+                >
+                  ← Back to Dashboard
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNextFromStep1}
+                  className="dark-agent-primary-btn"
+                >
+                  Continue
+                </button>
+              </div>
             </div>
-            <div className="create-agent-list">
-              {responsibilities.map((resp, idx) => (
-                <div key={idx} className="create-agent-list-item">
-                  <input
-                    type="text"
-                    value={resp}
-                    onChange={(e) => handleUpdateResponsibility(idx, e.target.value)}
-                    placeholder={`Responsibility #${idx + 1}`}
-                    className="create-agent-input"
-                  />
-                  {responsibilities.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveResponsibility(idx)}
-                      className="create-agent-item-delete-btn"
-                      title="Remove responsibility"
-                      aria-label="Remove responsibility"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  )}
+          )}
+
+          {currentStep === 2 && (
+            <div className="dark-step-content">
+              {/* 5. Responsibilities */}
+              <div className="dark-agent-field">
+                <div className="dark-agent-field-header">
+                  <label className="dark-agent-label">
+                    <span className="dark-agent-num">5.</span> Responsibilities
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleAddResponsibility}
+                    className="dark-agent-pill-add-btn"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>Add</span>
+                  </button>
                 </div>
-              ))}
-            </div>
-            <button
-              type="button"
-              onClick={handleAddResponsibility}
-              className="create-agent-add-btn"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add</span>
-            </button>
-          </div>
-
-          {/* 6. Research Variables */}
-          <div className="create-agent-section">
-            <div className="create-agent-section-label">
-              <span className="create-agent-section-num">6.</span> Research Variables
-            </div>
-            <div className="create-agent-list">
-              {researchVariables.map((variable, idx) => (
-                <div key={idx} className="create-agent-list-item">
-                  <input
-                    type="text"
-                    value={variable}
-                    onChange={(e) => handleUpdateVariable(idx, e.target.value)}
-                    placeholder={`Variable #${idx + 1}`}
-                    className="create-agent-input"
-                  />
-                  {researchVariables.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveVariable(idx)}
-                      className="create-agent-item-delete-btn"
-                      title="Remove variable"
-                      aria-label="Remove variable"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  )}
+                <span className="dark-agent-hint">
+                  Concrete tasks, operational duties, and procedural workflows owned by this agent
+                </span>
+                <div className="dark-agent-list">
+                  {responsibilities.map((resp, idx) => (
+                    <div key={idx} className="dark-agent-list-row">
+                      <input
+                        type="text"
+                        value={resp}
+                        onChange={(e) => handleUpdateResponsibility(idx, e.target.value)}
+                        placeholder={`Responsibility #${idx + 1}`}
+                        className="dark-agent-input"
+                      />
+                      {responsibilities.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveResponsibility(idx)}
+                          className="dark-agent-delete-btn"
+                          title="Remove responsibility"
+                          aria-label="Remove responsibility"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+
+              {/* 6. Research Variables */}
+              <div className="dark-agent-field">
+                <div className="dark-agent-field-header">
+                  <label className="dark-agent-label">
+                    <span className="dark-agent-num">6.</span> Research Variables
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleAddVariable}
+                    className="dark-agent-pill-add-btn"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>Add Variable</span>
+                  </button>
+                </div>
+                <span className="dark-agent-hint">
+                  Key data vectors, market factors, customer segments, or elasticity parameters to evaluate
+                </span>
+                <div className="dark-agent-list">
+                  {researchVariables.map((variable, idx) => (
+                    <div key={idx} className="dark-agent-list-row">
+                      <input
+                        type="text"
+                        value={variable}
+                        onChange={(e) => handleUpdateVariable(idx, e.target.value)}
+                        placeholder={`Variable #${idx + 1}`}
+                        className="dark-agent-input"
+                      />
+                      {researchVariables.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveVariable(idx)}
+                          className="dark-agent-delete-btn"
+                          title="Remove variable"
+                          aria-label="Remove variable"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 7. Expected Deliverables */}
+              <div className="dark-agent-field">
+                <label htmlFor="agent-deliverables-input" className="dark-agent-label">
+                  <span className="dark-agent-num">7.</span> Expected Deliverables
+                </label>
+                <textarea
+                  id="agent-deliverables-input"
+                  value={expectedDeliverables}
+                  onChange={(e) => setExpectedDeliverables(e.target.value)}
+                  placeholder="Specify the tangible outputs, reports, data schemas, or decision briefs produced..."
+                  className="dark-agent-textarea"
+                  rows={3}
+                />
+                <span className="dark-agent-hint">
+                  Standard format and key components of final synthesis deliverables
+                </span>
+              </div>
+
+              {/* 8. Knowledge Sources */}
+              <div className="dark-agent-field">
+                <label htmlFor="agent-sources-input" className="dark-agent-label">
+                  <span className="dark-agent-num">8.</span> Knowledge Sources
+                </label>
+                <textarea
+                  id="agent-sources-input"
+                  value={knowledgeSources}
+                  onChange={(e) => setKnowledgeSources(e.target.value)}
+                  placeholder="Documentation, proprietary data sets, URLs, APIs, or literature repositories..."
+                  className="dark-agent-textarea"
+                  rows={3}
+                />
+                <span className="dark-agent-hint">
+                  Primary data stores, knowledge bases, and verified references accessible to the agent
+                </span>
+              </div>
+
+              {/* Footer Buttons for Step 2 */}
+              <div className="dark-agent-footer">
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep(1)}
+                  className="dark-agent-secondary-btn"
+                >
+                  ← Back
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep(3)}
+                  className="dark-agent-primary-btn"
+                >
+                  Continue
+                </button>
+              </div>
             </div>
-            <button
-              type="button"
-              onClick={handleAddVariable}
-              className="create-agent-add-btn"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add Variable</span>
-            </button>
-          </div>
+          )}
 
-          {/* 7. Expected Deliverables */}
-          <div className="create-agent-section">
-            <label htmlFor="agent-deliverables-input" className="create-agent-section-label">
-              <span className="create-agent-section-num">7.</span> Expected Deliverables
-            </label>
-            <textarea
-              id="agent-deliverables-input"
-              value={expectedDeliverables}
-              onChange={(e) => setExpectedDeliverables(e.target.value)}
-              placeholder="Specify the tangible outputs, reports, data schemas, or decision briefs produced..."
-              className="create-agent-textarea"
-              rows={3}
-            />
-          </div>
+          {currentStep === 3 && (
+            <div className="dark-step-content">
+              {/* 9. Working Instructions */}
+              <div className="dark-agent-field">
+                <label htmlFor="agent-instructions-input" className="dark-agent-label">
+                  <span className="dark-agent-num">9.</span> Working Instructions
+                </label>
+                <textarea
+                  id="agent-instructions-input"
+                  value={workingInstructions}
+                  onChange={(e) => setWorkingInstructions(e.target.value)}
+                  placeholder="Step-by-step reasoning protocol, analytical methodology, and operational procedures..."
+                  className="dark-agent-textarea"
+                  rows={3}
+                />
+                <span className="dark-agent-hint">
+                  Strict operational guidelines, triage steps, and problem-solving methodology
+                </span>
+              </div>
 
-          {/* 8. Working Instructions */}
-          <div className="create-agent-section">
-            <label htmlFor="agent-instructions-input" className="create-agent-section-label">
-              <span className="create-agent-section-num">8.</span> Working Instructions
-            </label>
-            <textarea
-              id="agent-instructions-input"
-              value={workingInstructions}
-              onChange={(e) => setWorkingInstructions(e.target.value)}
-              placeholder="Step-by-step reasoning protocol, analytical methodology, and operational procedures..."
-              className="create-agent-textarea"
-              rows={4}
-            />
-          </div>
+              {/* 10. Constraints */}
+              <div className="dark-agent-field">
+                <label htmlFor="agent-constraints-input" className="dark-agent-label">
+                  <span className="dark-agent-num">10.</span> Constraints
+                </label>
+                <textarea
+                  id="agent-constraints-input"
+                  value={constraints}
+                  onChange={(e) => setConstraints(e.target.value)}
+                  placeholder="Explicit boundaries, compliance restrictions, budget limits, or out-of-scope actions..."
+                  className="dark-agent-textarea"
+                  rows={3}
+                />
+                <span className="dark-agent-hint">
+                  Hard restrictions, compliance guardrails, and prohibited operations
+                </span>
+              </div>
 
-          {/* 9. Constraints */}
-          <div className="create-agent-section">
-            <label htmlFor="agent-constraints-input" className="create-agent-section-label">
-              <span className="create-agent-section-num">9.</span> Constraints
-            </label>
-            <textarea
-              id="agent-constraints-input"
-              value={constraints}
-              onChange={(e) => setConstraints(e.target.value)}
-              placeholder="Explicit boundaries, compliance restrictions, budget limits, or out-of-scope actions..."
-              className="create-agent-textarea"
-              rows={3}
-            />
-          </div>
+              {/* 11. Collaboration */}
+              <div className="dark-agent-field">
+                <label htmlFor="agent-collab-input" className="dark-agent-label">
+                  <span className="dark-agent-num">11.</span> Collaboration
+                </label>
+                <textarea
+                  id="agent-collab-input"
+                  value={collaboration}
+                  onChange={(e) => setCollaboration(e.target.value)}
+                  placeholder="Cooperating agents, escalation protocols, and human checkpoint requirements..."
+                  className="dark-agent-textarea"
+                  rows={3}
+                />
+                <span className="dark-agent-hint">
+                  Multi-agent handshake rules, delegation protocols, and human approvals
+                </span>
+              </div>
 
-          {/* 10. Knowledge Sources */}
-          <div className="create-agent-section">
-            <label htmlFor="agent-sources-input" className="create-agent-section-label">
-              <span className="create-agent-section-num">10.</span> Knowledge Sources
-            </label>
-            <textarea
-              id="agent-sources-input"
-              value={knowledgeSources}
-              onChange={(e) => setKnowledgeSources(e.target.value)}
-              placeholder="Documentation, proprietary data sets, URLs, APIs, or literature repositories..."
-              className="create-agent-textarea"
-              rows={3}
-            />
-          </div>
+              {/* 12. Test Prompt */}
+              <div className="dark-agent-field">
+                <label htmlFor="agent-test-input" className="dark-agent-label">
+                  <span className="dark-agent-num">12.</span> Test Prompt
+                </label>
+                <textarea
+                  id="agent-test-input"
+                  value={testPrompt}
+                  onChange={(e) => setTestPrompt(e.target.value)}
+                  placeholder="Provide a benchmark scenario or sample question to validate agent capability before deployment..."
+                  className="dark-agent-textarea"
+                  rows={3}
+                />
+                <span className="dark-agent-hint">
+                  Verification probe to evaluate the agent before saving into active swarms
+                </span>
+              </div>
 
-          {/* 11. Collaboration */}
-          <div className="create-agent-section">
-            <label htmlFor="agent-collab-input" className="create-agent-section-label">
-              <span className="create-agent-section-num">11.</span> Collaboration
-            </label>
-            <textarea
-              id="agent-collab-input"
-              value={collaboration}
-              onChange={(e) => setCollaboration(e.target.value)}
-              placeholder="Cooperating agents, escalation protocols, and human checkpoint requirements..."
-              className="create-agent-textarea"
-              rows={3}
-            />
-          </div>
+              {/* Agent Summary Card */}
+              <div className="dark-agent-summary-card">
+                <div className="dark-agent-summary-header">
+                  <div className="dark-agent-summary-avatar">
+                    {name ? name.slice(0, 2).toUpperCase() : "AG"}
+                  </div>
+                  <div>
+                    <h4 className="dark-agent-summary-name">{name || "Untitled Agent"}</h4>
+                    <p className="dark-agent-summary-role">{role || "Specialist Agent"}</p>
+                  </div>
+                </div>
+                {primaryGoal && (
+                  <p className="dark-agent-summary-goal">
+                    <strong>Goal:</strong> {primaryGoal}
+                  </p>
+                )}
+                <div className="dark-agent-summary-stats">
+                  <span>{responsibilities.filter(Boolean).length} Responsibilities</span>
+                  <span>•</span>
+                  <span>{researchVariables.filter(Boolean).length} Variables</span>
+                </div>
+              </div>
 
-          {/* 12. Test Prompt */}
-          <div className="create-agent-section">
-            <label htmlFor="agent-test-input" className="create-agent-section-label">
-              <span className="create-agent-section-num">12.</span> Test Prompt
-            </label>
-            <textarea
-              id="agent-test-input"
-              value={testPrompt}
-              onChange={(e) => setTestPrompt(e.target.value)}
-              placeholder="Provide a benchmark scenario or sample question to validate agent capability before deployment..."
-              className="create-agent-textarea"
-              rows={3}
-            />
-          </div>
-
-          {/* Form Actions */}
-          <div className="create-agent-actions">
-            <button
-              type="button"
-              onClick={onBack}
-              className="create-agent-cancel-btn"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="create-agent-submit-btn"
-            >
-              Create Agent
-            </button>
-          </div>
+              {/* Footer Buttons for Step 3 */}
+              <div className="dark-agent-footer">
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep(2)}
+                  className="dark-agent-secondary-btn"
+                >
+                  ← Back
+                </button>
+                <button
+                  type="submit"
+                  className="dark-agent-primary-btn"
+                >
+                  Create Agent
+                </button>
+              </div>
+            </div>
+          )}
         </form>
       </div>
     </div>

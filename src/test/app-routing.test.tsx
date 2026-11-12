@@ -80,7 +80,7 @@ describe("App routing", () => {
     expect(screen.getByText("+1")).toBeDefined();
   });
 
-  it("navigates to Create Agent page with 12 numbered sections and returns to dashboard", () => {
+  it("navigates through the 3-step dark Create Agent wizard and returns to dashboard", () => {
     const Component = Route.options.component;
     if (!Component) throw new Error("Component is not defined on Route");
 
@@ -90,30 +90,52 @@ describe("App routing", () => {
     const createAgentTileBtn = screen.getByRole("button", { name: /create agent/i });
     fireEvent.click(createAgentTileBtn);
 
-    // Verify Create Agent page renders with all 12 sections
-    expect(screen.getByRole("heading", { level: 1, name: "Create Agent" })).toBeDefined();
+    // Verify Stepper navigation capsule exists
+    expect(screen.getByRole("navigation", { name: "Creation Steps" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "1 Agent Identity" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "2 Scope & Variables" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "3 Review & Submit" })).toBeDefined();
+
+    // Verify Step 1: Agent Identity
+    expect(screen.getByRole("heading", { level: 1, name: "Create your agent" })).toBeDefined();
     expect(screen.getByText("Agent Name")).toBeDefined();
     expect(screen.getByText("Agent Role")).toBeDefined();
     expect(screen.getByText("Primary Goal")).toBeDefined();
     expect(screen.getByText("Project Context")).toBeDefined();
-    expect(screen.getByText("Responsibilities")).toBeDefined();
-    expect(screen.getByText("Research Variables")).toBeDefined();
-    expect(screen.getByText("Expected Deliverables")).toBeDefined();
-    expect(screen.getByText("Working Instructions")).toBeDefined();
-    expect(screen.getByText("Constraints")).toBeDefined();
-    expect(screen.getByText("Knowledge Sources")).toBeDefined();
-    expect(screen.getByText("Collaboration")).toBeDefined();
-    expect(screen.getByText("Test Prompt")).toBeDefined();
 
-    // Verify Add buttons
-    expect(screen.getByRole("button", { name: "Add" })).toBeDefined();
-    expect(screen.getByRole("button", { name: "Add Variable" })).toBeDefined();
-
-    // Fill required fields and submit
+    // Fill required fields in Step 1
     const nameInput = screen.getByPlaceholderText("e.g. Emerging Markets Strategist");
     const roleInput = screen.getByPlaceholderText("e.g. Lead Market Research & Geographic Expansion Specialist");
     fireEvent.change(nameInput, { target: { value: "Consumer Intelligence Specialist" } });
     fireEvent.change(roleInput, { target: { value: "Qualitative Data Lead" } });
+
+    // Click Continue to go to Step 2
+    const step1ContinueBtn = screen.getByRole("button", { name: "Continue" });
+    fireEvent.click(step1ContinueBtn);
+
+    // Verify Step 2: Scope & Variables
+    expect(screen.getByRole("heading", { level: 1, name: "Configure capabilities" })).toBeDefined();
+    expect(screen.getByText("Responsibilities")).toBeDefined();
+    expect(screen.getByText("Research Variables")).toBeDefined();
+    expect(screen.getByText("Expected Deliverables")).toBeDefined();
+    expect(screen.getByText("Knowledge Sources")).toBeDefined();
+    expect(screen.getByRole("button", { name: "Add" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "Add Variable" })).toBeDefined();
+
+    // Click Continue to go to Step 3
+    const step2ContinueBtn = screen.getByRole("button", { name: "Continue" });
+    fireEvent.click(step2ContinueBtn);
+
+    // Verify Step 3: Review & Submit
+    expect(screen.getByRole("heading", { level: 1, name: "Review & launch instructions" })).toBeDefined();
+    expect(screen.getByText("Working Instructions")).toBeDefined();
+    expect(screen.getByText("Constraints")).toBeDefined();
+    expect(screen.getByText("Collaboration")).toBeDefined();
+    expect(screen.getByText("Test Prompt")).toBeDefined();
+
+    // Verify summary card contains agent name
+    expect(screen.getByText("Consumer Intelligence Specialist")).toBeDefined();
+    expect(screen.getByText("Qualitative Data Lead")).toBeDefined();
 
     // Submit Create Agent form
     const submitBtn = screen.getByRole("button", { name: "Create Agent" });
@@ -121,5 +143,6 @@ describe("App routing", () => {
 
     // Returns back to dashboard
     expect(screen.getByText("Autonomous Collaborative Projects")).toBeDefined();
+    expect(screen.getByText("4")).toBeDefined();
   });
 });
