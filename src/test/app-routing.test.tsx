@@ -94,10 +94,10 @@ describe("App routing", () => {
 
     // 4th badge is now visible below
     expect(screen.getByText("Distribution Channel Optimisation")).toBeDefined();
-    expect(screen.getByText("−")).toBeDefined();
+    expect(screen.getByText("Less")).toBeDefined();
 
-    // Click minus to collapse
-    fireEvent.click(screen.getByText("−"));
+    // Click Less to collapse
+    fireEvent.click(screen.getByText("Less"));
     expect(screen.queryByText("Distribution Channel Optimisation")).toBeNull();
     expect(screen.getByText("+1")).toBeDefined();
   });

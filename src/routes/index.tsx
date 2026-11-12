@@ -1518,16 +1518,16 @@ function Index() {
                         className={`project-agent-round-badge ${expandedBadges[project.id] ? "active" : ""}`}
                         title={
                           expandedBadges[project.id]
-                            ? "Hide extra agents"
+                            ? "Show less"
                             : `+${project.agents.length - 3} more`
                         }
                         aria-label={
                           expandedBadges[project.id]
-                            ? "Hide extra agents"
+                            ? "Show less agents"
                             : `+${project.agents.length - 3} more agents`
                         }
                       >
-                        {expandedBadges[project.id] ? "−" : `+${project.agents.length - 3}`}
+                        {expandedBadges[project.id] ? "Less" : `+${project.agents.length - 3}`}
                       </button>
                     )}
                   </div>
