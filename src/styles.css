@@ -643,8 +643,7 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--aircond-subtle);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
   margin-bottom: 12px;
 }
 
@@ -728,9 +727,8 @@
 .project-agents-header-label {
   font-size: 14px;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.85);
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .project-agents-list {
