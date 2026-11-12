@@ -24,6 +24,7 @@ describe("App routing", () => {
     render(<Component />);
 
     // Verify initial home page state
+    expect(screen.getByText("FROST PROJECTS")).toBeDefined();
     expect(screen.getByText("Autonomous Collaborative Projects")).toBeDefined();
 
     // Verify main navigation has Home, Profile, Add Tokens, and Settings

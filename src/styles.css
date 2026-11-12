@@ -233,10 +233,11 @@
 
 .aircond-wordmark {
   font-size: 18px;
-  font-weight: 500;
+  font-weight: 600;
   color: #ffffff;
   text-decoration: none;
-  letter-spacing: 0;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .aircond-nav {
