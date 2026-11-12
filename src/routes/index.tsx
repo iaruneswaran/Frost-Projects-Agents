@@ -468,12 +468,26 @@ interface CreateAgentPageProps {
   onCreateAgent: (data: { name: string; role: string }) => void;
 }
 
+interface TeamMember {
+  id: string;
+  initials: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
 function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
   const [primaryGoal, setPrimaryGoal] = useState("");
   const [projectContext, setProjectContext] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [members, setMembers] = useState<TeamMember[]>([
+    { id: "1", initials: "EA", name: "Guy Hawkins", email: "hello@deserve.studio", role: "Analyst" },
+    { id: "2", initials: "TW", name: "Theresa Webb", email: "manhhachkt08@gmail.com", role: "Owner" },
+    { id: "3", initials: "DS", name: "Darrell Steward", email: "bill.sanders@example.com", role: "Analyst" },
+  ]);
   const [responsibilities, setResponsibilities] = useState<string[]>([
     "Synthesize market dynamics and prioritize expansion milestones",
   ]);
@@ -486,6 +500,32 @@ function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
   const [knowledgeSources, setKnowledgeSources] = useState("");
   const [collaboration, setCollaboration] = useState("");
   const [testPrompt, setTestPrompt] = useState("");
+
+  const handleAddMember = () => {
+    if (!inviteEmail.trim()) {
+      toast.error("Please enter a member email address");
+      return;
+    }
+    const cleanEmail = inviteEmail.trim();
+    const namePart = cleanEmail.split("@")[0] || "User";
+    const initials = (namePart.slice(0, 2) || "MB").toUpperCase();
+    setMembers((prev) => [
+      ...prev,
+      {
+        id: Date.now().toString(),
+        initials,
+        name: namePart.charAt(0).toUpperCase() + namePart.slice(1),
+        email: cleanEmail,
+        role: "Analyst",
+      },
+    ]);
+    setInviteEmail("");
+    toast.success("Member added");
+  };
+
+  const handleUpdateMemberRole = (id: string, newRole: string) => {
+    setMembers((prev) => prev.map((m) => (m.id === id ? { ...m, role: newRole } : m)));
+  };
 
   const handleAddResponsibility = () => {
     setResponsibilities((prev) => [...prev, ""]);
@@ -596,22 +636,27 @@ function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
           <Plus className="h-5 w-5" />
         </div>
 
-        {/* Main Title */}
+        {/* Main Title & Subtitle */}
         <div className="dark-agent-header-text">
           <h1 className="dark-agent-heading">
             {currentStep === 1 && "Create your agent"}
             {currentStep === 2 && "Configure capabilities"}
             {currentStep === 3 && "Review & launch instructions"}
           </h1>
+          <p className="dark-agent-subheading">
+            {currentStep === 1 && "You can create more agents later or coordinate collaborative workflows with a single agent"}
+            {currentStep === 2 && "Configure operational responsibilities, research variables, and knowledge sources"}
+            {currentStep === 3 && "Verify agent parameters and launch instructions before saving"}
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="dark-agent-form">
           {currentStep === 1 && (
             <div className="dark-step-content">
-              {/* 1. Agent Name */}
+              {/* Agent Name */}
               <div className="dark-agent-field">
                 <label htmlFor="agent-name-input" className="dark-agent-label">
-                  <span className="dark-agent-num">1.</span> Agent Name
+                  Agent Name
                 </label>
                 <input
                   id="agent-name-input"
@@ -623,14 +668,14 @@ function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
                   required
                 />
                 <span className="dark-agent-hint">
-                  Unique identifier used to address and invoke this agent in multi-agent workflows
+                  Associate the seed scope with a specific agent persona or group
                 </span>
               </div>
 
-              {/* 2. Agent Role */}
+              {/* Agent Role */}
               <div className="dark-agent-field">
                 <label htmlFor="agent-role-input" className="dark-agent-label">
-                  <span className="dark-agent-num">2.</span> Agent Role
+                  Agent Role
                 </label>
                 <input
                   id="agent-role-input"
@@ -646,10 +691,71 @@ function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
                 </span>
               </div>
 
-              {/* 3. Primary Goal */}
+              {/* Invite Members */}
+              <div className="dark-agent-field">
+                <label htmlFor="agent-member-input" className="dark-agent-label">
+                  Invite Members
+                </label>
+                <div className="dark-agent-invite-row">
+                  <input
+                    id="agent-member-input"
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddMember();
+                      }
+                    }}
+                    placeholder="Member mail"
+                    className="dark-agent-input"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddMember}
+                    className="dark-agent-invite-btn"
+                  >
+                    Add Users
+                  </button>
+                </div>
+              </div>
+
+              {/* Members List */}
+              <div className="dark-agent-field">
+                <label className="dark-agent-label">Members</label>
+                <div className="dark-agent-members-list">
+                  {members.map((member) => (
+                    <div key={member.id} className="dark-agent-member-row">
+                      <div className="dark-agent-member-left">
+                        <div className="dark-agent-member-avatar">{member.initials}</div>
+                        <div className="dark-agent-member-info">
+                          <span className="dark-agent-member-name">{member.name}</span>
+                          <span className="dark-agent-member-email">{member.email}</span>
+                        </div>
+                      </div>
+                      <div className="dark-agent-member-role-select">
+                        <select
+                          value={member.role}
+                          onChange={(e) => handleUpdateMemberRole(member.id, e.target.value)}
+                          className="dark-agent-select"
+                          aria-label={`Role for ${member.name}`}
+                        >
+                          <option value="Analyst">Analyst</option>
+                          <option value="Owner">Owner</option>
+                          <option value="Strategist">Strategist</option>
+                          <option value="Specialist">Specialist</option>
+                        </select>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Primary Goal */}
               <div className="dark-agent-field">
                 <label htmlFor="agent-goal-input" className="dark-agent-label">
-                  <span className="dark-agent-num">3.</span> Primary Goal
+                  Primary Goal
                 </label>
                 <textarea
                   id="agent-goal-input"
@@ -657,17 +763,17 @@ function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
                   onChange={(e) => setPrimaryGoal(e.target.value)}
                   placeholder="Define the primary business outcome or mission objective this agent must accomplish..."
                   className="dark-agent-textarea"
-                  rows={3}
+                  rows={2}
                 />
                 <span className="dark-agent-hint">
                   Primary strategic milestone or analytical deliverable this agent strives to accomplish
                 </span>
               </div>
 
-              {/* 4. Project Context */}
+              {/* Project Context */}
               <div className="dark-agent-field">
                 <label htmlFor="agent-context-input" className="dark-agent-label">
-                  <span className="dark-agent-num">4.</span> Project Context
+                  Project Context
                 </label>
                 <textarea
                   id="agent-context-input"
@@ -675,7 +781,7 @@ function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
                   onChange={(e) => setProjectContext(e.target.value)}
                   placeholder="Workspace domain, target audience, market dynamics, or operational backdrop..."
                   className="dark-agent-textarea"
-                  rows={3}
+                  rows={2}
                 />
                 <span className="dark-agent-hint">
                   Strategic environment and operational parameters the agent should ground its reasoning in
@@ -706,11 +812,11 @@ function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
 
           {currentStep === 2 && (
             <div className="dark-step-content">
-              {/* 5. Responsibilities */}
+              {/* Responsibilities */}
               <div className="dark-agent-field">
                 <div className="dark-agent-field-header">
                   <label className="dark-agent-label">
-                    <span className="dark-agent-num">5.</span> Responsibilities
+                    Responsibilities
                   </label>
                   <button
                     type="button"
@@ -750,11 +856,11 @@ function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
                 </div>
               </div>
 
-              {/* 6. Research Variables */}
+              {/* Research Variables */}
               <div className="dark-agent-field">
                 <div className="dark-agent-field-header">
                   <label className="dark-agent-label">
-                    <span className="dark-agent-num">6.</span> Research Variables
+                    Research Variables
                   </label>
                   <button
                     type="button"
@@ -794,10 +900,10 @@ function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
                 </div>
               </div>
 
-              {/* 7. Expected Deliverables */}
+              {/* Expected Deliverables */}
               <div className="dark-agent-field">
                 <label htmlFor="agent-deliverables-input" className="dark-agent-label">
-                  <span className="dark-agent-num">7.</span> Expected Deliverables
+                  Expected Deliverables
                 </label>
                 <textarea
                   id="agent-deliverables-input"
@@ -812,10 +918,10 @@ function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
                 </span>
               </div>
 
-              {/* 8. Knowledge Sources */}
+              {/* Knowledge Sources */}
               <div className="dark-agent-field">
                 <label htmlFor="agent-sources-input" className="dark-agent-label">
-                  <span className="dark-agent-num">8.</span> Knowledge Sources
+                  Knowledge Sources
                 </label>
                 <textarea
                   id="agent-sources-input"
@@ -854,10 +960,10 @@ function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
 
           {currentStep === 3 && (
             <div className="dark-step-content">
-              {/* 9. Working Instructions */}
+              {/* Working Instructions */}
               <div className="dark-agent-field">
                 <label htmlFor="agent-instructions-input" className="dark-agent-label">
-                  <span className="dark-agent-num">9.</span> Working Instructions
+                  Working Instructions
                 </label>
                 <textarea
                   id="agent-instructions-input"
@@ -872,10 +978,10 @@ function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
                 </span>
               </div>
 
-              {/* 10. Constraints */}
+              {/* Constraints */}
               <div className="dark-agent-field">
                 <label htmlFor="agent-constraints-input" className="dark-agent-label">
-                  <span className="dark-agent-num">10.</span> Constraints
+                  Constraints
                 </label>
                 <textarea
                   id="agent-constraints-input"
@@ -890,10 +996,10 @@ function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
                 </span>
               </div>
 
-              {/* 11. Collaboration */}
+              {/* Collaboration */}
               <div className="dark-agent-field">
                 <label htmlFor="agent-collab-input" className="dark-agent-label">
-                  <span className="dark-agent-num">11.</span> Collaboration
+                  Collaboration
                 </label>
                 <textarea
                   id="agent-collab-input"
@@ -908,10 +1014,10 @@ function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
                 </span>
               </div>
 
-              {/* 12. Test Prompt */}
+              {/* Test Prompt */}
               <div className="dark-agent-field">
                 <label htmlFor="agent-test-input" className="dark-agent-label">
-                  <span className="dark-agent-num">12.</span> Test Prompt
+                  Test Prompt
                 </label>
                 <textarea
                   id="agent-test-input"
@@ -943,6 +1049,8 @@ function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
                   </p>
                 )}
                 <div className="dark-agent-summary-stats">
+                  <span>{members.length} Members</span>
+                  <span>•</span>
                   <span>{responsibilities.filter(Boolean).length} Responsibilities</span>
                   <span>•</span>
                   <span>{researchVariables.filter(Boolean).length} Variables</span>

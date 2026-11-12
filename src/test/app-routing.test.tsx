@@ -121,6 +121,14 @@ describe("App routing", () => {
     expect(screen.getByRole("button", { name: "Back" })).toBeDefined();
     expect(screen.getByText("Agent Name")).toBeDefined();
     expect(screen.getByText("Agent Role")).toBeDefined();
+    expect(screen.getByText("Invite Members")).toBeDefined();
+    expect(screen.getByPlaceholderText("Member mail")).toBeDefined();
+    expect(screen.getByRole("button", { name: "Add Users" })).toBeDefined();
+    expect(screen.getByText("Members")).toBeDefined();
+    expect(screen.getByText("Guy Hawkins")).toBeDefined();
+    expect(screen.getByText("hello@deserve.studio")).toBeDefined();
+    expect(screen.getByText("Theresa Webb")).toBeDefined();
+    expect(screen.getByText("Darrell Steward")).toBeDefined();
     expect(screen.getByText("Primary Goal")).toBeDefined();
     expect(screen.getByText("Project Context")).toBeDefined();
 
