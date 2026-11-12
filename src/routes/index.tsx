@@ -17,6 +17,7 @@ import {
   Plus,
   Search,
   Settings,
+  Sun,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -335,7 +336,7 @@ function ProjectWorkspace({
               title="Light theme active"
               onClick={() => toast.info("Brand Lite Theme active")}
             >
-              <Moon className="h-4 w-4" />
+              <Sun className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -381,21 +382,21 @@ function ProjectWorkspace({
               </DialogTrigger>
               <DialogContent className="sm:max-w-md workspace-knowledge-dialog">
                 <DialogHeader>
-                  <DialogTitle className="text-white">Project Knowledge Base</DialogTitle>
-                  <DialogDescription className="text-zinc-400">
+                  <DialogTitle className="text-zinc-900 font-bold">Project Knowledge Base</DialogTitle>
+                  <DialogDescription className="text-zinc-500">
                     Context and active collaborative agents for {project.title}.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 pt-2">
                   <div>
-                    <h4 className="font-semibold text-zinc-200 mb-1 text-sm">Executive Summary</h4>
-                    <p className="text-zinc-400 leading-relaxed text-sm">{project.description}</p>
+                    <h4 className="font-semibold text-zinc-900 mb-1 text-sm">Executive Summary</h4>
+                    <p className="text-zinc-600 leading-relaxed text-sm">{project.description}</p>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-zinc-200 mb-2 text-sm">Assigned Autonomous Agents</h4>
+                    <h4 className="font-semibold text-zinc-900 mb-2 text-sm">Assigned Autonomous Agents</h4>
                     <div className="flex flex-wrap gap-2">
                       {project.agents.map((agent) => (
-                        <span key={agent} className="px-3 py-1 bg-zinc-800 text-zinc-200 border border-zinc-700/60 rounded-full font-medium text-sm">
+                        <span key={agent} className="px-3 py-1 bg-zinc-100 text-zinc-800 border border-zinc-200 rounded-full font-medium text-sm">
                           {agent}
                         </span>
                       ))}
