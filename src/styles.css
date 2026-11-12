@@ -178,12 +178,13 @@
   z-index: 5;
   display: flex;
   flex-direction: column;
-  width: min(1320px, calc(100% - 96px));
-  margin-top: 0;
-  padding: 20px 24px 92px 28px;
-  border-radius: 0 0 42px 42px;
-  background: var(--aircond-ink);
+  width: 100%;
+  margin: 0;
+  padding: 20px 48px 92px;
+  border-radius: 0;
+  background: #000000;
   color: var(--aircond-paper);
+  box-sizing: border-box;
 }
 
 .aircond-header-top {
@@ -191,6 +192,8 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
   min-height: 46px;
 }
 
@@ -200,7 +203,8 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  margin-top: 50px;
+  max-width: 1320px;
+  margin: 50px auto 0;
   padding-top: 0;
   border-top: none;
   text-align: center;
@@ -2019,7 +2023,7 @@ button:hover,
 }
 
 @media (max-width: 900px) {
-  .aircond-header { width: calc(100% - 32px); height: auto; margin-top: 0; padding: 16px 16px 82px 18px; border-radius: 0 0 28px 28px; }
+  .aircond-header { width: 100%; height: auto; margin-top: 0; padding: 16px 20px 82px; border-radius: 0; }
   .aircond-header-bottom { margin-top: 36px; padding-top: 0; border-top: none; }
   .aircond-header-heading { font-size: 22px; }
   .aircond-header-subline { font-size: 14px; margin-top: 8px; font-weight: 300; }
