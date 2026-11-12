@@ -357,11 +357,6 @@ function Index() {
               </div>
 
               <div className="project-card-right">
-                <div className="project-agents-header">
-                  <span className="project-agents-header-label">
-                    Agents ({project.agents.length})
-                  </span>
-                </div>
                 <div className="project-agents-list">
                   {project.agents.map((agent, index) => (
                     <div key={agent} className="project-agent-item">
