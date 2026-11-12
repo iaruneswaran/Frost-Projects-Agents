@@ -628,7 +628,7 @@
 .project-card {
   position: relative;
   display: grid;
-  grid-template-columns: 1.45fr 0.82fr;
+  grid-template-columns: 1fr 330px;
   width: 100%;
   min-height: 280px;
   background: var(--aircond-paper);
@@ -724,7 +724,8 @@
   flex-direction: column;
   align-self: flex-start;
   justify-self: end;
-  width: 100%;
+  width: 330px;
+  max-width: 100%;
   background: #c7ebff;
   color: var(--aircond-ink);
   padding: 24px 26px 22px;
@@ -836,7 +837,7 @@
   .project-card-left { padding: 24px 20px; }
   .project-card-title { font-size: 20px; }
   .project-card-description { font-size: 14px; }
-  .project-card-right { border-top-right-radius: 0; border-bottom-left-radius: 24px; border-bottom-right-radius: 0; padding: 22px 20px; }
+  .project-card-right { width: 100%; border-top-right-radius: 0; border-bottom-left-radius: 24px; border-bottom-right-radius: 0; padding: 22px 20px; }
   .aircond-contact { width: calc(100% - 32px); padding: 42px 0; gap: 20px; }
 }
 
