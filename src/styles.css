@@ -316,7 +316,7 @@
 }
 
 .aircond-tile:hover { transform: translateY(-4px); }
-.tile-home { background: var(--aircond-blue-soft); color: var(--aircond-ink); }
+.tile-home { background: #c7ebff; color: var(--aircond-ink); }
 .tile-system { background: var(--aircond-lime); color: var(--aircond-ink); }
 .tile-climate { background: var(--aircond-dark-card); color: var(--aircond-paper); }
 
@@ -711,8 +711,8 @@
   flex-direction: column;
   align-self: flex-start;
   width: 100%;
-  background: #181c1f;
-  color: #ffffff;
+  background: #c7ebff;
+  color: var(--aircond-ink);
   padding: 24px 26px 22px;
   border-top-right-radius: 32px;
   border-bottom-left-radius: 36px;
@@ -729,7 +729,7 @@
 
 .project-agent-item {
   padding: 8px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(17, 28, 29, 0.12);
 }
 
 .project-agent-item:first-child {
@@ -747,14 +747,14 @@
   font-size: 16px;
   font-weight: 600;
   line-height: 1.3;
-  color: #ffffff;
+  color: var(--aircond-ink);
 }
 
 .project-agent-role {
   display: block;
   margin-top: 2px;
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.65);
+  color: rgba(17, 28, 29, 0.68);
 }
 
 .projects-empty-state {
