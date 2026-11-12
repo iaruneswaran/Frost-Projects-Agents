@@ -39,12 +39,12 @@ export const Route = createFileRoute("/")({
       { title: "Frost Projects — Autonomous Collaborative Projects" },
       {
         name: "description",
-        content: "Deploy intelligent autonomous agents and coordinate collaborative projects with ease.",
+        content: "Deploy intelligent agents and coordinate collaborative.",
       },
       { property: "og:title", content: "Frost Projects — Autonomous Collaborative Projects" },
       {
         property: "og:description",
-        content: "Deploy intelligent autonomous agents and coordinate collaborative projects with ease.",
+        content: "Deploy intelligent agents and coordinate collaborative.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -907,7 +907,7 @@ function Index() {
             Autonomous Collaborative Projects
           </h1>
           <p className="aircond-header-subline">
-            Deploy intelligent autonomous agents and coordinate collaborative with ease.
+            Deploy intelligent agents and coordinate collaborative.
           </p>
         </div>
       </header>
