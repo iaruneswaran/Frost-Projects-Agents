@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   ArrowLeft,
+  ArrowRight,
   ArrowUp,
   ArrowUpRight,
   BookOpen,
   ChevronDown,
   Clock,
+  FileText,
   LayoutGrid,
   Menu,
   MessageSquare,
@@ -19,7 +21,10 @@ import {
   Plus,
   Search,
   Settings,
+  ShieldCheck,
   Sun,
+  Trash2,
+  UploadCloud,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -511,6 +516,334 @@ function ProjectWorkspace({
         </div>
       </div>
     </div>
+  );
+}
+
+interface AttachedFile {
+  id: string;
+  name: string;
+  size: string;
+  type: string;
+}
+
+interface KycVerificationPageProps {
+  onBack: () => void;
+  onProceedToWorkspace?: (notes?: string, docs?: string[]) => void;
+}
+
+function KycVerificationPage({ onBack, onProceedToWorkspace }: KycVerificationPageProps) {
+  const [documents, setDocuments] = useState<AttachedFile[]>([
+    {
+      id: "doc-1",
+      name: "Customer_Aadhaar_Card_Front_Back.pdf",
+      size: "1.8 MB",
+      type: "application/pdf",
+    },
+    {
+      id: "doc-2",
+      name: "Customer_PAN_Card.jpg",
+      size: "820 KB",
+      type: "image/jpeg",
+    },
+  ]);
+  const [notes, setNotes] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationResult, setVerificationResult] = useState<{
+    status: "verified" | "idle";
+    extractedData: {
+      fullName: string;
+      aadhaarNumber: string;
+      panNumber: string;
+      dob: string;
+      complianceStatus: string;
+      authenticityScore: string;
+    };
+  } | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const newDocs: AttachedFile[] = Array.from(files).map((file, idx) => ({
+      id: `upload-${Date.now()}-${idx}`,
+      name: file.name,
+      size: `${(file.size / 1024).toFixed(1)} KB`,
+      type: file.type || "document",
+    }));
+
+    setDocuments((prev) => [...prev, ...newDocs]);
+    toast.success(`Attached ${newDocs.length} document${newDocs.length > 1 ? "s" : ""}`);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleRemoveDoc = (id: string) => {
+    setDocuments((prev) => prev.filter((d) => d.id !== id));
+    toast.info("Document removed");
+  };
+
+  const handleVerify = () => {
+    if (documents.length === 0) {
+      toast.error("Please attach at least one customer document to verify");
+      return;
+    }
+
+    setIsVerifying(true);
+    setTimeout(() => {
+      setIsVerifying(false);
+      setVerificationResult({
+        status: "verified",
+        extractedData: {
+          fullName: "ARUN ESWARAN",
+          aadhaarNumber: "XXXX XXXX 4829",
+          panNumber: "ABCDE1234F",
+          dob: "14-08-1992",
+          complianceStatus: "Approved (RBI & KYC Master Direction Compliant)",
+          authenticityScore: "99.8% Match",
+        },
+      });
+      toast.success("Document verification completed successfully!");
+    }, 1000);
+  };
+
+  return (
+    <main className="aircond-page min-h-screen bg-background text-foreground">
+      {/* Header section from Home preserved as-is */}
+      <header className="aircond-header mx-auto flex flex-col">
+        <div className="aircond-header-top flex items-center justify-between">
+          <a
+            href="#top"
+            className="aircond-wordmark"
+            aria-label="Frost Atlas home"
+            onClick={(e) => {
+              e.preventDefault();
+              onBack();
+            }}
+          >
+            <img
+              src={frostAtlasLogo}
+              alt="Frost Atlas"
+              className="aircond-logo-img"
+            />
+          </a>
+          <nav className="aircond-nav" aria-label="Main navigation">
+            {navItems.map((item) => (
+              <a
+                key={item}
+                href={
+                  item === "Home"
+                    ? "#top"
+                    : item === "Profile"
+                      ? "#profile"
+                      : item === "Add Tokens"
+                        ? "#tokens"
+                        : "#settings"
+                }
+                onClick={(e) => {
+                  if (item === "Home") {
+                    e.preventDefault();
+                    onBack();
+                  } else {
+                    e.preventDefault();
+                    toast.info(item);
+                  }
+                }}
+              >
+                {item}
+              </a>
+            ))}
+          </nav>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className="aircond-login inline-flex items-center"
+              onClick={() => toast.info("Log in modal")}
+            >
+              Log in
+              <ArrowUpRight className="ml-1 h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Container - 820px width only */}
+      <div className="kyc-container">
+        {/* Navigation Breadcrumb / Back button */}
+        <div className="kyc-top-bar">
+          <button
+            type="button"
+            className="kyc-back-btn"
+            onClick={onBack}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
+            Back to Agents
+          </button>
+        </div>
+
+        {/* Proper Page Headering */}
+        <div className="kyc-header-block">
+          <h1 className="kyc-heading">SBI Customer KYC & Document Verification</h1>
+          <p className="kyc-subheading">
+            Inspects and verifies uploaded customer documents (Aadhaar, PAN, Passport, DL) for authenticity, data extraction, and regulatory KYC compliance.
+          </p>
+        </div>
+
+        {/* Attachment Field */}
+        <div className="kyc-section">
+          <label className="kyc-section-title">Customer Identification Documents</label>
+          <p className="kyc-section-desc">
+            Upload official proof of identity (Aadhaar Card, PAN Card, Passport, or Driving Licence) in PDF, PNG, or JPEG format.
+          </p>
+
+          {/* Hidden File Input */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            multiple
+            accept=".pdf,.png,.jpg,.jpeg"
+            className="hidden"
+            id="kyc-file-input"
+          />
+
+          {/* Dropzone Card */}
+          <div
+            className="kyc-upload-dropzone"
+            onClick={() => fileInputRef.current?.click()}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => {
+              e.preventDefault();
+              if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                const files = Array.from(e.dataTransfer.files);
+                const newDocs: AttachedFile[] = files.map((file, idx) => ({
+                  id: `drop-${Date.now()}-${idx}`,
+                  name: file.name,
+                  size: `${(file.size / 1024).toFixed(1)} KB`,
+                  type: file.type || "document",
+                }));
+                setDocuments((prev) => [...prev, ...newDocs]);
+                toast.success(`Attached ${newDocs.length} document${newDocs.length > 1 ? "s" : ""}`);
+              }
+            }}
+          >
+            <UploadCloud className="kyc-upload-icon" aria-hidden="true" />
+            <div className="kyc-upload-text">
+              <span className="kyc-upload-prompt">Click to attach documents</span> or drag and drop files here
+            </div>
+            <span className="kyc-upload-formats">Supported: PDF, PNG, JPG, JPEG (Max 25 MB per file)</span>
+          </div>
+
+          {/* Attached Documents List */}
+          {documents.length > 0 && (
+            <div className="kyc-docs-list">
+              {documents.map((doc) => (
+                <div key={doc.id} className="kyc-doc-item">
+                  <div className="kyc-doc-info">
+                    <FileText className="kyc-doc-icon" aria-hidden="true" />
+                    <div className="kyc-doc-text">
+                      <span className="kyc-doc-name">{doc.name}</span>
+                      <span className="kyc-doc-size">{doc.size}</span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveDoc(doc.id)}
+                    className="kyc-doc-remove-btn"
+                    aria-label={`Remove ${doc.name}`}
+                  >
+                    <Trash2 className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Additional Notes Field */}
+        <div className="kyc-section">
+          <label htmlFor="kyc-notes" className="kyc-section-title">
+            Verification Instructions & Notes <span className="kyc-optional-label">(Optional)</span>
+          </label>
+          <textarea
+            id="kyc-notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Add specific customer reference number, branch instructions, or address verification notes..."
+            rows={3}
+            className="kyc-notes-input"
+          />
+        </div>
+
+        {/* Verification Result Banner (if verified) */}
+        {verificationResult && (
+          <div className="kyc-result-card">
+            <div className="kyc-result-header">
+              <ShieldCheck className="kyc-result-icon" aria-hidden="true" />
+              <div>
+                <h3 className="kyc-result-title">Documents Verified Successfully</h3>
+                <p className="kyc-result-subtitle">Government ID format authenticated with 99.8% confidence match</p>
+              </div>
+            </div>
+            <div className="kyc-result-grid">
+              <div className="kyc-result-item">
+                <span className="kyc-result-key">Customer Name</span>
+                <span className="kyc-result-val">{verificationResult.extractedData.fullName}</span>
+              </div>
+              <div className="kyc-result-item">
+                <span className="kyc-result-key">Aadhaar (Masked)</span>
+                <span className="kyc-result-val">{verificationResult.extractedData.aadhaarNumber}</span>
+              </div>
+              <div className="kyc-result-item">
+                <span className="kyc-result-key">PAN Number</span>
+                <span className="kyc-result-val">{verificationResult.extractedData.panNumber}</span>
+              </div>
+              <div className="kyc-result-item">
+                <span className="kyc-result-key">Date of Birth</span>
+                <span className="kyc-result-val">{verificationResult.extractedData.dob}</span>
+              </div>
+              <div className="kyc-result-item kyc-result-full">
+                <span className="kyc-result-key">Compliance Status</span>
+                <span className="kyc-result-val">{verificationResult.extractedData.complianceStatus}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Main Action Footer */}
+        <div className="kyc-actions-footer">
+          <Button
+            type="button"
+            onClick={handleVerify}
+            disabled={isVerifying}
+            className="kyc-verify-btn"
+          >
+            {isVerifying ? (
+              <>
+                <Clock className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
+                Verifying Documents...
+              </>
+            ) : (
+              <>
+                <ShieldCheck className="h-4 w-4 mr-2" aria-hidden="true" />
+                Verify Document
+              </>
+            )}
+          </Button>
+
+          {verificationResult && onProceedToWorkspace && (
+            <button
+              type="button"
+              className="kyc-proceed-btn"
+              onClick={() => onProceedToWorkspace(notes, documents.map((d) => d.name))}
+            >
+              Open in Project Workspace
+              <ArrowRight className="h-4 w-4 ml-2" aria-hidden="true" />
+            </button>
+          )}
+        </div>
+      </div>
+    </main>
   );
 }
 
@@ -1149,6 +1482,7 @@ function Index() {
   const [editingAgent, setEditingAgent] = useState<AgentItem | null>(null);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [isCreateAgentView, setIsCreateAgentView] = useState(false);
+  const [isKycVerificationView, setIsKycVerificationView] = useState(false);
   const [expandedBadges, setExpandedBadges] = useState<Record<string, boolean>>({});
 
   const filteredProjects = projects.filter((project) => {
@@ -1206,6 +1540,35 @@ function Index() {
             }
             setIsCreateAgentView(false);
             setEditingAgent(null);
+          }}
+        />
+        <Toaster position="top-center" richColors />
+      </>
+    );
+  }
+
+  if (isKycVerificationView) {
+    return (
+      <>
+        <KycVerificationPage
+          onBack={() => setIsKycVerificationView(false)}
+          onProceedToWorkspace={() => {
+            setIsKycVerificationView(false);
+            const kycProj = projects.find((p) => p.title.includes("KYC"));
+            if (kycProj) {
+              setActiveProjectId(kycProj.id);
+            } else {
+              const newKycProject: ProjectItem = {
+                id: "agent-sbi-kyc",
+                title: "SBI Customer KYC & Document Verification Agent",
+                description:
+                  "Inspects and verifies uploaded customer documents (Aadhaar, PAN, Passport, DL) for authenticity, data extraction, and regulatory KYC compliance.",
+                agents: ["SBI KYC Specialist", "Document Authenticator"],
+                url: "#agent-sbi-kyc",
+              };
+              setProjects((prev) => [newKycProject, ...prev]);
+              setActiveProjectId("agent-sbi-kyc");
+            }
           }}
         />
         <Toaster position="top-center" richColors />
@@ -1555,6 +1918,10 @@ function Index() {
                   if ((e.target as HTMLElement).closest('button')) {
                     return;
                   }
+                  if (agent.id === "agent-sbi-kyc" || agent.title.includes("KYC")) {
+                    setIsKycVerificationView(true);
+                    return;
+                  }
                   const existing = projects.find((p) => p.title === agent.title);
                   if (existing) {
                     setActiveProjectId(existing.id);
@@ -1579,6 +1946,10 @@ function Index() {
                         className="project-title-link"
                         onClick={(e) => {
                           e.stopPropagation();
+                          if (agent.id === "agent-sbi-kyc" || agent.title.includes("KYC")) {
+                            setIsKycVerificationView(true);
+                            return;
+                          }
                           const existing = projects.find((p) => p.title === agent.title);
                           if (existing) {
                             setActiveProjectId(existing.id);
@@ -1603,6 +1974,10 @@ function Index() {
                       className="project-action-btn"
                       onClick={(e) => {
                         e.stopPropagation();
+                        if (agent.id === "agent-sbi-kyc" || agent.title.includes("KYC")) {
+                          setIsKycVerificationView(true);
+                          return;
+                        }
                         const existing = projects.find((p) => p.title === agent.title);
                         if (existing) {
                           setActiveProjectId(existing.id);

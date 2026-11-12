@@ -256,15 +256,19 @@ describe("App routing", () => {
     fireEvent.click(backBtn);
     expect(screen.getByText("Autonomous Collaborative Projects")).toBeDefined();
 
-    // Click agent title link to open workspace
+    // Click agent title link to open initial KYC document upload step
     const agentLink = screen.getByRole("button", { name: "SBI Customer KYC & Document Verification Agent" });
     fireEvent.click(agentLink);
-    expect(screen.getByText("CEO Workspace")).toBeDefined();
-    expect(screen.getAllByText("SBI Customer KYC & Document Verification Agent").length).toBeGreaterThan(0);
+    expect(screen.getByText("SBI Customer KYC & Document Verification")).toBeDefined();
+    expect(screen.getByText("Customer Identification Documents")).toBeDefined();
+    expect(screen.getByRole("button", { name: /verify document/i })).toBeDefined();
+
+    // Click Verify Document
+    fireEvent.click(screen.getByRole("button", { name: /verify document/i }));
 
     // Return to dashboard
-    const homeBtn = screen.getByRole("button", { name: "Back to Home" });
-    fireEvent.click(homeBtn);
+    const backToAgentsBtn = screen.getByRole("button", { name: /back to agents/i });
+    fireEvent.click(backToAgentsBtn);
     expect(screen.getByText("Autonomous Collaborative Projects")).toBeDefined();
 
     // Switch back to Projects tab and verify original projects show
