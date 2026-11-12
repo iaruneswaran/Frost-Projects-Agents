@@ -596,18 +596,13 @@ function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
           <Plus className="h-5 w-5" />
         </div>
 
-        {/* Main Title & Subtitle */}
+        {/* Main Title */}
         <div className="dark-agent-header-text">
           <h1 className="dark-agent-heading">
             {currentStep === 1 && "Create your agent"}
             {currentStep === 2 && "Configure capabilities"}
             {currentStep === 3 && "Review & launch instructions"}
           </h1>
-          <p className="dark-agent-subheading">
-            {currentStep === 1 && "Define agent identity, domain role persona, and primary mission goals"}
-            {currentStep === 2 && "Outline core responsibilities, analytical variables, and deliverables"}
-            {currentStep === 3 && "Specify operating constraints, collaboration protocols, and test prompts"}
-          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="dark-agent-form">
@@ -693,8 +688,10 @@ function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
                   type="button"
                   onClick={onBack}
                   className="dark-agent-secondary-btn"
+                  title="Back"
                 >
-                  ← Back to Dashboard
+                  <ArrowLeft className="h-4 w-4 mr-1.5" />
+                  <span>Back</span>
                 </button>
                 <button
                   type="button"
@@ -839,8 +836,10 @@ function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
                   type="button"
                   onClick={() => setCurrentStep(1)}
                   className="dark-agent-secondary-btn"
+                  title="Back"
                 >
-                  ← Back
+                  <ArrowLeft className="h-4 w-4 mr-1.5" />
+                  <span>Back</span>
                 </button>
                 <button
                   type="button"
@@ -956,8 +955,10 @@ function CreateAgentPage({ onBack, onCreateAgent }: CreateAgentPageProps) {
                   type="button"
                   onClick={() => setCurrentStep(2)}
                   className="dark-agent-secondary-btn"
+                  title="Back"
                 >
-                  ← Back
+                  <ArrowLeft className="h-4 w-4 mr-1.5" />
+                  <span>Back</span>
                 </button>
                 <button
                   type="submit"

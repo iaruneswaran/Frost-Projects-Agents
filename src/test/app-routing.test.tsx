@@ -117,6 +117,8 @@ describe("App routing", () => {
 
     // Verify Step 1: Agent Identity
     expect(screen.getByRole("heading", { level: 1, name: "Create your agent" })).toBeDefined();
+    expect(screen.queryByText("Define agent identity, domain role persona, and primary mission goals")).toBeNull();
+    expect(screen.getByRole("button", { name: "Back" })).toBeDefined();
     expect(screen.getByText("Agent Name")).toBeDefined();
     expect(screen.getByText("Agent Role")).toBeDefined();
     expect(screen.getByText("Primary Goal")).toBeDefined();
