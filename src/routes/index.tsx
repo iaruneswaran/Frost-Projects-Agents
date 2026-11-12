@@ -666,22 +666,23 @@ function KycVerificationPage({ onBack, onProceedToWorkspace }: KycVerificationPa
           </div>
         </div>
 
-        {/* Heading, shortened subline and back navigation inside the header */}
-        <div className="aircond-header-bottom text-center">
-          <div className="kyc-header-back-wrapper">
+        {/* Heading, shortened subline and unwrapped back navigation inline inside header */}
+        <div className="aircond-header-bottom kyc-header-bottom">
+          <div className="kyc-heading-inline-row">
             <button
               type="button"
-              className="kyc-header-back-btn"
+              className="kyc-header-back-inline-btn"
               onClick={onBack}
+              aria-label="Back"
             >
-              <ArrowLeft className="h-4 w-4 mr-1.5" aria-hidden="true" />
-              Back
+              <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+              <span>Back</span>
             </button>
+            <h1 className="aircond-header-heading kyc-header-heading-inline">
+              SBI Customer KYC & Document Verification
+            </h1>
           </div>
-          <h1 className="aircond-header-heading">
-            SBI Customer KYC & Document Verification
-          </h1>
-          <p className="aircond-header-subline">
+          <p className="aircond-header-subline kyc-header-subline-left">
             Verifies uploaded customer documents for authenticity and KYC compliance.
           </p>
         </div>

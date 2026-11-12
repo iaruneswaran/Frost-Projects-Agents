@@ -2298,6 +2298,59 @@ button:hover,
   gap: 6px;
 }
 
+.kyc-header-bottom {
+  align-items: flex-start !important;
+  text-align: left !important;
+}
+
+.kyc-heading-inline-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.kyc-header-back-inline-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent !important;
+  border: none !important;
+  color: #ffffff !important;
+  padding: 4px 0 !important;
+  border-radius: 0 !important;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  margin: 0;
+  box-shadow: none !important;
+  flex-shrink: 0;
+  opacity: 0.9;
+  transition: opacity 0.15s ease;
+}
+
+.kyc-header-back-inline-btn:hover {
+  opacity: 1;
+  background: transparent !important;
+  border: none !important;
+  color: #ffffff !important;
+  transform: none !important;
+}
+
+.kyc-header-heading-inline {
+  text-align: left !important;
+  margin: 0 !important;
+}
+
+.kyc-header-subline-left {
+  text-align: left !important;
+  margin: 10px 0 0 !important;
+  max-width: 100% !important;
+}
+
 .kyc-header-back-wrapper {
   width: 100%;
   display: flex;
