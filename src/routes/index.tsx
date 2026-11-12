@@ -20,12 +20,12 @@ import { Toaster } from "@/components/ui/sonner";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Frost Projects — Autonomous agents and collaborative projects" },
+      { title: "Frost Projects — Autonomous Collaborative Projects" },
       {
         name: "description",
         content: "Deploy intelligent autonomous agents and coordinate collaborative projects with ease.",
       },
-      { property: "og:title", content: "Frost Projects — Autonomous agents and collaborative projects" },
+      { property: "og:title", content: "Frost Projects — Autonomous Collaborative Projects" },
       {
         property: "og:description",
         content: "Deploy intelligent autonomous agents and coordinate collaborative projects with ease.",
@@ -175,8 +175,11 @@ function Index() {
         </div>
         <div className="aircond-header-bottom text-center">
           <h1 className="aircond-header-heading">
-            Autonomous agents and collaborative projects
+            Autonomous Collaborative Projects
           </h1>
+          <p className="aircond-header-subline">
+            Deploy intelligent autonomous agents and coordinate collaborative initiatives with ease.
+          </p>
         </div>
       </header>
 

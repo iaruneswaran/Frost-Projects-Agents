@@ -179,7 +179,7 @@
   flex-direction: column;
   width: min(1320px, calc(100% - 96px));
   margin-top: 0;
-  padding: 20px 24px 85px 28px;
+  padding: 20px 24px 92px 28px;
   border-radius: 0 0 42px 42px;
   background: var(--aircond-ink);
   color: var(--aircond-paper);
@@ -195,10 +195,11 @@
 
 .aircond-header-bottom {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 100%;
-  margin-top: 56px;
+  margin-top: 50px;
   padding-top: 0;
   border-top: none;
   text-align: center;
@@ -212,6 +213,16 @@
   line-height: 1.25;
   color: var(--aircond-paper);
   letter-spacing: -0.01em;
+  text-align: center;
+}
+
+.aircond-header-subline {
+  margin: 10px auto 0;
+  max-width: 600px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.74);
+  font-weight: 400;
   text-align: center;
 }
 
@@ -798,9 +809,10 @@
 .aircond-contact a { margin-top: 0; color: var(--aircond-ink); }
 
 @media (max-width: 900px) {
-  .aircond-header { width: calc(100% - 32px); height: auto; margin-top: 0; padding: 16px 16px 72px 18px; border-radius: 0 0 28px 28px; }
-  .aircond-header-bottom { margin-top: 40px; padding-top: 0; border-top: none; }
+  .aircond-header { width: calc(100% - 32px); height: auto; margin-top: 0; padding: 16px 16px 82px 18px; border-radius: 0 0 28px 28px; }
+  .aircond-header-bottom { margin-top: 36px; padding-top: 0; border-top: none; }
   .aircond-header-heading { font-size: 20px; }
+  .aircond-header-subline { font-size: 14px; margin-top: 8px; }
   .aircond-nav { display: none; }
   .aircond-login { margin-left: auto; height: 38px; padding: 0 13px; font-size: 14px; }
   .aircond-mobile-menu { display: inline-flex; margin-left: 5px; }
