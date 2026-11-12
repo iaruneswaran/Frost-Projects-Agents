@@ -330,7 +330,6 @@ function Index() {
             <article key={project.id} className="project-card">
               <div className="project-card-left">
                 <div className="project-card-left-top">
-                  <span className="project-card-eyebrow">Strategic Project</span>
                   <h3 className="project-card-title">
                     <a
                       href={project.url}
