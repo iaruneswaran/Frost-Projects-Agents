@@ -116,6 +116,7 @@
   --aircond-blue-soft: oklch(0.965 0.018 235);
   --aircond-paper: oklch(0.99 0.003 250);
   --aircond-muted: oklch(0.56 0.012 250);
+  --aircond-subtle: oklch(0.56 0.012 250);
   --aircond-dark-card: oklch(0.31 0.008 250);
 }
 
@@ -578,7 +579,7 @@
 .projects-search-bar .search-icon {
   width: 20px;
   height: 20px;
-  color: var(--aircond-subtle);
+  color: var(--aircond-muted);
   flex-shrink: 0;
   margin-right: 12px;
 }
@@ -594,7 +595,8 @@
 }
 
 .projects-search-input::placeholder {
-  color: var(--aircond-subtle);
+  color: var(--aircond-muted);
+  opacity: 1;
   font-size: 15px;
 }
 

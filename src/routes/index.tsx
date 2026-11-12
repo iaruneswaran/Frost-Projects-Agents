@@ -311,9 +311,9 @@ function Index() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search projects by name, description, or agent tag..."
+              placeholder="Search projects..."
               className="projects-search-input"
-              aria-label="Search projects by name, description, or agent"
+              aria-label="Search projects"
             />
             {searchQuery && (
               <button
