@@ -609,7 +609,7 @@ function KycVerificationPage({ onBack, onProceedToWorkspace }: KycVerificationPa
 
   return (
     <main className="aircond-page min-h-screen bg-background text-foreground">
-      {/* Header section from Home preserved as-is */}
+      {/* Black header matching home page with heading, shortened subline, and back nav inside */}
       <header className="aircond-header mx-auto flex flex-col">
         <div className="aircond-header-top flex items-center justify-between">
           <a
@@ -665,30 +665,28 @@ function KycVerificationPage({ onBack, onProceedToWorkspace }: KycVerificationPa
             </button>
           </div>
         </div>
-      </header>
 
-      {/* Main Container - 820px width only */}
-      <div className="kyc-container">
-        {/* Navigation Breadcrumb / Back button */}
-        <div className="kyc-top-bar">
+        {/* Heading, shortened subline and back navigation inside the header */}
+        <div className="aircond-header-bottom text-center">
           <button
             type="button"
-            className="kyc-back-btn"
+            className="kyc-header-back-btn"
             onClick={onBack}
           >
             <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
             Back to Agents
           </button>
-        </div>
-
-        {/* Proper Page Headering */}
-        <div className="kyc-header-block">
-          <h1 className="kyc-heading">SBI Customer KYC & Document Verification</h1>
-          <p className="kyc-subheading">
-            Inspects and verifies uploaded customer documents (Aadhaar, PAN, Passport, DL) for authenticity, data extraction, and regulatory KYC compliance.
+          <h1 className="aircond-header-heading">
+            SBI Customer KYC & Document Verification
+          </h1>
+          <p className="aircond-header-subline">
+            Inspects and verifies uploaded customer documents for authenticity and KYC compliance.
           </p>
         </div>
+      </header>
 
+      {/* Attachment card overlaid on the header/menu with negative margin (820px width) */}
+      <div className="kyc-overlay-card">
         {/* Attachment Field */}
         <div className="kyc-section">
           <label className="kyc-section-title">Customer Identification Documents</label>
