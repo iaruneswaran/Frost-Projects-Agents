@@ -179,7 +179,7 @@
   flex-direction: column;
   width: min(1320px, calc(100% - 96px));
   margin-top: 0;
-  padding: 20px 24px 96px 28px;
+  padding: 20px 24px 85px 28px;
   border-radius: 0 0 42px 42px;
   background: var(--aircond-ink);
   color: var(--aircond-paper);
@@ -198,7 +198,7 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  margin-top: 32px;
+  margin-top: 56px;
   padding-top: 0;
   border-top: none;
   text-align: center;
@@ -297,7 +297,7 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
   width: min(100%, 820px);
-  margin: -72px auto 0;
+  margin: -35px auto 0;
 }
 
 .aircond-tile {
@@ -812,8 +812,8 @@
 .aircond-contact a { margin-top: 0; color: var(--aircond-ink); }
 
 @media (max-width: 900px) {
-  .aircond-header { width: calc(100% - 32px); height: auto; margin-top: 0; padding: 16px 16px 84px 18px; border-radius: 0 0 28px 28px; }
-  .aircond-header-bottom { margin-top: 22px; padding-top: 0; border-top: none; }
+  .aircond-header { width: calc(100% - 32px); height: auto; margin-top: 0; padding: 16px 16px 72px 18px; border-radius: 0 0 28px 28px; }
+  .aircond-header-bottom { margin-top: 40px; padding-top: 0; border-top: none; }
   .aircond-header-heading { font-size: 20px; }
   .aircond-nav { display: none; }
   .aircond-login { margin-left: auto; height: 38px; padding: 0 13px; font-size: 14px; }
@@ -821,7 +821,7 @@
   .aircond-hero { width: calc(100% - 32px); min-height: auto; padding-top: 0; padding-bottom: 24px; }
   .aircond-eyebrow { max-width: 100%; font-size: 14px; }
   .aircond-intro h1 { margin-top: 14px; font-size: clamp(28px, 6vw, 42px); }
-  .aircond-solutions { grid-template-columns: 1fr; gap: 14px; margin: -64px auto 0; }
+  .aircond-solutions { grid-template-columns: 1fr; gap: 14px; margin: -35px auto 0; }
   .aircond-tile { min-height: 160px; padding: 18px 18px; border-radius: 20px; }
   .tile-title { font-size: 22px; }
   .tile-copy { margin-top: 8px; font-size: 14px; max-width: 100%; }
