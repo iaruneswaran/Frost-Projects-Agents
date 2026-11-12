@@ -332,28 +332,27 @@ function Index() {
           {filteredProjects.map((project) => (
             <article key={project.id} className="project-card">
               <div className="project-card-main">
-                <h3 className="project-card-title">
+                <div className="project-card-header">
+                  <h3 className="project-card-title">
+                    <a
+                      href={project.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {project.title}
+                    </a>
+                  </h3>
                   <a
                     href={project.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                  >
-                    {project.title}
-                  </a>
-                </h3>
-                <p className="project-card-description">{project.description}</p>
-                <div className="project-card-action">
-                  <a
-                    href={project.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="project-action-link"
+                    className="project-action-btn"
                     aria-label={`Open project: ${project.title}`}
                   >
-                    <span>Open Project</span>
                     <ArrowUpRight aria-hidden="true" />
                   </a>
                 </div>
+                <p className="project-card-description">{project.description}</p>
               </div>
 
               <div className="project-card-agents">

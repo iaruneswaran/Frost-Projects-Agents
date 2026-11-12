@@ -680,6 +680,14 @@
   margin-bottom: 12px;
 }
 
+.project-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+}
+
 .project-card-title {
   margin: 0;
   font-family: var(--font-heading);
@@ -688,7 +696,7 @@
   line-height: 1.32;
   color: var(--aircond-ink);
   text-align: left;
-  max-width: 680px;
+  flex: 1;
 }
 
 .project-card-title a {
@@ -702,44 +710,41 @@
   opacity: 0.8;
 }
 
+.project-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--aircond-ink);
+  color: #ffffff;
+  border: none;
+  text-decoration: none;
+  box-shadow: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.project-action-btn:hover {
+  background: var(--aircond-lime);
+  color: var(--aircond-ink);
+  transform: translateY(-2px);
+}
+
+.project-action-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
 .project-card-description {
-  margin: 12px 0 0;
+  margin: 14px 0 0;
   max-width: 660px;
   font-size: 15px;
   line-height: 1.62;
   color: var(--aircond-muted);
   text-align: left;
-}
-
-.project-card-action {
-  margin-top: 22px;
-  display: flex;
-  justify-content: flex-start;
-}
-
-.project-action-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 38px;
-  padding: 0 20px;
-  border-radius: 9999px;
-  background: var(--aircond-ink);
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: background-color 0.2s ease, transform 0.2s ease;
-}
-
-.project-action-link:hover {
-  background: var(--aircond-lime);
-  color: var(--aircond-ink);
-}
-
-.project-action-link svg {
-  width: 15px;
-  height: 15px;
 }
 
 .project-card-agents {
@@ -852,8 +857,9 @@
   .project-card { border-radius: 24px; min-height: auto; align-items: flex-start; }
   .project-card-main { padding: 26px 20px 14px; text-align: left; align-items: flex-start; }
   .project-card-title { font-size: 20px; text-align: left; }
+  .project-action-btn { width: 38px; height: 38px; }
+  .project-action-btn svg { width: 16px; height: 16px; }
   .project-card-description { font-size: 14px; text-align: left; }
-  .project-card-action { justify-content: flex-start; }
   .project-card-agents { width: 100%; padding: 0 20px 20px; gap: 8px 10px; justify-content: flex-start; }
   .project-agent-badge { height: 34px; padding: 0 14px; font-size: 14px; }
   .aircond-contact { width: calc(100% - 32px); padding: 42px 0; gap: 20px; }
