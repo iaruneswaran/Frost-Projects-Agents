@@ -154,30 +154,33 @@ function Index() {
 
   return (
     <main className="aircond-page min-h-screen overflow-hidden bg-background text-foreground">
-      <header className="aircond-header mx-auto flex items-center justify-between">
-        <a href="#top" className="aircond-wordmark" aria-label="Frost Projects home">
-          Frost Projects
-        </a>
-        <nav className="aircond-nav" aria-label="Main navigation">
-          {navItems.map((item) => (
-            <a key={item} href={item === "Projects" ? "#projects" : "#solutions"}>
-              {item}
-            </a>
-          ))}
-        </nav>
-        <Button className="aircond-login" asChild>
-          <a href="#solutions">Log in <ArrowUpRight aria-hidden="true" /></a>
-        </Button>
-        <Button className="aircond-mobile-menu" variant="ghost" size="icon" aria-label="Open menu">
-          <Menu aria-hidden="true" />
-        </Button>
+      <header className="aircond-header mx-auto flex flex-col">
+        <div className="aircond-header-top flex items-center justify-between">
+          <a href="#top" className="aircond-wordmark" aria-label="Frost Projects home">
+            Frost Projects
+          </a>
+          <nav className="aircond-nav" aria-label="Main navigation">
+            {navItems.map((item) => (
+              <a key={item} href={item === "Projects" ? "#projects" : "#solutions"}>
+                {item}
+              </a>
+            ))}
+          </nav>
+          <Button className="aircond-login" asChild>
+            <a href="#solutions">Log in <ArrowUpRight aria-hidden="true" /></a>
+          </Button>
+          <Button className="aircond-mobile-menu" variant="ghost" size="icon" aria-label="Open menu">
+            <Menu aria-hidden="true" />
+          </Button>
+        </div>
+        <div className="aircond-header-bottom text-center">
+          <h1 className="aircond-header-heading">
+            Autonomous agents and collaborative projects
+          </h1>
+        </div>
       </header>
 
       <section id="top" className="aircond-hero mx-auto">
-        <div className="aircond-intro">
-          <h1>Autonomous agents and collaborative projects</h1>
-        </div>
-
         <div id="solutions" className="aircond-solutions" aria-label="Create agents and projects">
           <div className="aircond-tile tile-home">
             <div className="tile-content">
