@@ -750,11 +750,18 @@
 
 .project-card-description {
   margin: 14px 0 0;
-  max-width: 660px;
-  font-size: 15px;
-  line-height: 1.62;
+  max-width: 100%;
+  font-size: 14px;
+  line-height: 1.5;
   color: var(--aircond-muted);
   text-align: left;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 3em;
 }
 
 .project-card-agents {
@@ -1471,7 +1478,17 @@
   .project-card-title { font-size: 20px; text-align: left; }
   .project-action-btn { width: 38px; height: 38px; }
   .project-action-btn svg { width: 16px; height: 16px; }
-  .project-card-description { font-size: 14px; text-align: left; }
+  .project-card-description {
+    font-size: 14px;
+    text-align: left;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 3em;
+  }
   .project-card-agents { width: 100%; padding: 0 20px 20px; gap: 8px 10px; justify-content: flex-start; }
   .project-agent-badge { height: 34px; padding: 0 14px; font-size: 14px; }
   .aircond-contact { width: calc(100% - 32px); padding: 42px 0; gap: 20px; }
