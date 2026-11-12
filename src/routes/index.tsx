@@ -722,7 +722,7 @@ function Index() {
           {filteredProjects.map((project) => (
             <article
               key={project.id}
-              className="project-card"
+              className={`project-card ${expandedBadges[project.id] ? "expanded" : ""}`}
               onClick={() => setActiveProjectId(project.id)}
               role="button"
               tabIndex={0}
