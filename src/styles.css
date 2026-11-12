@@ -566,7 +566,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 24px;
   flex-wrap: wrap;
   width: 100%;
 }
@@ -574,6 +574,7 @@
 .projects-tabs {
   display: inline-flex;
   align-items: center;
+  flex-shrink: 0;
   background: rgba(17, 28, 29, 0.05);
   border: 1px solid rgba(17, 28, 29, 0.08);
   border-radius: 9999px;
@@ -615,8 +616,10 @@
   position: relative;
   display: flex;
   align-items: center;
-  width: 100%;
-  max-width: 380px;
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  max-width: none;
   height: 50px;
   background: var(--aircond-paper);
   border-radius: 9999px;

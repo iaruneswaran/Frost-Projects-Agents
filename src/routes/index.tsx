@@ -1371,6 +1371,28 @@ function Index() {
           </h2>
 
           <div className="projects-header-toolbar">
+            <div className="projects-search-bar">
+              <Search className="search-icon" aria-hidden="true" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={activeTab === "projects" ? "Search projects..." : "Search agents..."}
+                className="projects-search-input"
+                aria-label={activeTab === "projects" ? "Search projects" : "Search agents"}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="search-clear-btn"
+                  aria-label="Clear search query"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </button>
+              )}
+            </div>
+
             <div className="projects-tabs" role="tablist" aria-label="Projects and Agents selection">
               <button
                 type="button"
@@ -1396,28 +1418,6 @@ function Index() {
               >
                 Agents
               </button>
-            </div>
-
-            <div className="projects-search-bar">
-              <Search className="search-icon" aria-hidden="true" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={activeTab === "projects" ? "Search projects..." : "Search agents..."}
-                className="projects-search-input"
-                aria-label={activeTab === "projects" ? "Search projects" : "Search agents"}
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery("")}
-                  className="search-clear-btn"
-                  aria-label="Clear search query"
-                >
-                  <X className="h-4 w-4" aria-hidden="true" />
-                </button>
-              )}
             </div>
           </div>
         </div>
