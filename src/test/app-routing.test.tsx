@@ -26,9 +26,11 @@ describe("App routing", () => {
     // Verify initial home page state
     expect(screen.getByText("Autonomous Collaborative Projects")).toBeDefined();
 
-    // Verify main navigation has only Home and Settings
+    // Verify main navigation has Home, Profile, Add Tokens, and Settings
     expect(screen.getByRole("navigation", { name: "Main navigation" })).toBeDefined();
     expect(screen.getByRole("link", { name: "Home" })).toBeDefined();
+    expect(screen.getByRole("link", { name: "Profile" })).toBeDefined();
+    expect(screen.getByRole("link", { name: "Add Tokens" })).toBeDefined();
     expect(screen.getByRole("link", { name: "Settings" })).toBeDefined();
     expect(screen.queryByRole("link", { name: "Advantages" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Career" })).toBeNull();

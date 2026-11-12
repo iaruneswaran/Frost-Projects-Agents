@@ -128,7 +128,7 @@ const initialProjects: ProjectItem[] = [
   },
 ];
 
-const navItems = ["Home", "Settings"];
+const navItems = ["Home", "Profile", "Add Tokens", "Settings"];
 
 function ProjectWorkspace({
   project,
@@ -1186,11 +1186,19 @@ function Index() {
             {navItems.map((item) => (
               <a
                 key={item}
-                href={item === "Home" ? "#top" : "#settings"}
+                href={
+                  item === "Home"
+                    ? "#top"
+                    : item === "Profile"
+                      ? "#profile"
+                      : item === "Add Tokens"
+                        ? "#tokens"
+                        : "#settings"
+                }
                 onClick={(e) => {
-                  if (item === "Settings") {
+                  if (item !== "Home") {
                     e.preventDefault();
-                    toast.info("Settings");
+                    toast.info(item);
                   }
                 }}
               >
