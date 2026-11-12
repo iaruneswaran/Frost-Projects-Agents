@@ -223,7 +223,7 @@
   font-size: 15px;
   line-height: 1.5;
   color: #ffffff;
-  font-weight: 400;
+  font-weight: 300;
   text-align: center;
 }
 
@@ -1765,7 +1765,7 @@ button:hover,
   .aircond-header { width: calc(100% - 32px); height: auto; margin-top: 0; padding: 16px 16px 82px 18px; border-radius: 0 0 28px 28px; }
   .aircond-header-bottom { margin-top: 36px; padding-top: 0; border-top: none; }
   .aircond-header-heading { font-size: 22px; }
-  .aircond-header-subline { font-size: 14px; margin-top: 8px; }
+  .aircond-header-subline { font-size: 14px; margin-top: 8px; font-weight: 300; }
   .aircond-nav { display: none; }
   .aircond-login { margin-left: auto; height: 38px; padding: 0 13px; font-size: 14px; }
   .aircond-mobile-menu { display: inline-flex; margin-left: 5px; }
