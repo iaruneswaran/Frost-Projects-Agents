@@ -328,9 +328,21 @@ function Index() {
         <div className="projects-grid">
           {filteredProjects.map((project) => (
             <article key={project.id} className="project-card">
-              <div className="project-card-top">
-                <div className="project-card-header">
-                  <span className="project-type-pill">Project</span>
+              <div className="project-card-left">
+                <div className="project-card-left-top">
+                  <span className="project-card-eyebrow">Strategic Project</span>
+                  <h3 className="project-card-title">
+                    <a
+                      href={project.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {project.title}
+                    </a>
+                  </h3>
+                  <p className="project-card-description">{project.description}</p>
+                </div>
+                <div className="project-card-left-bottom">
                   <a
                     href={project.url}
                     target="_blank"
@@ -342,27 +354,22 @@ function Index() {
                     <ArrowUpRight aria-hidden="true" />
                   </a>
                 </div>
-                <h3 className="project-card-title">
-                  <a
-                    href={project.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {project.title}
-                  </a>
-                </h3>
-                <p className="project-card-description">{project.description}</p>
               </div>
 
-              <div className="project-agents-section">
-                <div className="project-agents-title">
-                  <span>Agents ({project.agents.length})</span>
+              <div className="project-card-right">
+                <div className="project-agents-header">
+                  <span className="project-agents-header-label">
+                    Agents ({project.agents.length})
+                  </span>
                 </div>
-                <div className="project-agents-tags">
-                  {project.agents.map((agent) => (
-                    <span key={agent} className="project-agent-tag">
-                      {agent}
-                    </span>
+                <div className="project-agents-list">
+                  {project.agents.map((agent, index) => (
+                    <div key={agent} className="project-agent-item">
+                      <span className="project-agent-name">{agent}</span>
+                      <span className="project-agent-role">
+                        Specialized Agent • 0{index + 1}
+                      </span>
+                    </div>
                   ))}
                 </div>
               </div>
