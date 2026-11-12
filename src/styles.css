@@ -811,7 +811,7 @@
   height: 38px;
   padding: 0 18px;
   border-radius: 9999px;
-  background: #c7ebff;
+  background: #e6f6ff;
   border: none;
   outline: none;
   box-shadow: none;
@@ -825,7 +825,7 @@
 }
 
 .project-agent-badge:hover {
-  background: #b5e4ff;
+  background: #d3efff;
   transform: translateY(-1px);
 }
 
@@ -844,13 +844,13 @@
   border: none;
   outline: none;
   box-shadow: none;
-  background: #c7ebff;
+  background: #e6f6ff;
   color: var(--aircond-ink);
   transition: all 0.2s ease;
 }
 
 .project-agent-round-badge:hover {
-  background: #b5e4ff;
+  background: #d3efff;
   transform: scale(1.06);
 }
 
