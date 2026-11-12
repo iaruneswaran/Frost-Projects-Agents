@@ -331,20 +331,18 @@ function Index() {
         <div className="projects-grid">
           {filteredProjects.map((project) => (
             <article key={project.id} className="project-card">
-              <div className="project-card-left">
-                <div className="project-card-left-top">
-                  <h3 className="project-card-title">
-                    <a
-                      href={project.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {project.title}
-                    </a>
-                  </h3>
-                  <p className="project-card-description">{project.description}</p>
-                </div>
-                <div className="project-card-left-bottom">
+              <div className="project-card-main">
+                <h3 className="project-card-title">
+                  <a
+                    href={project.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {project.title}
+                  </a>
+                </h3>
+                <p className="project-card-description">{project.description}</p>
+                <div className="project-card-action">
                   <a
                     href={project.url}
                     target="_blank"
@@ -358,10 +356,11 @@ function Index() {
                 </div>
               </div>
 
-              <div className="project-card-right">
+              <div className="project-card-agents">
                 <div className="project-agents-list">
                   {project.agents.map((agent) => (
                     <div key={agent} className="project-agent-item">
+                      <span className="project-agent-dot" aria-hidden="true" />
                       <span className="project-agent-name">{agent}</span>
                     </div>
                   ))}
