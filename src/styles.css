@@ -517,7 +517,7 @@
 .projects-title {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: clamp(28px, 3.5vw, 38px);
+  font-size: 24px;
   font-weight: 600;
   line-height: 1.15;
   color: var(--aircond-ink);
@@ -832,7 +832,7 @@
   .orbit-one { top: auto; bottom: 115px; left: 0; width: 68px; height: 68px; }
   .orbit-two { top: auto; bottom: 95px; left: -5px; width: 110px; height: 110px; }
   .aircond-mission { width: calc(100% - 32px); min-height: 0; padding: 0; margin: 36px auto 60px; border-radius: 0; }
-  .projects-title { font-size: 28px; }
+  .projects-title { font-size: 24px; }
   .projects-grid { gap: 18px; }
   .project-card { grid-template-columns: 1fr; border-radius: 24px; }
   .project-card-left { padding: 24px 20px; }
