@@ -648,19 +648,6 @@
   box-shadow: none;
 }
 
-.project-card::before {
-  content: "";
-  position: absolute;
-  left: -8%;
-  right: -8%;
-  bottom: -25px;
-  height: 145px;
-  border-radius: 50% 50% 0 0 / 55px 55px 0 0;
-  background: radial-gradient(ellipse 100% 85% at 50% 100%, #c7ebff 0%, rgba(199, 235, 255, 0.72) 45%, rgba(199, 235, 255, 0.15) 80%, transparent 100%);
-  pointer-events: none;
-  z-index: 0;
-}
-
 .project-card-main {
   position: relative;
   z-index: 1;
@@ -818,9 +805,7 @@
   height: 38px;
   padding: 0 18px;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: #c7ebff;
   border: none;
   outline: none;
   box-shadow: none;
@@ -834,7 +819,7 @@
 }
 
 .project-agent-badge:hover {
-  background: #ffffff;
+  background: #b5e4ff;
   transform: translateY(-1px);
 }
 
@@ -853,13 +838,13 @@
   border: none;
   outline: none;
   box-shadow: none;
-  background: rgba(255, 255, 255, 0.9);
+  background: #c7ebff;
   color: var(--aircond-ink);
   transition: all 0.2s ease;
 }
 
 .project-agent-round-badge:hover {
-  background: #ffffff;
+  background: #b5e4ff;
   transform: scale(1.06);
 }
 
