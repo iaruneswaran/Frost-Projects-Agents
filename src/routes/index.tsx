@@ -682,7 +682,7 @@ function KycVerificationPage({ onBack, onProceedToWorkspace }: KycVerificationPa
             SBI Customer KYC & Document Verification
           </h1>
           <p className="aircond-header-subline">
-            Inspects and verifies uploaded customer documents for authenticity and KYC compliance.
+            Verifies uploaded customer documents for authenticity and KYC compliance.
           </p>
         </div>
       </header>
