@@ -178,9 +178,9 @@
   display: flex;
   flex-direction: column;
   width: min(1320px, calc(100% - 96px));
-  margin-top: 26px;
-  padding: 14px 18px 34px 24px;
-  border-radius: 40px;
+  margin-top: 0;
+  padding: 20px 24px 38px 28px;
+  border-radius: 0 0 42px 42px;
   background: var(--aircond-ink);
   color: var(--aircond-paper);
 }
@@ -198,9 +198,9 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  margin-top: 36px;
-  padding-top: 28px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 32px;
+  padding-top: 0;
+  border-top: none;
   text-align: center;
 }
 
@@ -792,8 +792,8 @@
 .aircond-contact a { margin-top: 0; color: var(--aircond-ink); }
 
 @media (max-width: 900px) {
-  .aircond-header { width: calc(100% - 32px); height: auto; margin-top: 16px; padding: 12px 14px 24px 18px; border-radius: 28px; }
-  .aircond-header-bottom { margin-top: 24px; padding-top: 18px; }
+  .aircond-header { width: calc(100% - 32px); height: auto; margin-top: 0; padding: 16px 16px 28px 18px; border-radius: 0 0 28px 28px; }
+  .aircond-header-bottom { margin-top: 22px; padding-top: 0; border-top: none; }
   .aircond-header-heading { font-size: 20px; }
   .aircond-nav { display: none; }
   .aircond-login { margin-left: auto; height: 38px; padding: 0 13px; font-size: 14px; }
