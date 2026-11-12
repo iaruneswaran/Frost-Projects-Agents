@@ -28,3 +28,5 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+Keep the home page composition in `src/routes/index.tsx` and its shared visual tokens and presentation rules in `src/styles.css` so the screenshot-led design stays coherent.
