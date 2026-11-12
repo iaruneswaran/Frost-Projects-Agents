@@ -483,7 +483,7 @@
 }
 
 .projects-title {
-  margin: 14px 0 8px;
+  margin: 0;
   font-family: var(--font-heading);
   font-size: clamp(28px, 3.5vw, 38px);
   font-weight: 600;

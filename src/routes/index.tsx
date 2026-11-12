@@ -297,18 +297,7 @@ function Index() {
       <section id="projects" className="aircond-mission mx-auto">
         <span id="mission" aria-hidden="true" className="sr-only" />
         <div className="projects-header">
-          <div className="projects-header-top">
-            <div>
-              <span className="mission-tag">Featured Projects</span>
-              <h2 className="projects-title">Active Projects & Agent Teams</h2>
-              <p className="projects-subtitle">
-                Explore collaborative initiatives, strategic objectives, and the specialized autonomous agents executing them.
-              </p>
-            </div>
-            <div className="projects-meta-count">
-              <span>{filteredProjects.length} {filteredProjects.length === 1 ? "project" : "projects"} found</span>
-            </div>
-          </div>
+          <h2 className="projects-title">Active Projects & Agent Teams</h2>
 
           <div className="projects-search-bar">
             <Search className="search-icon" aria-hidden="true" />
