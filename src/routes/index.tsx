@@ -128,7 +128,7 @@ const initialProjects: ProjectItem[] = [
   },
 ];
 
-const navItems = ["Projects", "Advantages", "Career", "News", "Team"];
+const navItems = ["Home", "Settings"];
 
 function ProjectWorkspace({
   project,
@@ -1075,7 +1075,16 @@ function Index() {
           </a>
           <nav className="aircond-nav" aria-label="Main navigation">
             {navItems.map((item) => (
-              <a key={item} href={item === "Projects" ? "#projects" : "#solutions"}>
+              <a
+                key={item}
+                href={item === "Home" ? "#top" : "#settings"}
+                onClick={(e) => {
+                  if (item === "Settings") {
+                    e.preventDefault();
+                    toast.info("Settings");
+                  }
+                }}
+              >
                 {item}
               </a>
             ))}
