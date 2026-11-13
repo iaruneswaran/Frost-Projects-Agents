@@ -474,11 +474,20 @@ describe("App routing", () => {
       await new Promise((resolve) => setTimeout(resolve, 600));
     });
 
-    expect(screen.getByText(/Target Market & Audience/i)).toBeDefined();
-    // Verify answer is wrapped inside stroke box
+    expect(
+      screen.getByText(/Let's define the core objective of this project to start building the business case/i)
+    ).toBeDefined();
+
+    // Verify answer is wrapped inside stroke box with 4 outcome options
     const strokeBox = document.querySelector(".ai-stroke-box");
     expect(strokeBox).not.toBeNull();
-    expect(strokeBox?.textContent).toContain("Target Market & Audience");
+    expect(strokeBox?.textContent).toContain("What primary outcome do you want to achieve with this project?");
+    expect(screen.getByText("Accelerate enterprise revenue growth")).toBeDefined();
+    expect(screen.getByText("Automate key operational processes")).toBeDefined();
+    expect(screen.getByText("Launch a new AI product or platform")).toBeDefined();
+    expect(screen.getByText("Expand into a new target market")).toBeDefined();
+    expect(screen.getByText("Or in your own words")).toBeDefined();
+    expect(screen.getByPlaceholderText("Type your answer and press Enter")).toBeDefined();
 
     // Verify after conversation start, greeting and starter actions are hidden
     expect(screen.queryByText("What outcome would make this project worthwhile?")).toBeNull();
@@ -800,7 +809,7 @@ describe("App routing", () => {
     ).toBeDefined();
   });
 
-  it("renders curated Knowledge Packs with Adobe Acrobat PDF icons, GET buttons, and report metadata", () => {
+  it("renders curated Knowledge Packs with Adobe Acrobat PDF icons, GET buttons, and report metadata", async () => {
     const Component = Route.options.component;
     if (!Component) throw new Error("Component is not defined on Route");
 
@@ -894,6 +903,23 @@ describe("App routing", () => {
     expect(runBtn).toBeDefined();
     fireEvent.click(runBtn);
     expect(screen.getByText("Running...")).toBeDefined();
+
+    // Wait for agent execution
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    });
+
+    // Verify button state changes to Completed without check mark symbol
+    expect(screen.getByText("Completed")).toBeDefined();
+    expect(screen.queryByText(/Running ✓/)).toBeNull();
+
+    // Verify report section appears below Recommended Agents
+    expect(screen.getByText("SBI Home Loan Monthly Performance & Disbursement Report")).toBeDefined();
+    expect(screen.getAllByText("₹4,820.50 Cr").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("Monthly Disbursement Trends (₹ in Crores)")).toBeDefined();
+    expect(screen.getByText("Disbursement by City Tier & Category")).toBeDefined();
+    expect(screen.getByText("Regional Zonal Breakdown & Compliance Review")).toBeDefined();
+    expect(screen.getByText("Regulatory Compliance & Scope Isolation")).toBeDefined();
   });
 
   it("opens right-side slide panel with 3 project related agents and other agents below on clicking New chat under a project", () => {

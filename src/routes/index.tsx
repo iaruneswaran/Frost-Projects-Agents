@@ -16,6 +16,8 @@ import {
   ChevronRight,
   Clock,
   Clock3,
+  Download,
+  FileSpreadsheet,
   Folder,
   Library,
   Menu,
@@ -870,6 +872,8 @@ function ProjectWorkspace({
   const [obtainedReports, setObtainedReports] = useState<Record<string, boolean>>({});
   const [generatingAgentId, setGeneratingAgentId] = useState<string | null>(null);
   const [generatedAgents, setGeneratedAgents] = useState<Record<string, boolean>>({});
+  const [activeReportAgentId, setActiveReportAgentId] = useState<string | null>(null);
+  const [downloadedReportId, setDownloadedReportId] = useState<string | null>(null);
   const [reportFlows, setReportFlows] = useState<Record<string, ReportFlowState>>({});
   const dockFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -965,6 +969,7 @@ function ProjectWorkspace({
     setTimeout(() => {
       setGeneratingAgentId(null);
       setGeneratedAgents((prev) => ({ ...prev, [agent.id]: true }));
+      setActiveReportAgentId(agent.id);
 
       // If in New chat, update title to the agent
       if (selectedChat === "New chat") {
@@ -977,34 +982,842 @@ function ProjectWorkspace({
         }));
         setSelectedChat(cleanTitle);
       }
-
-      const flowId = `ai-flow-${Date.now()}`;
-      const userMsg: MessageItem = {
-        id: `user-gen-${Date.now()}`,
-        sender: "user",
-        text: `Generate report with ${agent.title}`,
-      };
-
-      const aiMsg: MessageItem = {
-        id: flowId,
-        sender: "assistant",
-        text: `To complete this report for **${project.title}**, I've assembled two specialized agents to synthesize the market intelligence. Select an agent to begin configuration:`,
-      };
-
-      setReportFlows((prev) => ({
-        ...prev,
-        [flowId]: {
-          ...defaultReportFlowState,
-          activeAgentId: agent.id,
-          isAgent2Active: true,
-        },
-      }));
-
-      setConversations((prev) => ({
-        ...prev,
-        [currentChatKey]: [...(prev[currentChatKey] || []), userMsg, aiMsg],
-      }));
     }, 400);
+  };
+
+  const renderAgentReport = (agentId: string) => {
+    const isHomeLoan = agentId === "agent-sbi-home-loan" || agentId.includes("home-loan") || agentId.includes("Home Loan");
+    const hasMultipleGenerated = !!(generatedAgents["agent-sbi-home-loan"] && generatedAgents["agent-sbi-kyc"]);
+
+    if (isHomeLoan) {
+      return (
+        <section className="agent-report-card openui-report-card" aria-label="SBI Home Loan Monthly Report">
+          {/* Header */}
+          <div className="openui-header">
+            <div className="openui-header-info">
+              <h3 className="openui-title">
+                SBI Home Loan Monthly Performance & Disbursement Report
+              </h3>
+              <p className="openui-subtitle">
+                Across all regions in 2026, total home-loan disbursements reached ₹4,820.50 Cr with 18,460 accounts active.
+              </p>
+            </div>
+
+            <div className="openui-header-actions">
+              {hasMultipleGenerated && (
+                <div className="agent-report-tab-switch" role="tablist">
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={activeReportAgentId === "agent-sbi-home-loan"}
+                    className={`agent-report-tab-btn ${activeReportAgentId === "agent-sbi-home-loan" ? "active" : ""}`}
+                    onClick={() => setActiveReportAgentId("agent-sbi-home-loan")}
+                  >
+                    Home Loan Report
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={activeReportAgentId === "agent-sbi-kyc"}
+                    className={`agent-report-tab-btn ${activeReportAgentId === "agent-sbi-kyc" ? "active" : ""}`}
+                    onClick={() => setActiveReportAgentId("agent-sbi-kyc")}
+                  >
+                    South Asia Market Report
+                  </button>
+                </div>
+              )}
+              <button
+                type="button"
+                className="agent-report-download-btn"
+                onClick={() => setDownloadedReportId("home-loan")}
+                title="Download complete compliance report in PDF"
+              >
+                <Download className="h-4 w-4" />
+                <span>{downloadedReportId === "home-loan" ? "Downloaded" : "Download Report (PDF)"}</span>
+              </button>
+              <button
+                type="button"
+                className="agent-report-export-btn"
+                onClick={() => setDownloadedReportId("home-loan-csv")}
+                title="Export raw disbursement dataset as CSV"
+              >
+                <FileSpreadsheet className="h-4 w-4" />
+                <span>Export CSV</span>
+              </button>
+            </div>
+          </div>
+
+          {/* 3 Large Stat Metrics Row */}
+          <div className="openui-metrics-row">
+            <div className="openui-metric-box">
+              <div className="openui-metric-number">₹4,820.50 Cr</div>
+              <div className="openui-metric-subline">
+                <span className="openui-metric-name">Total loan disbursements</span>
+                <span className="openui-metric-delta positive">+12.4%</span>
+              </div>
+            </div>
+
+            <div className="openui-metric-box">
+              <div className="openui-metric-number">18,460</div>
+              <div className="openui-metric-subline">
+                <span className="openui-metric-name">Active loans disbursed</span>
+                <span className="openui-metric-delta positive">+9.1%</span>
+              </div>
+            </div>
+
+            <div className="openui-metric-box">
+              <div className="openui-metric-number">0.78%</div>
+              <div className="openui-metric-subline">
+                <span className="openui-metric-name">Portfolio GNPL ratio</span>
+                <span className="openui-metric-delta positive">RBI &lt; 2.0%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Dual-Bar Grouped Chart: Jan to Nov */}
+          <div className="openui-chart-panel">
+            <div className="openui-panel-header">
+              <h4 className="openui-panel-title">Monthly Disbursement Trends (₹ in Crores)</h4>
+              <div className="openui-legend">
+                <span className="openui-legend-item">
+                  <span className="openui-legend-swatch swatch-sanctioned" />
+                  <span>Sanctioned</span>
+                </span>
+                <span className="openui-legend-item">
+                  <span className="openui-legend-swatch swatch-disbursed" />
+                  <span>Disbursed</span>
+                </span>
+              </div>
+            </div>
+
+            <div className="openui-svg-container">
+              <svg viewBox="0 0 880 280" className="openui-bar-svg" aria-label="Monthly disbursement grouped bar chart">
+                {/* Horizontal Gridlines & Y-Axis Labels */}
+                <line x1="60" y1="35" x2="850" y2="35" stroke="#f1f5f9" strokeWidth="1" />
+                <text x="52" y="39" textAnchor="end" className="openui-axis-text">5.0k</text>
+
+                <line x1="60" y1="78" x2="850" y2="78" stroke="#f1f5f9" strokeWidth="1" />
+                <text x="52" y="82" textAnchor="end" className="openui-axis-text">4.0k</text>
+
+                <line x1="60" y1="121" x2="850" y2="121" stroke="#f1f5f9" strokeWidth="1" />
+                <text x="52" y="125" textAnchor="end" className="openui-axis-text">3.0k</text>
+
+                <line x1="60" y1="164" x2="850" y2="164" stroke="#f1f5f9" strokeWidth="1" />
+                <text x="52" y="168" textAnchor="end" className="openui-axis-text">2.0k</text>
+
+                <line x1="60" y1="207" x2="850" y2="207" stroke="#f1f5f9" strokeWidth="1" />
+                <text x="52" y="211" textAnchor="end" className="openui-axis-text">1.0k</text>
+
+                <line x1="60" y1="230" x2="850" y2="230" stroke="#e2e8f0" strokeWidth="1.5" />
+                <text x="52" y="234" textAnchor="end" className="openui-axis-text">0</text>
+
+                {/* 11 Month Columns (Jan - Nov) with Dual Grouped Bars */}
+                {/* Jan */}
+                <rect x="80" y="145" width="16" height="85" rx="3" fill="#93c5fd" />
+                <rect x="99" y="125" width="16" height="105" rx="3" fill="#3b82f6" />
+                <text x="97" y="252" textAnchor="middle" className="openui-axis-month">Jan</text>
+
+                {/* Feb */}
+                <rect x="148" y="132" width="16" height="98" rx="3" fill="#93c5fd" />
+                <rect x="167" y="112" width="16" height="118" rx="3" fill="#3b82f6" />
+                <text x="165" y="252" textAnchor="middle" className="openui-axis-month">Feb</text>
+
+                {/* Mar */}
+                <rect x="216" y="120" width="16" height="110" rx="3" fill="#93c5fd" />
+                <rect x="235" y="98" width="16" height="132" rx="3" fill="#3b82f6" />
+                <text x="233" y="252" textAnchor="middle" className="openui-axis-month">Mar</text>
+
+                {/* Apr */}
+                <rect x="284" y="128" width="16" height="102" rx="3" fill="#93c5fd" />
+                <rect x="303" y="105" width="16" height="125" rx="3" fill="#3b82f6" />
+                <text x="301" y="252" textAnchor="middle" className="openui-axis-month">Apr</text>
+
+                {/* May */}
+                <rect x="352" y="118" width="16" height="112" rx="3" fill="#93c5fd" />
+                <rect x="371" y="94" width="16" height="136" rx="3" fill="#3b82f6" />
+                <text x="369" y="252" textAnchor="middle" className="openui-axis-month">May</text>
+
+                {/* Jun */}
+                <rect x="420" y="125" width="16" height="105" rx="3" fill="#93c5fd" />
+                <rect x="439" y="102" width="16" height="128" rx="3" fill="#3b82f6" />
+                <text x="437" y="252" textAnchor="middle" className="openui-axis-month">Jun</text>
+
+                {/* Jul */}
+                <rect x="488" y="114" width="16" height="116" rx="3" fill="#93c5fd" />
+                <rect x="507" y="90" width="16" height="140" rx="3" fill="#3b82f6" />
+                <text x="505" y="252" textAnchor="middle" className="openui-axis-month">Jul</text>
+
+                {/* Aug */}
+                <rect x="556" y="105" width="16" height="125" rx="3" fill="#93c5fd" />
+                <rect x="575" y="78" width="16" height="152" rx="3" fill="#3b82f6" />
+                <text x="573" y="252" textAnchor="middle" className="openui-axis-month">Aug</text>
+
+                {/* Sep */}
+                <rect x="624" y="95" width="16" height="135" rx="3" fill="#93c5fd" />
+                <rect x="643" y="65" width="16" height="165" rx="3" fill="#3b82f6" />
+                <text x="641" y="252" textAnchor="middle" className="openui-axis-month">Sep</text>
+
+                {/* Oct (Peak ₹4,820 Cr) */}
+                <rect x="692" y="82" width="16" height="148" rx="3" fill="#93c5fd" />
+                <rect x="711" y="46" width="16" height="184" rx="3" fill="#2563eb" />
+                <text x="709" y="252" textAnchor="middle" className="openui-axis-month font-semibold">Oct</text>
+
+                {/* Nov */}
+                <rect x="760" y="88" width="16" height="142" rx="3" fill="#93c5fd" />
+                <rect x="779" y="55" width="16" height="175" rx="3" fill="#3b82f6" />
+                <text x="777" y="252" textAnchor="middle" className="openui-axis-month">Nov</text>
+              </svg>
+            </div>
+          </div>
+
+          {/* Bottom 2-Column Grid */}
+          <div className="openui-bottom-grid">
+            {/* Left: Donut Chart */}
+            <div className="openui-chart-panel">
+              <div className="openui-panel-header">
+                <h4 className="openui-panel-title">Disbursement by City Tier & Category</h4>
+              </div>
+              <div className="openui-donut-wrap">
+                <svg viewBox="0 0 240 240" className="openui-donut-svg" aria-label="City Tier Disbursement Share Donut Chart">
+                  <circle cx="120" cy="120" r="82" fill="none" stroke="#f1f5f9" strokeWidth="26" />
+                  {/* Tier 1 (42%): 216 / 515 */}
+                  <circle
+                    cx="120"
+                    cy="120"
+                    r="82"
+                    fill="none"
+                    stroke="#2563eb"
+                    strokeWidth="26"
+                    strokeDasharray="216 515"
+                    strokeDashoffset="0"
+                    transform="rotate(-90 120 120)"
+                  />
+                  {/* Tier 2 (36%): 185 / 515 */}
+                  <circle
+                    cx="120"
+                    cy="120"
+                    r="82"
+                    fill="none"
+                    stroke="#6366f1"
+                    strokeWidth="26"
+                    strokeDasharray="185 515"
+                    strokeDashoffset="-216"
+                    transform="rotate(-90 120 120)"
+                  />
+                  {/* Tier 3 (22%): 114 / 515 */}
+                  <circle
+                    cx="120"
+                    cy="120"
+                    r="82"
+                    fill="none"
+                    stroke="#93c5fd"
+                    strokeWidth="26"
+                    strokeDasharray="114 515"
+                    strokeDashoffset="-401"
+                    transform="rotate(-90 120 120)"
+                  />
+                  <text x="120" y="115" textAnchor="middle" className="openui-donut-val-text">₹4,820M</text>
+                  <text x="120" y="137" textAnchor="middle" className="openui-donut-sub-text">Total disbursed</text>
+                </svg>
+              </div>
+              <div className="openui-donut-legend">
+                <span className="openui-legend-item">
+                  <span className="openui-legend-swatch" style={{ backgroundColor: "#2563eb" }} />
+                  <span>Tier-1 Metro 42%</span>
+                </span>
+                <span className="openui-legend-item">
+                  <span className="openui-legend-swatch" style={{ backgroundColor: "#6366f1" }} />
+                  <span>Tier-2 Urban 36%</span>
+                </span>
+                <span className="openui-legend-item">
+                  <span className="openui-legend-swatch" style={{ backgroundColor: "#93c5fd" }} />
+                  <span>Tier-3 Emerging 22%</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Right: Area / Line Trend Chart */}
+            <div className="openui-chart-panel">
+              <div className="openui-panel-header">
+                <h4 className="openui-panel-title">Cumulative portfolio growth over time</h4>
+                <span className="openui-pill-badge">3.4× since 2020</span>
+              </div>
+              <div className="openui-svg-container">
+                <svg viewBox="0 0 460 220" className="openui-area-svg" aria-label="Portfolio growth area chart">
+                  <defs>
+                    <linearGradient id="openuiAreaGradHomeLoan" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#2563eb" stopOpacity="0.28" />
+                      <stop offset="100%" stopColor="#2563eb" stopOpacity="0.02" />
+                    </linearGradient>
+                  </defs>
+                  {/* Gridlines & Y Axis */}
+                  <line x1="55" y1="35" x2="435" y2="35" stroke="#f1f5f9" strokeWidth="1" />
+                  <text x="47" y="39" textAnchor="end" className="openui-axis-text">20k</text>
+
+                  <line x1="55" y1="75" x2="435" y2="75" stroke="#f1f5f9" strokeWidth="1" />
+                  <text x="47" y="79" textAnchor="end" className="openui-axis-text">15k</text>
+
+                  <line x1="55" y1="115" x2="435" y2="115" stroke="#f1f5f9" strokeWidth="1" />
+                  <text x="47" y="119" textAnchor="end" className="openui-axis-text">10k</text>
+
+                  <line x1="55" y1="155" x2="435" y2="155" stroke="#f1f5f9" strokeWidth="1" />
+                  <text x="47" y="159" textAnchor="end" className="openui-axis-text">5k</text>
+
+                  <line x1="55" y1="180" x2="435" y2="180" stroke="#e2e8f0" strokeWidth="1.5" />
+                  <text x="47" y="184" textAnchor="end" className="openui-axis-text">0</text>
+
+                  {/* X Axis Years */}
+                  <text x="60" y="202" textAnchor="middle" className="openui-axis-text">2020</text>
+                  <text x="120" y="202" textAnchor="middle" className="openui-axis-text">2021</text>
+                  <text x="180" y="202" textAnchor="middle" className="openui-axis-text">2022</text>
+                  <text x="240" y="202" textAnchor="middle" className="openui-axis-text">2023</text>
+                  <text x="300" y="202" textAnchor="middle" className="openui-axis-text">2024</text>
+                  <text x="360" y="202" textAnchor="middle" className="openui-axis-text">2025</text>
+                  <text x="420" y="202" textAnchor="middle" className="openui-axis-text font-semibold">2026</text>
+
+                  {/* Area fill */}
+                  <path
+                    d="M 60 155 Q 120 148 180 136 T 300 95 T 360 62 T 420 34 L 420 180 L 60 180 Z"
+                    fill="url(#openuiAreaGradHomeLoan)"
+                  />
+                  {/* Top curve (Disbursed) */}
+                  <path
+                    d="M 60 155 Q 120 148 180 136 T 300 95 T 360 62 T 420 34"
+                    fill="none"
+                    stroke="#2563eb"
+                    strokeWidth="2.5"
+                  />
+                  {/* Endpoint dot */}
+                  <circle cx="420" cy="34" r="4.5" fill="#2563eb" stroke="#ffffff" strokeWidth="2" />
+                  {/* Lower curve (Sanctioned baseline) */}
+                  <path
+                    d="M 60 168 Q 120 162 180 154 T 300 130 T 360 112 T 420 102"
+                    fill="none"
+                    stroke="#93c5fd"
+                    strokeWidth="2"
+                    strokeDasharray="4 3"
+                  />
+                </svg>
+              </div>
+              <div className="openui-legend openui-legend-center">
+                <span className="openui-legend-item">
+                  <span className="openui-legend-swatch swatch-disbursed" />
+                  <span>Disbursed</span>
+                </span>
+                <span className="openui-legend-item">
+                  <span className="openui-legend-swatch swatch-sanctioned" />
+                  <span>Sanctioned</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Detailed Performance Table */}
+          <div className="agent-report-table-card openui-table-card">
+            <div className="openui-panel-header">
+              <h4 className="openui-panel-title">Regional Zonal Breakdown & Compliance Review</h4>
+            </div>
+
+            <div className="agent-table-wrapper">
+              <table className="agent-data-table">
+                <thead>
+                  <tr>
+                    <th>Zone / Operating Region</th>
+                    <th>Applications</th>
+                    <th>Sanctioned</th>
+                    <th>Disbursed Amount</th>
+                    <th>Avg Interest Rate</th>
+                    <th>Compliance Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="agent-table-cell-bold">North Zone (Delhi NCR, Punjab, Haryana)</td>
+                    <td>4,920</td>
+                    <td>4,610</td>
+                    <td>₹1,248.20 Cr</td>
+                    <td>8.45%</td>
+                    <td className="agent-status-tag verified">Verified</td>
+                  </tr>
+                  <tr>
+                    <td className="agent-table-cell-bold">West Zone (Mumbai, Pune, Ahmedabad)</td>
+                    <td>5,680</td>
+                    <td>5,340</td>
+                    <td>₹1,496.50 Cr</td>
+                    <td>8.40%</td>
+                    <td className="agent-status-tag verified">Verified</td>
+                  </tr>
+                  <tr>
+                    <td className="agent-table-cell-bold">South Zone (Bengaluru, Chennai, Hyderabad)</td>
+                    <td>4,810</td>
+                    <td>4,520</td>
+                    <td>₹1,214.80 Cr</td>
+                    <td>8.50%</td>
+                    <td className="agent-status-tag verified">Verified</td>
+                  </tr>
+                  <tr>
+                    <td className="agent-table-cell-bold">East & Central (Kolkata, Lucknow, Patna)</td>
+                    <td>4,210</td>
+                    <td>3,990</td>
+                    <td>₹861.00 Cr</td>
+                    <td>8.55%</td>
+                    <td className="agent-status-tag verified">Verified</td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td className="agent-table-cell-bold">Total Pan-India Summary</td>
+                    <td className="agent-table-cell-bold">19,620</td>
+                    <td className="agent-table-cell-bold">18,460</td>
+                    <td className="agent-table-cell-bold">₹4,820.50 Cr</td>
+                    <td className="agent-table-cell-bold">8.47%</td>
+                    <td className="agent-table-cell-bold agent-status-tag verified">100% Compliant</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+          {/* Regulatory Governance Box */}
+          <div className="agent-report-audit-card openui-audit-card">
+            <h4 className="openui-audit-heading">Regulatory Compliance & Scope Isolation</h4>
+            <div className="agent-audit-grid">
+              <div className="agent-audit-item">
+                <span className="agent-audit-label">Scope Isolation</span>
+                <p className="agent-audit-desc">
+                  Strict residential home loan portfolio verification enforced. Auto loans, commercial vehicle finance, and vacant land loans are 100% excluded from this reporting cycle.
+                </p>
+              </div>
+              <div className="agent-audit-item">
+                <span className="agent-audit-label">Risk & Benchmark Governance</span>
+                <p className="agent-audit-desc">
+                  Portfolio weighted average LTV is 68.4% against RBI benchmark limit of 75.00%. Floating interest rates are 100% pegged to the External Benchmark Lending Rate (EBLR).
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    // Otherwise Market Intelligence Report for Personal Care Brand
+    return (
+      <section className="agent-report-card openui-report-card" aria-label="Personal Care South Asia Market Entry Report">
+        {/* Header */}
+        <div className="openui-header">
+          <div className="openui-header-info">
+            <h3 className="openui-title">
+              Personal Care Brand: South Asia Tier-2 & Tier-3 Market Entry Report
+            </h3>
+            <p className="openui-subtitle">
+              Across all secondary urban retail corridors in 2026, 142,850 households surveyed with 98.6% channel velocity confidence.
+            </p>
+          </div>
+
+          <div className="openui-header-actions">
+            {hasMultipleGenerated && (
+              <div className="agent-report-tab-switch" role="tablist">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeReportAgentId === "agent-sbi-home-loan"}
+                  className={`agent-report-tab-btn ${activeReportAgentId === "agent-sbi-home-loan" ? "active" : ""}`}
+                  onClick={() => setActiveReportAgentId("agent-sbi-home-loan")}
+                >
+                  Home Loan Report
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeReportAgentId === "agent-sbi-kyc"}
+                  className={`agent-report-tab-btn ${activeReportAgentId === "agent-sbi-kyc" ? "active" : ""}`}
+                  onClick={() => setActiveReportAgentId("agent-sbi-kyc")}
+                >
+                  South Asia Market Report
+                </button>
+              </div>
+            )}
+            <button
+              type="button"
+              className="agent-report-download-btn"
+              onClick={() => setDownloadedReportId("kyc")}
+              title="Download market entry report in PDF"
+            >
+              <Download className="h-4 w-4" />
+              <span>{downloadedReportId === "kyc" ? "Downloaded" : "Download Report (PDF)"}</span>
+            </button>
+            <button
+              type="button"
+              className="agent-report-export-btn"
+              onClick={() => setDownloadedReportId("kyc-csv")}
+              title="Export secondary market entry dataset as CSV"
+            >
+              <FileSpreadsheet className="h-4 w-4" />
+              <span>Export CSV</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 3 Large Stat Metrics Row */}
+        <div className="openui-metrics-row">
+          <div className="openui-metric-box">
+            <div className="openui-metric-number">142,850</div>
+            <div className="openui-metric-subline">
+              <span className="openui-metric-name">Target consumer households</span>
+              <span className="openui-metric-delta positive">+8.6% MoM</span>
+            </div>
+          </div>
+
+          <div className="openui-metric-box">
+            <div className="openui-metric-number">98.6%</div>
+            <div className="openui-metric-subline">
+              <span className="openui-metric-name">Retail placement velocity</span>
+              <span className="openui-metric-delta positive">+2.4% vs Category</span>
+            </div>
+          </div>
+
+          <div className="openui-metric-box">
+            <div className="openui-metric-number">₹380 – ₹450</div>
+            <div className="openui-metric-subline">
+              <span className="openui-metric-name">Mass-premium sweet spot</span>
+              <span className="openui-metric-delta positive">&lt; ₹500 Threshold</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Dual-Bar Grouped Chart: Jan to Nov */}
+        <div className="openui-chart-panel">
+          <div className="openui-panel-header">
+            <h4 className="openui-panel-title">Monthly Trial Kit Distribution & Conversion Velocity</h4>
+            <div className="openui-legend">
+              <span className="openui-legend-item">
+                <span className="openui-legend-swatch swatch-sanctioned" />
+                <span>Distributed Samples</span>
+              </span>
+              <span className="openui-legend-item">
+                <span className="openui-legend-swatch swatch-disbursed" />
+                <span>Repeat Purchases</span>
+              </span>
+            </div>
+          </div>
+
+          <div className="openui-svg-container">
+            <svg viewBox="0 0 880 280" className="openui-bar-svg" aria-label="Monthly trial kit distribution and repeat purchases grouped bar chart">
+              {/* Horizontal Gridlines & Y-Axis Labels */}
+              <line x1="60" y1="35" x2="850" y2="35" stroke="#f1f5f9" strokeWidth="1" />
+              <text x="52" y="39" textAnchor="end" className="openui-axis-text">30k</text>
+
+              <line x1="60" y1="78" x2="850" y2="78" stroke="#f1f5f9" strokeWidth="1" />
+              <text x="52" y="82" textAnchor="end" className="openui-axis-text">25k</text>
+
+              <line x1="60" y1="121" x2="850" y2="121" stroke="#f1f5f9" strokeWidth="1" />
+              <text x="52" y="125" textAnchor="end" className="openui-axis-text">20k</text>
+
+              <line x1="60" y1="164" x2="850" y2="164" stroke="#f1f5f9" strokeWidth="1" />
+              <text x="52" y="168" textAnchor="end" className="openui-axis-text">15k</text>
+
+              <line x1="60" y1="207" x2="850" y2="207" stroke="#f1f5f9" strokeWidth="1" />
+              <text x="52" y="211" textAnchor="end" className="openui-axis-text">10k</text>
+
+              <line x1="60" y1="230" x2="850" y2="230" stroke="#e2e8f0" strokeWidth="1.5" />
+              <text x="52" y="234" textAnchor="end" className="openui-axis-text">0</text>
+
+              {/* 11 Month Columns (Jan - Nov) with Dual Grouped Bars */}
+              {/* Jan */}
+              <rect x="80" y="130" width="16" height="100" rx="3" fill="#93c5fd" />
+              <rect x="99" y="138" width="16" height="92" rx="3" fill="#3b82f6" />
+              <text x="97" y="252" textAnchor="middle" className="openui-axis-month">Jan</text>
+
+              {/* Feb */}
+              <rect x="148" y="124" width="16" height="106" rx="3" fill="#93c5fd" />
+              <rect x="167" y="130" width="16" height="100" rx="3" fill="#3b82f6" />
+              <text x="165" y="252" textAnchor="middle" className="openui-axis-month">Feb</text>
+
+              {/* Mar */}
+              <rect x="216" y="115" width="16" height="115" rx="3" fill="#93c5fd" />
+              <rect x="235" y="120" width="16" height="110" rx="3" fill="#3b82f6" />
+              <text x="233" y="252" textAnchor="middle" className="openui-axis-month">Mar</text>
+
+              {/* Apr */}
+              <rect x="284" y="118" width="16" height="112" rx="3" fill="#93c5fd" />
+              <rect x="303" y="122" width="16" height="108" rx="3" fill="#3b82f6" />
+              <text x="301" y="252" textAnchor="middle" className="openui-axis-month">Apr</text>
+
+              {/* May */}
+              <rect x="352" y="105" width="16" height="125" rx="3" fill="#93c5fd" />
+              <rect x="371" y="110" width="16" height="120" rx="3" fill="#3b82f6" />
+              <text x="369" y="252" textAnchor="middle" className="openui-axis-month">May</text>
+
+              {/* Jun */}
+              <rect x="420" y="112" width="16" height="118" rx="3" fill="#93c5fd" />
+              <rect x="439" y="116" width="16" height="114" rx="3" fill="#3b82f6" />
+              <text x="437" y="252" textAnchor="middle" className="openui-axis-month">Jun</text>
+
+              {/* Jul */}
+              <rect x="488" y="98" width="16" height="132" rx="3" fill="#93c5fd" />
+              <rect x="507" y="102" width="16" height="128" rx="3" fill="#3b82f6" />
+              <text x="505" y="252" textAnchor="middle" className="openui-axis-month">Jul</text>
+
+              {/* Aug */}
+              <rect x="556" y="90" width="16" height="140" rx="3" fill="#93c5fd" />
+              <rect x="575" y="94" width="16" height="136" rx="3" fill="#3b82f6" />
+              <text x="573" y="252" textAnchor="middle" className="openui-axis-month">Aug</text>
+
+              {/* Sep */}
+              <rect x="624" y="80" width="16" height="150" rx="3" fill="#93c5fd" />
+              <rect x="643" y="84" width="16" height="146" rx="3" fill="#3b82f6" />
+              <text x="641" y="252" textAnchor="middle" className="openui-axis-month">Sep</text>
+
+              {/* Oct (Peak) */}
+              <rect x="692" y="68" width="16" height="162" rx="3" fill="#93c5fd" />
+              <rect x="711" y="72" width="16" height="158" rx="3" fill="#2563eb" />
+              <text x="709" y="252" textAnchor="middle" className="openui-axis-month font-semibold">Oct</text>
+
+              {/* Nov */}
+              <rect x="760" y="74" width="16" height="156" rx="3" fill="#93c5fd" />
+              <rect x="779" y="78" width="16" height="152" rx="3" fill="#3b82f6" />
+              <text x="777" y="252" textAnchor="middle" className="openui-axis-month">Nov</text>
+            </svg>
+          </div>
+        </div>
+
+        {/* Bottom 2-Column Grid */}
+        <div className="openui-bottom-grid">
+          {/* Left: Donut Chart */}
+          <div className="openui-chart-panel">
+            <div className="openui-panel-header">
+              <h4 className="openui-panel-title">Consumer Cohort & Market Segmentation Breakdown</h4>
+            </div>
+            <div className="openui-donut-wrap">
+              <svg viewBox="0 0 240 240" className="openui-donut-svg" aria-label="Consumer Cohort Segmentation Donut Chart">
+                <circle cx="120" cy="120" r="82" fill="none" stroke="#f1f5f9" strokeWidth="26" />
+                {/* Aspirational Mass-Premium (58%): 299 / 515 */}
+                <circle
+                  cx="120"
+                  cy="120"
+                  r="82"
+                  fill="none"
+                  stroke="#2563eb"
+                  strokeWidth="26"
+                  strokeDasharray="299 515"
+                  strokeDashoffset="0"
+                  transform="rotate(-90 120 120)"
+                />
+                {/* Young Urban Skincare Adopters (28%): 144 / 515 */}
+                <circle
+                  cx="120"
+                  cy="120"
+                  r="82"
+                  fill="none"
+                  stroke="#6366f1"
+                  strokeWidth="26"
+                  strokeDasharray="144 515"
+                  strokeDashoffset="-299"
+                  transform="rotate(-90 120 120)"
+                />
+                {/* Value-Conscious Households (9%): 46 / 515 */}
+                <circle
+                  cx="120"
+                  cy="120"
+                  r="82"
+                  fill="none"
+                  stroke="#93c5fd"
+                  strokeWidth="26"
+                  strokeDasharray="46 515"
+                  strokeDashoffset="-443"
+                  transform="rotate(-90 120 120)"
+                />
+                {/* Tier-3 Trial Adopters (5%): 26 / 515 */}
+                <circle
+                  cx="120"
+                  cy="120"
+                  r="82"
+                  fill="none"
+                  stroke="#cbd5e1"
+                  strokeWidth="26"
+                  strokeDasharray="26 515"
+                  strokeDashoffset="-489"
+                  transform="rotate(-90 120 120)"
+                />
+                <text x="120" y="115" textAnchor="middle" className="openui-donut-val-text">142.8k</text>
+                <text x="120" y="137" textAnchor="middle" className="openui-donut-sub-text">Total surveyed</text>
+              </svg>
+            </div>
+            <div className="openui-donut-legend">
+              <span className="openui-legend-item">
+                <span className="openui-legend-swatch" style={{ backgroundColor: "#2563eb" }} />
+                <span>Mass-Premium 58%</span>
+              </span>
+              <span className="openui-legend-item">
+                <span className="openui-legend-swatch" style={{ backgroundColor: "#6366f1" }} />
+                <span>Young Urban 28%</span>
+              </span>
+              <span className="openui-legend-item">
+                <span className="openui-legend-swatch" style={{ backgroundColor: "#93c5fd" }} />
+                <span>Value-Conscious 9%</span>
+              </span>
+              <span className="openui-legend-item">
+                <span className="openui-legend-swatch" style={{ backgroundColor: "#cbd5e1" }} />
+                <span>Tier-3 Adopters 5%</span>
+              </span>
+            </div>
+          </div>
+
+          {/* Right: Area / Line Trend Chart */}
+          <div className="openui-chart-panel">
+            <div className="openui-panel-header">
+              <h4 className="openui-panel-title">Regional sales velocity & market penetration over time</h4>
+              <span className="openui-pill-badge">4.2× since 2021</span>
+            </div>
+            <div className="openui-svg-container">
+              <svg viewBox="0 0 460 220" className="openui-area-svg" aria-label="Secondary market sales velocity area chart">
+                <defs>
+                  <linearGradient id="openuiAreaGradKYC" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#2563eb" stopOpacity="0.28" />
+                    <stop offset="100%" stopColor="#2563eb" stopOpacity="0.02" />
+                  </linearGradient>
+                </defs>
+                {/* Gridlines & Y Axis */}
+                <line x1="55" y1="35" x2="435" y2="35" stroke="#f1f5f9" strokeWidth="1" />
+                <text x="47" y="39" textAnchor="end" className="openui-axis-text">150k</text>
+
+                <line x1="55" y1="75" x2="435" y2="75" stroke="#f1f5f9" strokeWidth="1" />
+                <text x="47" y="79" textAnchor="end" className="openui-axis-text">100k</text>
+
+                <line x1="55" y1="115" x2="435" y2="115" stroke="#f1f5f9" strokeWidth="1" />
+                <text x="47" y="119" textAnchor="end" className="openui-axis-text">75k</text>
+
+                <line x1="55" y1="155" x2="435" y2="155" stroke="#f1f5f9" strokeWidth="1" />
+                <text x="47" y="159" textAnchor="end" className="openui-axis-text">25k</text>
+
+                <line x1="55" y1="180" x2="435" y2="180" stroke="#e2e8f0" strokeWidth="1.5" />
+                <text x="47" y="184" textAnchor="end" className="openui-axis-text">0</text>
+
+                {/* X Axis Years */}
+                <text x="60" y="202" textAnchor="middle" className="openui-axis-text">2021</text>
+                <text x="132" y="202" textAnchor="middle" className="openui-axis-text">2022</text>
+                <text x="204" y="202" textAnchor="middle" className="openui-axis-text">2023</text>
+                <text x="276" y="202" textAnchor="middle" className="openui-axis-text">2024</text>
+                <text x="348" y="202" textAnchor="middle" className="openui-axis-text">2025</text>
+                <text x="420" y="202" textAnchor="middle" className="openui-axis-text font-semibold">2026</text>
+
+                {/* Area fill */}
+                <path
+                  d="M 60 162 Q 132 154 204 140 T 348 76 T 420 38 L 420 180 L 60 180 Z"
+                  fill="url(#openuiAreaGradKYC)"
+                />
+                {/* Top curve (Repeat Purchases) */}
+                <path
+                  d="M 60 162 Q 132 154 204 140 T 348 76 T 420 38"
+                  fill="none"
+                  stroke="#2563eb"
+                  strokeWidth="2.5"
+                />
+                {/* Endpoint dot */}
+                <circle cx="420" cy="38" r="4.5" fill="#2563eb" stroke="#ffffff" strokeWidth="2" />
+                {/* Baseline curve (Initial Sampling Inflow) */}
+                <path
+                  d="M 60 160 Q 132 150 204 135 T 348 72 T 420 34"
+                  fill="none"
+                  stroke="#93c5fd"
+                  strokeWidth="2"
+                  strokeDasharray="4 3"
+                />
+              </svg>
+            </div>
+            <div className="openui-legend openui-legend-center">
+              <span className="openui-legend-item">
+                <span className="openui-legend-swatch swatch-disbursed" />
+                <span>Repeat Retail Purchases</span>
+              </span>
+              <span className="openui-legend-item">
+                <span className="openui-legend-swatch swatch-sanctioned" />
+                <span>Initial Sampling Inflow</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Detailed Channel Velocity Table */}
+        <div className="agent-report-table-card openui-table-card">
+          <div className="openui-panel-header">
+            <h4 className="openui-panel-title">Channel Distribution Velocity & Retail Network Breakdown</h4>
+          </div>
+
+          <div className="agent-table-wrapper">
+            <table className="agent-data-table">
+              <thead>
+                <tr>
+                  <th>Distribution Channel</th>
+                  <th>Network Infrastructure</th>
+                  <th>Target Cohort Focus</th>
+                  <th>Velocity Confidence</th>
+                  <th>Strategic Viability</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="agent-table-cell-bold">Traditional Kirana & General Trade</td>
+                  <td>Secondary City FMCG Wholesale Distributors</td>
+                  <td>Value-Conscious Households (Sachet/Travel)</td>
+                  <td>99.8%</td>
+                  <td className="agent-status-tag verified">Priority Expansion</td>
+                </tr>
+                <tr>
+                  <td className="agent-table-cell-bold">Quick Commerce & Modern Trade</td>
+                  <td>Blinkit / Zepto / Regional Fulfillment Hubs</td>
+                  <td>Young Urban Skincare Adopters</td>
+                  <td>99.9%</td>
+                  <td className="agent-status-tag verified">High Velocity</td>
+                </tr>
+                <tr>
+                  <td className="agent-table-cell-bold">Pharmacy & Dermatologist Corridors</td>
+                  <td>Apollo / MedPlus Regional Outlets</td>
+                  <td>Aspirational Mass-Premium Buyers</td>
+                  <td>99.6%</td>
+                  <td className="agent-status-tag verified">High Margin Anchor</td>
+                </tr>
+                <tr>
+                  <td className="agent-table-cell-bold">Omnichannel Trial Kits & D2C</td>
+                  <td>Direct Logistics & Regional Pop-Up Sampling</td>
+                  <td>Digital-First Skincare Switchers</td>
+                  <td>99.4%</td>
+                  <td className="agent-status-tag verified">Validated Driver</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td className="agent-table-cell-bold">Total Market Synthesis</td>
+                  <td className="agent-table-cell-bold">4 Strategic Retail Channels</td>
+                  <td className="agent-table-cell-bold">Pan-South Asia Secondary Urban Network</td>
+                  <td className="agent-table-cell-bold">99.8% Overall</td>
+                  <td className="agent-table-cell-bold agent-status-tag verified">100% Market Alignment</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        {/* Regulatory Governance Box */}
+        <div className="agent-report-audit-card openui-audit-card">
+          <h4 className="openui-audit-heading">Regional Market Entry & Product Formulation Governance</h4>
+          <div className="agent-audit-grid">
+            <div className="agent-audit-item">
+              <span className="agent-audit-label">Climate-Adaptive Skincare & Regional Formulation Fit</span>
+              <p className="agent-audit-desc">
+                Formulations engineered specifically for South Asian seasonal heat, monsoon humidity, and UV exposure. Prioritizes lightweight gel-creams and skin barrier ceramides over heavy occlusives to match regional cleansing rituals.
+              </p>
+            </div>
+            <div className="agent-audit-item">
+              <span className="agent-audit-label">Retail Price Elasticity & Pack Sizing Governance</span>
+              <p className="agent-audit-desc">
+                Dual-tier pack architecture implemented: entry-level 30ml trial formats at ₹199–₹249 and 100ml core SKUs at ₹399–₹449. Mitigates trial friction while protecting distributor margins across Tier-2 and Tier-3 Kirana corridors.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
   };
 
   const currentChatKey = selectedChatKey === "new-chat" ? `new-chat-${project.id}` : selectedChatKey;
@@ -1098,10 +1911,10 @@ function ProjectWorkspace({
           !text.toLowerCase().includes("define the idea") &&
           !text.toLowerCase().includes("attach a plan") &&
           !text.toLowerCase().includes("diwali") &&
-          !text.includes("Expand into a new customer segment") &&
+          !text.includes("Expand into") &&
           !text.includes("Launch a new AI product") &&
-          !text.includes("Automate internal operations") &&
-          !text.includes("Accelerate enterprise sales"));
+          !text.includes("Automate") &&
+          !text.includes("Accelerate enterprise"));
 
       if (isReportQuery) {
         const flowId = `ai-flow-${Date.now()}`;
@@ -1126,16 +1939,32 @@ function ProjectWorkspace({
       }
 
       let reply = `Understood. For "${project.title}", I have initialized the core context. I found market intelligence reports from 2025–2026 covering regional retail, price elasticity, active ingredients, and channel distribution. Together they detail how consumer price sensitivity, local retailer margins, and climate-adaptive formulations connect to drive sustainable regional market penetration:`;
-      if (text.includes("Expand into a new customer segment or region")) {
+      if (
+        text.includes("Expand into a new customer segment or region") ||
+        text.includes("Expand into a new target market") ||
+        text.includes("Expand into")
+      ) {
         reply = `I found market intelligence reports from 2025–2026 covering tier-2 & tier-3 city retail, price elasticity, active ingredients, and channel distribution. The most relevant are “Growth Opportunities in Personal Care for Tier-2 and Tier-3 Cities, South Asia” and “Price-Point & Pack-Size Strategy for Mass-Premium Skincare”. Together they discuss how these themes connect, from consumer price sensitivity and local retailer margins to climate-adaptive formulations for regional market penetration.`;
-      } else if (text.includes("Launch a new AI product or service")) {
-        reply = `Understood! For launching a new AI product or service under "${project.title}", I found market intelligence reports evaluating product readiness, architecture, and commercialization models. Together they outline technical feasibility and deployment roadmaps:`;
-      } else if (text.includes("Automate internal operations & reduce costs")) {
-        reply = `Understood! For automating operations & reducing costs under "${project.title}", I found market intelligence reports analyzing operational workflows, process automation, and unit economics:`;
-      } else if (text.includes("Accelerate enterprise sales & revenue growth")) {
-        reply = `Understood! To accelerate sales & revenue growth for "${project.title}", I found market intelligence reports assessing enterprise sales cycles, pricing architecture, and customer lifetime value:`;
+      } else if (
+        text.includes("Launch a new AI product or service") ||
+        text.includes("Launch a new AI product or platform") ||
+        text.includes("Launch a new AI product")
+      ) {
+        reply = `Understood! For launching a new AI product or platform under "${project.title}", I found market intelligence reports evaluating product readiness, architecture, and commercialization models. Together they outline technical feasibility and deployment roadmaps:`;
+      } else if (
+        text.includes("Automate internal operations & reduce costs") ||
+        text.includes("Automate key operational processes") ||
+        text.includes("Automate")
+      ) {
+        reply = `Understood! For automating key operational processes under "${project.title}", I found market intelligence reports analyzing operational workflows, process automation, and unit economics:`;
+      } else if (
+        text.includes("Accelerate enterprise sales & revenue growth") ||
+        text.includes("Accelerate enterprise revenue growth") ||
+        text.includes("Accelerate enterprise")
+      ) {
+        reply = `Understood! To accelerate enterprise revenue growth for "${project.title}", I found market intelligence reports assessing enterprise sales cycles, pricing architecture, and customer lifetime value:`;
       } else if (text.toLowerCase().includes("define the idea")) {
-        reply = `Let's define the scope for "${project.title}":\n1. Target Market & Audience: Which region or customer segment drives maximum initial impact?\n2. Value Proposition: What key advantage differentiates this solution?\n3. Success Criteria: What primary metric determines a successful deployment?`;
+        reply = `Let's define the core objective of this project to start building the business case.\n\nWhat primary outcome do you want to achieve with this project?\n\nAccelerate enterprise revenue growth\n\nAutomate key operational processes\n\nLaunch a new AI product or platform\n\nExpand into a new target market\n\nOr in your own words\nType your answer and press Enter`;
       } else if (text.toLowerCase().includes("attach a plan")) {
         reply = `I'm ready to review your plan for "${project.title}". You can upload documents, presentations, or data tables, and I'll extract key milestones, budget assumptions, and required agent capabilities.`;
       } else if (text.toLowerCase().includes("diwali")) {
@@ -1586,81 +2415,116 @@ function ProjectWorkspace({
                     className={`workspace-message ${m.sender === "user" ? "user-message" : "ai-message"}`}
                   >
                     {isOutcomeMessage ? (
-                      <div className="ai-intake-and-outcome-container">
-                        {/* Project brief message section above the box */}
-                        <div className="ai-intake-card">
-                          <h4 className="ai-intake-title">
-                            Project brief confirmed, Arun
-                          </h4>
-                          <p className="ai-intake-text">
-                            We've received your project brief for "{project.title}". Autonomous collaborative agents are ready to coordinate market dynamics, unit economics, and execution milestones. To configure the optimal agent workflow, let's establish your direction:
-                          </p>
-                        </div>
+                      (() => {
+                        const isDefineObjective =
+                          m.text.includes("core objective") ||
+                          m.text.includes("start building the business case") ||
+                          m.text.includes("Accelerate enterprise revenue growth");
 
-                        {/* Outcome Choice Box */}
-                        <div className="ai-stroke-box">
-                          <div className="ai-outcome-container">
-                            <h3 className="ai-outcome-question">
-                              What primary outcome do you want to achieve with this project?
-                            </h3>
+                        const outcomeOptions = isDefineObjective
+                          ? [
+                              "Accelerate enterprise revenue growth",
+                              "Automate key operational processes",
+                              "Launch a new AI product or platform",
+                              "Expand into a new target market",
+                            ]
+                          : [
+                              "Launch a new AI product or service",
+                              "Automate internal operations & reduce costs",
+                              "Expand into a new customer segment or region",
+                              "Accelerate enterprise sales & revenue growth",
+                            ];
 
-                            <div className="ai-outcome-options-grid">
-                              {[
-                                "Launch a new AI product or service",
-                                "Automate internal operations & reduce costs",
-                                "Expand into a new customer segment or region",
-                                "Accelerate enterprise sales & revenue growth",
-                              ].map((opt) => (
-                                <button
-                                  key={opt}
-                                  type="button"
-                                  onClick={() => handleSend(opt)}
-                                  className="ai-outcome-option-btn"
+                        return (
+                          <div className="ai-intake-and-outcome-container">
+                            {/* Project brief message section above the box */}
+                            <div className="ai-intake-card">
+                              {isDefineObjective ? (
+                                <p
+                                  className="ai-intake-text"
+                                  style={{
+                                    fontSize: "15px",
+                                    fontWeight: 500,
+                                    color: "var(--aircond-ink, #111c1d)",
+                                    margin: 0,
+                                    lineHeight: 1.6,
+                                  }}
                                 >
-                                  <span className="ai-outcome-option-text">{opt}</span>
-                                  <ArrowUpRight className="ai-outcome-option-arrow" />
-                                </button>
-                              ))}
+                                  Let's define the core objective of this project to start building the business case.
+                                </p>
+                              ) : (
+                                <>
+                                  <h4 className="ai-intake-title">
+                                    Project brief confirmed, Arun
+                                  </h4>
+                                  <p className="ai-intake-text">
+                                    We've received your project brief for "{project.title}". Autonomous collaborative agents are ready to coordinate market dynamics, unit economics, and execution milestones. To configure the optimal agent workflow, let's establish your direction:
+                                  </p>
+                                </>
+                              )}
                             </div>
 
-                            <div className="ai-outcome-divider-row">
-                              <div className="ai-outcome-divider-line" />
-                              <span className="ai-outcome-footer-label">Or in your own words</span>
-                              <div className="ai-outcome-divider-line" />
-                            </div>
+                            {/* Outcome Choice Box */}
+                            <div className="ai-stroke-box">
+                              <div className="ai-outcome-container">
+                                <h3 className="ai-outcome-question">
+                                  What primary outcome do you want to achieve with this project?
+                                </h3>
 
-                            <form
-                              onSubmit={(e) => {
-                                e.preventDefault();
-                                if (customOutcome.trim()) {
-                                  handleSend(customOutcome.trim());
-                                  setCustomOutcome("");
-                                }
-                              }}
-                              className="ai-outcome-input-form"
-                            >
-                              <input
-                                type="text"
-                                value={customOutcome}
-                                onChange={(e) => setCustomOutcome(e.target.value)}
-                                placeholder="Type your answer and press Enter"
-                                className="ai-outcome-input-field"
-                                aria-label="Type your answer and press Enter"
-                              />
-                              <span className="sr-only">Type your answer and press Enter</span>
-                              <button
-                                type="submit"
-                                disabled={!customOutcome.trim()}
-                                className="ai-outcome-submit-btn"
-                                aria-label="Submit answer"
-                                title="Send"
-                              >
-                                <ArrowUp className="h-4 w-4" />
-                              </button>
-                            </form>
+                                <div className="ai-outcome-options-grid">
+                                  {outcomeOptions.map((opt) => (
+                                    <button
+                                      key={opt}
+                                      type="button"
+                                      onClick={() => handleSend(opt)}
+                                      className="ai-outcome-option-btn"
+                                    >
+                                      <span className="ai-outcome-option-text">{opt}</span>
+                                      <ArrowUpRight className="ai-outcome-option-arrow" />
+                                    </button>
+                                  ))}
+                                </div>
+
+                                <div className="ai-outcome-divider-row">
+                                  <div className="ai-outcome-divider-line" />
+                                  <span className="ai-outcome-footer-label">Or in your own words</span>
+                                  <div className="ai-outcome-divider-line" />
+                                </div>
+
+                                <form
+                                  onSubmit={(e) => {
+                                    e.preventDefault();
+                                    if (customOutcome.trim()) {
+                                      handleSend(customOutcome.trim());
+                                      setCustomOutcome("");
+                                    }
+                                  }}
+                                  className="ai-outcome-input-form"
+                                >
+                                  <input
+                                    type="text"
+                                    value={customOutcome}
+                                    onChange={(e) => setCustomOutcome(e.target.value)}
+                                    placeholder="Type your answer and press Enter"
+                                    className="ai-outcome-input-field"
+                                    aria-label="Type your answer and press Enter"
+                                  />
+                                  <span className="sr-only">Type your answer and press Enter</span>
+                                  <button
+                                    type="submit"
+                                    disabled={!customOutcome.trim()}
+                                    className="ai-outcome-submit-btn"
+                                    aria-label="Submit answer"
+                                    title="Send"
+                                  >
+                                    <ArrowUp className="h-4 w-4" />
+                                  </button>
+                                </form>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
+                        );
+                      })()
                     ) : isReportFlowMsg ? (
                       <div className="report-flow-container">
                         {/* Unified Card Box wrapping intro prompt and the 2 agents */}
@@ -2086,7 +2950,7 @@ function ProjectWorkspace({
 
                                     <button
                                       type="button"
-                                      className="project-action-btn project-action-btn--run"
+                                      className={`project-action-btn project-action-btn--run ${isGenerated ? "project-action-btn--completed" : ""}`}
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleGenerateWithAgent(agent);
@@ -2094,20 +2958,17 @@ function ProjectWorkspace({
                                       disabled={isGenerating}
                                       aria-label={
                                         isGenerated
-                                          ? `Report generated with ${agent.title}`
+                                          ? `Report completed with ${agent.title}`
                                           : isGenerating
                                             ? `Generating report with ${agent.title}...`
                                             : `Run agent with ${agent.title}`
                                       }
-                                      title={isGenerated ? "Agent running" : "Run agent"}
+                                      title={isGenerated ? "Agent completed" : "Run agent"}
                                     >
                                       {isGenerating ? (
                                         <span>Running...</span>
                                       ) : isGenerated ? (
-                                        <>
-                                          <Check className="h-3.5 w-3.5 mr-1 text-emerald-400" />
-                                          <span>Running ✓</span>
-                                        </>
+                                        <span>Completed</span>
                                       ) : (
                                         <>
                                           <span>Run agent</span>
@@ -2121,6 +2982,13 @@ function ProjectWorkspace({
                             })}
                           </div>
                         </div>
+
+                        {/* Below Recommended Agents: Generated Report Section */}
+                        {activeReportAgentId && (
+                          <div className="ai-agent-report-container" id="agent-report-section">
+                            {renderAgentReport(activeReportAgentId)}
+                          </div>
+                        )}
                       </div>
                     ) : isStrokeBox ? (
                       <div className="ai-stroke-box">
