@@ -9,19 +9,18 @@ import {
   AudioLines,
   BookOpen,
   Brain,
+  Calendar,
   Check,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
   Clock,
   Clock3,
-  Copy,
   Folder,
   Library,
   Menu,
   Mic,
   Moon,
-  MoreHorizontal,
   PanelLeft,
   Paperclip,
   Pencil,
@@ -29,17 +28,13 @@ import {
   Plus,
   Search,
   Settings,
-  Share2,
   ShieldCheck,
   Sparkles,
   SquarePen,
   Sun,
-  ThumbsDown,
-  ThumbsUp,
   Trash2,
   UploadCloud,
   Users,
-  Volume2,
   X,
 } from "lucide-react";
 
@@ -95,6 +90,364 @@ interface MessageItem {
   id: string;
   sender: "user" | "assistant";
   text: string;
+}
+
+export interface ReportFlowState {
+  activeAgentId: string | null;
+  agent1Fields: {
+    period: string;
+    geography: string;
+    metric: string;
+  };
+  agent2Fields: {
+    cohort: string;
+    baseline: string;
+    channel: string;
+    customNotes?: string;
+  };
+  isAgent2Active: boolean;
+  isReportGenerated: boolean;
+}
+
+export const defaultReportFlowState: ReportFlowState = {
+  activeAgentId: null,
+  agent1Fields: {
+    period: "June 2026",
+    geography: "Tier-2 Priority Growth Cities",
+    metric: "Retail Price Elasticity & Pack Sizing",
+  },
+  agent2Fields: {
+    cohort: "Aspirational Mass-Premium Buyers",
+    baseline: "Domestic Legacy Skincare Brands",
+    channel: "Modern Trade & Quick Commerce",
+    customNotes: "",
+  },
+  isAgent2Active: false,
+  isReportGenerated: false,
+};
+
+export const REPORT_MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+export function ReportCalendarDropdown({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const parsedYear = useMemo(() => {
+    const match = value.match(/\b(20\d\d)\b/);
+    return match ? parseInt(match[1], 10) : 2026;
+  }, [value]);
+
+  const parsedMonth = useMemo(() => {
+    const idx = REPORT_MONTHS.findIndex((m) =>
+      value.toLowerCase().includes(m.toLowerCase().slice(0, 3))
+    );
+    return idx >= 0 ? idx : 5; // Default June
+  }, [value]);
+
+  const [selectedYear, setSelectedYear] = useState(parsedYear);
+  const [selectedMonth, setSelectedMonth] = useState(parsedMonth);
+
+  useEffect(() => {
+    setSelectedYear(parsedYear);
+    setSelectedMonth(parsedMonth);
+  }, [parsedYear, parsedMonth]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handlePointerDown = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, [isOpen]);
+
+  const handleSelectMonth = (mIdx: number) => {
+    setSelectedMonth(mIdx);
+    const updated = `${REPORT_MONTHS[mIdx]} ${selectedYear}`;
+    onChange(updated);
+  };
+
+  const handleSelectYear = (yr: number) => {
+    setSelectedYear(yr);
+    const updated = `${REPORT_MONTHS[selectedMonth]} ${yr}`;
+    onChange(updated);
+  };
+
+  const daysInMonth = useMemo(() => {
+    return new Date(selectedYear, selectedMonth + 1, 0).getDate();
+  }, [selectedYear, selectedMonth]);
+
+  const firstDayOfWeek = useMemo(() => {
+    return new Date(selectedYear, selectedMonth, 1).getDay();
+  }, [selectedYear, selectedMonth]);
+
+  const availableYears = [2024, 2025, 2026, 2027, 2028, 2030];
+
+  return (
+    <div className="report-flow-calendar-container" ref={containerRef}>
+      <button
+        type="button"
+        className={`report-flow-calendar-trigger ${isOpen ? "report-flow-calendar-trigger--open" : ""}`}
+        onClick={() => setIsOpen((prev) => !prev)}
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
+        aria-label="Select reporting month and year"
+      >
+        <Calendar className="report-flow-cal-icon" />
+        <span className="report-flow-cal-trigger-text">
+          {REPORT_MONTHS[selectedMonth]} {selectedYear}
+        </span>
+        <ChevronDown className={`report-flow-cal-chevron ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+
+      {isOpen && (
+        <div className="report-flow-calendar-dropdown" role="dialog" aria-label="Month and Year Calendar Selector">
+          {/* Header with year selection & chevrons */}
+          <div className="report-cal-header">
+            <div className="report-cal-nav-row">
+              <button
+                type="button"
+                className="report-cal-nav-btn"
+                onClick={() => handleSelectYear(selectedYear - 1)}
+                aria-label="Previous Year"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <div className="report-cal-year-display">
+                <span className="report-cal-year-label">{selectedYear}</span>
+              </div>
+              <button
+                type="button"
+                className="report-cal-nav-btn"
+                onClick={() => handleSelectYear(selectedYear + 1)}
+                aria-label="Next Year"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Quick Year selector pills */}
+            <div className="report-cal-years-pills">
+              {availableYears.map((yr) => (
+                <button
+                  key={yr}
+                  type="button"
+                  className={`report-cal-year-pill ${yr === selectedYear ? "report-cal-year-pill--active" : ""}`}
+                  onClick={() => handleSelectYear(yr)}
+                >
+                  {yr}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Month selector grid */}
+          <div className="report-cal-months-section">
+            <span className="report-cal-section-subtitle">Select Month</span>
+            <div className="report-cal-months-grid">
+              {REPORT_MONTHS.map((mName, idx) => {
+                const isSelected = idx === selectedMonth;
+                return (
+                  <button
+                    key={mName}
+                    type="button"
+                    className={`report-cal-month-btn ${isSelected ? "report-cal-month-btn--active" : ""}`}
+                    onClick={() => handleSelectMonth(idx)}
+                    aria-label={`${mName} ${selectedYear}`}
+                  >
+                    {mName.slice(0, 3)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Calendar days view preview */}
+          <div className="report-cal-days-section">
+            <div className="report-cal-days-header">
+              <span>{REPORT_MONTHS[selectedMonth]} {selectedYear} Calendar</span>
+            </div>
+            <div className="report-cal-weekdays-row">
+              {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
+                <span key={day} className="report-cal-weekday-label">
+                  {day}
+                </span>
+              ))}
+            </div>
+            <div className="report-cal-days-grid">
+              {Array.from({ length: firstDayOfWeek }).map((_, i) => (
+                <span key={`empty-${i}`} className="report-cal-day-empty" />
+              ))}
+              {Array.from({ length: daysInMonth }).map((_, i) => {
+                const dayNum = i + 1;
+                return (
+                  <button
+                    key={`day-${dayNum}`}
+                    type="button"
+                    className="report-cal-day-cell"
+                    onClick={() => {
+                      const updated = `${REPORT_MONTHS[selectedMonth]} ${selectedYear}`;
+                      onChange(updated);
+                      setIsOpen(false);
+                    }}
+                  >
+                    {dayNum}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Dropdown footer with presets & Done */}
+          <div className="report-cal-footer">
+            <div className="report-cal-presets">
+              {[
+                "June 2026",
+                "December 2025",
+                "April 2026",
+              ].map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  className="report-cal-preset-btn"
+                  onClick={() => {
+                    onChange(preset);
+                    setIsOpen(false);
+                  }}
+                >
+                  {preset}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              className="report-cal-done-btn"
+              onClick={() => setIsOpen(false)}
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export const CHANNEL_OPTIONS = [
+  {
+    label: "Modern Trade & Quick Commerce",
+    description: "Blinkit, Zepto, Instamart & Nykaa quick fulfillment for high inventory turnover",
+  },
+  {
+    label: "Traditional Kirana & Wholesale Networks",
+    description: "Deep tier-2/3 physical presence with 18–21% trade distributor margins",
+  },
+  {
+    label: "Omnichannel Trial Kit Sampling",
+    description: "Low-cost discovery sachets (₹49–₹99) driving trial without margin drag",
+  },
+  {
+    label: "Regional Pharmacy & Health Counters",
+    description: "Dermatologist-recommended wellness positioning in regional retail chains",
+  },
+  {
+    label: "Direct-to-Consumer (D2C) Digital Corridors",
+    description: "Targeted regional social commerce & localized language storefronts",
+  },
+];
+
+export function ReportSelectDropdown({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: { label: string; description?: string }[];
+  onChange: (val: string) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
+
+  const selectedOption = options.find((o) => o.label === value) || options[0];
+
+  return (
+    <div className="report-flow-select-container" ref={containerRef}>
+      <button
+        type="button"
+        className={`report-flow-select-trigger ${isOpen ? "report-flow-select-trigger--open" : ""}`}
+        onClick={() => setIsOpen((prev) => !prev)}
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        aria-label={`Select ${label}`}
+      >
+        <span className="report-flow-select-trigger-text">{selectedOption ? selectedOption.label : value}</span>
+        <ChevronDown className={`report-flow-select-chevron ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+
+      {isOpen && (
+        <div className="report-flow-select-dropdown" role="listbox" aria-label={label}>
+          {options.map((opt) => {
+            const isSelected = opt.label === value;
+            return (
+              <button
+                key={opt.label}
+                type="button"
+                role="option"
+                aria-selected={isSelected}
+                className={`report-flow-select-option ${isSelected ? "report-flow-select-option--active" : ""}`}
+                onClick={() => {
+                  onChange(opt.label);
+                  setIsOpen(false);
+                }}
+              >
+                <div className="report-flow-select-option-content">
+                  <span className="report-flow-select-option-title">{opt.label}</span>
+                  {opt.description && (
+                    <span className="report-flow-select-option-desc">{opt.description}</span>
+                  )}
+                </div>
+                {isSelected && <Check className="h-4 w-4 ml-2 flex-shrink-0 text-emerald-600" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function AdobeAcrobatPdfIcon({ className = "kyc-doc-acrobat-icon" }: { className?: string }) {
@@ -392,7 +745,7 @@ const initialProjectConversations: Record<string, MessageItem[]> = {
     {
       id: "msg-pc-2",
       sender: "assistant",
-      text: `Great initiative, Arun! We've received your project brief for Personal care brand enters South Asia’s smaller cities.
+      text: `Project brief confirmed, Arun! We've received your project brief for Personal care brand enters South Asia’s smaller cities.
 
 What primary outcome do you want to achieve with this project?
 
@@ -513,12 +866,11 @@ function ProjectWorkspace({
   const [isKnowledgeOpen, setIsKnowledgeOpen] = useState(false);
   const [isAgentsDrawerOpen, setIsAgentsDrawerOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
-  const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
   const [obtainedPacks, setObtainedPacks] = useState<Record<string, boolean>>({});
   const [obtainedReports, setObtainedReports] = useState<Record<string, boolean>>({});
   const [generatingAgentId, setGeneratingAgentId] = useState<string | null>(null);
   const [generatedAgents, setGeneratedAgents] = useState<Record<string, boolean>>({});
+  const [reportFlows, setReportFlows] = useState<Record<string, ReportFlowState>>({});
   const dockFileInputRef = useRef<HTMLInputElement>(null);
 
   const projectRelatedAgents = useMemo(() => getProjectRelatedAgents(project), [project]);
@@ -544,6 +896,69 @@ function ProjectWorkspace({
     }));
   };
 
+  const handleSelectFlowAgent = (msgId: string, agentId: string) => {
+    setReportFlows((prev) => {
+      const current = prev[msgId] || { ...defaultReportFlowState };
+      return {
+        ...prev,
+        [msgId]: {
+          ...current,
+          activeAgentId: agentId,
+          isAgent2Active: true,
+        },
+      };
+    });
+  };
+
+  const handleRunBothAgents = (msgId: string) => {
+    setReportFlows((prev) => {
+      const current = prev[msgId] || { ...defaultReportFlowState };
+      const suggested = projectRelatedAgents.slice(0, 2);
+      return {
+        ...prev,
+        [msgId]: {
+          ...current,
+          activeAgentId: suggested[0]?.id || "agent-1",
+          isAgent2Active: true,
+        },
+      };
+    });
+  };
+
+  const handleUpdateFlowField = (
+    msgId: string,
+    section: "agent1Fields" | "agent2Fields",
+    field: string,
+    value: string
+  ) => {
+    setReportFlows((prev) => {
+      const current = prev[msgId] || { ...defaultReportFlowState };
+      return {
+        ...prev,
+        [msgId]: {
+          ...current,
+          [section]: {
+            ...current[section],
+            [field]: value,
+          },
+        },
+      };
+    });
+  };
+
+  const handleGenerateReport = (msgId: string) => {
+    setReportFlows((prev) => {
+      const current = prev[msgId] || { ...defaultReportFlowState };
+      return {
+        ...prev,
+        [msgId]: {
+          ...current,
+          isReportGenerated: true,
+        },
+      };
+    });
+  };
+
   const handleGenerateWithAgent = (agent: AgentItem) => {
     setGeneratingAgentId(agent.id);
 
@@ -563,6 +978,7 @@ function ProjectWorkspace({
         setSelectedChat(cleanTitle);
       }
 
+      const flowId = `ai-flow-${Date.now()}`;
       const userMsg: MessageItem = {
         id: `user-gen-${Date.now()}`,
         sender: "user",
@@ -570,44 +986,29 @@ function ProjectWorkspace({
       };
 
       const aiMsg: MessageItem = {
-        id: `ai-gen-${Date.now()}`,
+        id: flowId,
         sender: "assistant",
-        text: `Report generated successfully by **${agent.title}**.\n\n• **Agent Objective**: ${agent.description}\n• **Knowledge Integration**: Synthesized data from 6 validated research reports and regional market entry parameters.\n• **Deliverable**: Executive strategic report compiled with priority tier-2 city matrices, pricing guardrails, and distribution velocity targets.\n\nReady for export or dispatch to autonomous execution agents.`,
+        text: `To complete this report for **${project.title}**, I've assembled two specialized agents to synthesize the market intelligence. Select an agent to begin configuration:`,
       };
+
+      setReportFlows((prev) => ({
+        ...prev,
+        [flowId]: {
+          ...defaultReportFlowState,
+          activeAgentId: agent.id,
+          isAgent2Active: true,
+        },
+      }));
 
       setConversations((prev) => ({
         ...prev,
         [currentChatKey]: [...(prev[currentChatKey] || []), userMsg, aiMsg],
       }));
-    }, 700);
+    }, 400);
   };
 
   const currentChatKey = selectedChatKey === "new-chat" ? `new-chat-${project.id}` : selectedChatKey;
   const messages = conversations[currentChatKey] || [];
-
-  const handleCopyMessage = (id: string, text: string) => {
-    if (typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(text);
-      setCopiedMessageId(id);
-      setTimeout(() => setCopiedMessageId(null), 1500);
-    }
-  };
-
-  const handleSpeakMessage = (id: string, text: string) => {
-    if (typeof window !== "undefined" && "speechSynthesis" in window) {
-      if (speakingMessageId === id) {
-        window.speechSynthesis.cancel();
-        setSpeakingMessageId(null);
-      } else {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.onend = () => setSpeakingMessageId(null);
-        utterance.onerror = () => setSpeakingMessageId(null);
-        setSpeakingMessageId(id);
-        window.speechSynthesis.speak(utterance);
-      }
-    }
-  };
 
   const handleDockFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -691,6 +1092,39 @@ function ProjectWorkspace({
     setInputValue("");
 
     setTimeout(() => {
+      const isReportQuery =
+        text.toLowerCase().includes("report") ||
+        (selectedChat === "New chat" &&
+          !text.toLowerCase().includes("define the idea") &&
+          !text.toLowerCase().includes("attach a plan") &&
+          !text.toLowerCase().includes("diwali") &&
+          !text.includes("Expand into a new customer segment") &&
+          !text.includes("Launch a new AI product") &&
+          !text.includes("Automate internal operations") &&
+          !text.includes("Accelerate enterprise sales"));
+
+      if (isReportQuery) {
+        const flowId = `ai-flow-${Date.now()}`;
+        const aiMessage: MessageItem = {
+          id: flowId,
+          sender: "assistant",
+          text: `To complete this report for **${project.title}**, I've assembled two specialized agents to synthesize the market intelligence. Select an agent to begin configuration:`,
+        };
+
+        setReportFlows((prev) => ({
+          ...prev,
+          [flowId]: {
+            ...defaultReportFlowState,
+          },
+        }));
+
+        setConversations((prev) => ({
+          ...prev,
+          [currentChatKey]: [...(prev[currentChatKey] || []), aiMessage],
+        }));
+        return;
+      }
+
       let reply = `Understood. For "${project.title}", I have initialized the core context. I found market intelligence reports from 2025–2026 covering regional retail, price elasticity, active ingredients, and channel distribution. Together they detail how consumer price sensitivity, local retailer margins, and climate-adaptive formulations connect to drive sustainable regional market penetration:`;
       if (text.includes("Expand into a new customer segment or region")) {
         reply = `I found market intelligence reports from 2025–2026 covering tier-2 & tier-3 city retail, price elasticity, active ingredients, and channel distribution. The most relevant are “Growth Opportunities in Personal Care for Tier-2 and Tier-3 Cities, South Asia” and “Price-Point & Pack-Size Strategy for Mass-Premium Skincare”. Together they discuss how these themes connect, from consumer price sensitivity and local retailer margins to climate-adaptive formulations for regional market penetration.`;
@@ -1040,7 +1474,7 @@ function ProjectWorkspace({
       </aside>
 
       {/* Main Workspace Area (Image 1 & Image 2) */}
-      <div className="workspace-main">
+      <div className={`workspace-main ${isKnowledgeOpen ? "workspace-main--knowledge-open" : ""}`}>
         {/* Topbar */}
         <header className="chatgpt-topbar">
           <div className="chatgpt-topbar-left">
@@ -1057,7 +1491,6 @@ function ProjectWorkspace({
                 type="button"
                 onClick={() => {
                   setIsKnowledgeOpen(true);
-                  setIsAgentsDrawerOpen(false);
                 }}
                 className="chatgpt-what-i-know-btn"
                 title="What I know so far"
@@ -1123,7 +1556,14 @@ function ProjectWorkspace({
                   m.sender === "assistant" &&
                   m.text.includes("What primary outcome do you want to achieve");
 
+                const isReportFlowMsg =
+                  m.sender === "assistant" &&
+                  (m.id.startsWith("ai-flow-") ||
+                    m.text.includes("assembled two specialized agents") ||
+                    m.text.includes("Select an agent to begin configuration"));
+
                 const isKnowledgePackMsg =
+                  !isReportFlowMsg &&
                   m.sender === "assistant" &&
                   (m.text.includes("Knowledge Packs") ||
                     m.text.includes("Knowledge Pack") ||
@@ -1150,7 +1590,7 @@ function ProjectWorkspace({
                         {/* Project brief message section above the box */}
                         <div className="ai-intake-card">
                           <h4 className="ai-intake-title">
-                            Great initiative, Arun!
+                            Project brief confirmed, Arun
                           </h4>
                           <p className="ai-intake-text">
                             We've received your project brief for "{project.title}". Autonomous collaborative agents are ready to coordinate market dynamics, unit economics, and execution milestones. To configure the optimal agent workflow, let's establish your direction:
@@ -1221,6 +1661,250 @@ function ProjectWorkspace({
                           </div>
                         </div>
                       </div>
+                    ) : isReportFlowMsg ? (
+                      <div className="report-flow-container">
+                        {/* Unified Card Box wrapping intro prompt and the 2 agents */}
+                        <div className="report-flow-box">
+                          <p className="report-flow-box-prompt">
+                            To complete this report for <strong>{project.title}</strong>, I've assembled two specialized agents to synthesize the market intelligence. Select an agent to begin configuration:
+                          </p>
+
+                          <h3 className="report-flow-box-heading">Suggested Agents</h3>
+
+                          <div className="report-flow-box-agents-grid">
+                            {projectRelatedAgents.slice(0, 2).map((agent) => {
+                              const currentFlow = reportFlows[m.id] || { ...defaultReportFlowState };
+                              const isRunning = Boolean(currentFlow.activeAgentId);
+
+                              return (
+                                <div
+                                  key={agent.id}
+                                  className={`report-flow-box-agent-item report-flow-agent-card ${isRunning ? "report-flow-box-agent-item--active report-flow-agent-card--active" : ""}`}
+                                  onClick={() => handleRunBothAgents(m.id)}
+                                >
+                                  <div className="report-flow-box-agent-top">
+                                    <h4 className="report-flow-box-agent-title">
+                                      {agent.title}
+                                    </h4>
+                                  </div>
+
+                                  <p className="report-flow-box-agent-desc">{agent.description}</p>
+
+                                  <div className="report-flow-box-agent-footer">
+                                    <span className="report-flow-box-agent-time">
+                                      <Clock className="h-3.5 w-3.5 text-zinc-400" />
+                                      <span>{agent.lastUsed || "Active now"}</span>
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* Single Run agents button for both, right side bottom */}
+                          <div className="report-flow-box-footer">
+                            <button
+                              type="button"
+                              className="report-flow-run-agents-btn"
+                              onClick={() => handleRunBothAgents(m.id)}
+                            >
+                              <span>Run agents</span>
+                              <ArrowRight className="h-4 w-4 ml-1.5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Configuration section when an agent is active */}
+                        {(() => {
+                          const currentFlow = reportFlows[m.id];
+                          if (!currentFlow || !currentFlow.activeAgentId) return null;
+
+                          const suggested = projectRelatedAgents.slice(0, 2);
+                          const leadAgent = suggested.find((a) => a.id === currentFlow.activeAgentId) || suggested[0];
+                          const secondAgent = suggested.find((a) => a.id !== leadAgent.id) || suggested[1];
+
+                          // When report is not yet generated, show field questions & continue button
+                          if (!currentFlow.isReportGenerated) {
+                            return (
+                              <div className="report-flow-configuration-container">
+                                {/* Agent 1 Fields */}
+                                <div className="report-flow-agent-section">
+                                  <div className="report-flow-section-header">
+                                    <h4 className="report-flow-section-title">{leadAgent.title}</h4>
+                                    <span className="report-flow-section-subtitle">Reporting parameters</span>
+                                  </div>
+
+                                  {/* Field 1: Period with Calendar Dropdown */}
+                                  <div className="report-flow-field-group">
+                                    <label className="report-flow-field-label">Reporting Period</label>
+                                    <ReportCalendarDropdown
+                                      value={currentFlow.agent1Fields.period}
+                                      onChange={(val) => handleUpdateFlowField(m.id, "agent1Fields", "period", val)}
+                                    />
+                                  </div>
+
+                                  {/* Field 2: Geography */}
+                                  <div className="report-flow-field-group">
+                                    <label className="report-flow-field-label">Geographic Tier Focus</label>
+                                    <div className="report-flow-pills-row" role="radiogroup" aria-label="Geographic Tier Focus">
+                                      {[
+                                        "Tier-2 Priority Growth Cities",
+                                        "Tier-3 Regional Urban Clusters",
+                                        "Comprehensive Secondary Network",
+                                      ].map((opt) => (
+                                        <button
+                                          key={opt}
+                                          type="button"
+                                          className={`report-flow-pill ${currentFlow.agent1Fields.geography === opt ? "report-flow-pill--active" : ""}`}
+                                          onClick={() => handleUpdateFlowField(m.id, "agent1Fields", "geography", opt)}
+                                        >
+                                          {opt}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Agent 2 Fields */}
+                                <div className="report-flow-agent-section">
+                                  <div className="report-flow-section-header">
+                                    <h4 className="report-flow-section-title">{secondAgent.title}</h4>
+                                    <span className="report-flow-section-subtitle">Collaborative segmentation inputs</span>
+                                  </div>
+
+                                  {/* Field 3: Target Consumer Cohort */}
+                                  <div className="report-flow-field-group">
+                                    <label className="report-flow-field-label">Target Consumer Cohort</label>
+                                    <div className="report-flow-pills-row" role="radiogroup" aria-label="Target Consumer Cohort">
+                                      {[
+                                        "Aspirational Mass-Premium Buyers",
+                                        "Value-Conscious Middle-Class Households",
+                                        "Young Urban Skincare Adopters",
+                                      ].map((opt) => (
+                                        <button
+                                          key={opt}
+                                          type="button"
+                                          className={`report-flow-pill ${currentFlow.agent2Fields.cohort === opt ? "report-flow-pill--active" : ""}`}
+                                          onClick={() => handleUpdateFlowField(m.id, "agent2Fields", "cohort", opt)}
+                                        >
+                                          {opt}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+
+                                  {/* Field 4: Channel Distribution Velocity (Dropdown using app theme) */}
+                                  <div className="report-flow-field-group">
+                                    <label className="report-flow-field-label">Channel Distribution Velocity</label>
+                                    <ReportSelectDropdown
+                                      label="Channel Distribution Velocity"
+                                      value={currentFlow.agent2Fields.channel}
+                                      options={CHANNEL_OPTIONS}
+                                      onChange={(val) => handleUpdateFlowField(m.id, "agent2Fields", "channel", val)}
+                                    />
+                                  </div>
+
+                                  {/* Field 5: Custom Strategic Focus & Priority Notes (Write field) */}
+                                  <div className="report-flow-field-group">
+                                    <label className="report-flow-field-label">
+                                      Custom Strategic Focus & Priority Cities
+                                    </label>
+                                    <div className="report-flow-write-wrap">
+                                      <input
+                                        type="text"
+                                        className="report-flow-write-input"
+                                        placeholder="Write custom strategic focus, target cities, or pack-size targets (e.g. Jaipur & Indore ₹199 trial packs)..."
+                                        value={currentFlow.agent2Fields.customNotes || ""}
+                                        onChange={(e) => handleUpdateFlowField(m.id, "agent2Fields", "customNotes", e.target.value)}
+                                        aria-label="Write custom strategic focus and priority cities"
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Continue Button */}
+                                <div className="report-flow-footer-row">
+                                  <button
+                                    type="button"
+                                    className="report-flow-continue-btn"
+                                    onClick={() => handleGenerateReport(m.id)}
+                                  >
+                                    <span>Continue to Generate Report</span>
+                                    <ArrowRight className="h-4 w-4 ml-2" />
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          // Generated Executive Report
+                          return (
+                            <div className="report-flow-generated-card">
+                              <div className="report-generated-header">
+                                <div className="report-generated-title-wrap">
+                                  <h4 className="report-generated-title">Executive Strategic Report: South Asia Secondary Cities Penetration</h4>
+                                  <p className="report-generated-meta">
+                                    Synthesized by {leadAgent.title} & {secondAgent.title}
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  className="packages-download-all-btn"
+                                  title="Download full executive report"
+                                >
+                                  Download report (PDF)
+                                </button>
+                              </div>
+
+                              <div className="report-generated-params-row">
+                                <span className="report-param-pill">{currentFlow.agent1Fields.period}</span>
+                                <span className="report-param-pill">{currentFlow.agent1Fields.geography}</span>
+                                <span className="report-param-pill">{currentFlow.agent2Fields.cohort}</span>
+                                <span className="report-param-pill">{currentFlow.agent2Fields.channel}</span>
+                                {currentFlow.agent2Fields.customNotes && (
+                                  <span className="report-param-pill">Focus: {currentFlow.agent2Fields.customNotes}</span>
+                                )}
+                              </div>
+
+                              <div className="report-generated-body">
+                                <div className="report-section-block">
+                                  <h5 className="report-section-heading">Executive Summary</h5>
+                                  <p className="report-section-paragraph">
+                                    Based on cross-analysis across {currentFlow.agent1Fields.geography.toLowerCase()} for the {currentFlow.agent1Fields.period.toLowerCase()} timeline, aspirational personal care adoption is outperforming metropolitan benchmarks by 2.4×. Targeted entry requires tailored pack sizes and localized channel margins to win market share for {currentFlow.agent2Fields.cohort.toLowerCase()}.
+                                    {currentFlow.agent2Fields.customNotes && (
+                                      <> Custom priority applied: <strong>{currentFlow.agent2Fields.customNotes}</strong>.</>
+                                    )}
+                                  </p>
+                                </div>
+
+                                <div className="report-section-block">
+                                  <h5 className="report-section-heading">Key Analytical Findings</h5>
+                                  <ul className="report-findings-list">
+                                    <li>
+                                      <strong>Price-Point & Pack Strategy:</strong> Optimal conversion occurs at the ₹199–₹249 price band using 15ml–30ml discovery formats, enabling trial without margin compression.
+                                    </li>
+                                    <li>
+                                      <strong>Channel Velocity & Margins:</strong> {currentFlow.agent2Fields.channel} yields 3.8× inventory turnover velocity. Kirana distributor economics require an 18–21% wholesale trade discount structure.
+                                    </li>
+                                    <li>
+                                      <strong>Formulation Dynamics:</strong> Climate-adaptive, lightweight gel formulations engineered for high humidity clusters increase 60-day repeat purchase velocity by 38%.
+                                    </li>
+                                  </ul>
+                                </div>
+
+                                <div className="report-section-block">
+                                  <h5 className="report-section-heading">Strategic Next Steps</h5>
+                                  <p className="report-section-paragraph">
+                                    1. Initiate 60-day regional distributor onboarding across the priority city corridor.<br />
+                                    2. Deploy localized discovery trial kits through quick commerce and targeted modern trade shelves.<br />
+                                    3. Scale regional brand advocacy campaigns aligned with seasonal skincare rituals.
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
                     ) : isKnowledgePackMsg ? (
                       <div className="ai-knowledge-flow-container">
                         {/* Matching Knowledge Packages */}
@@ -1237,22 +1921,6 @@ function ProjectWorkspace({
                                   <div className="ai-pack-card-header">
                                     <div className="ai-pack-card-top-row">
                                       <h4 className="ai-pack-title">{pack.title}</h4>
-                                      <button
-                                        type="button"
-                                        onClick={() => handleTogglePack(pack.id)}
-                                        className={`ai-pack-get-btn ${isAdded ? "ai-pack-get-btn--added" : ""}`}
-                                        aria-label={isAdded ? `${pack.title} added` : `Get ${pack.title}`}
-                                        title={isAdded ? "Pack added to project context" : "Add knowledge pack to project context"}
-                                      >
-                                        {isAdded ? (
-                                          <>
-                                            <Check className="h-3.5 w-3.5 mr-1 text-emerald-600" />
-                                            <span>ADDED ✓</span>
-                                          </>
-                                        ) : (
-                                          <span>GET</span>
-                                        )}
-                                      </button>
                                     </div>
 
                                     <p className="ai-pack-subtitle" title={pack.subtitle}>
@@ -1277,6 +1945,18 @@ function ProjectWorkspace({
                                       </div>
                                     ))}
                                   </div>
+
+                                  <div className="ai-pack-footer">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleTogglePack(pack.id)}
+                                      className="packages-download-all-btn"
+                                      title={`Download all reports in ${pack.title}`}
+                                      aria-label={`Download all reports in ${pack.title}`}
+                                    >
+                                      Download all
+                                    </button>
+                                  </div>
                                 </div>
                               );
                             })}
@@ -1285,7 +1965,10 @@ function ProjectWorkspace({
                           {/* Summary Box: How this knowledge supports your project */}
                           <div className="ai-relevance-box ai-relevance-summary-wrapper">
                             <h4 className="ai-relevance-title">How this knowledge supports your project</h4>
-                            <div className="ai-relevance-text workspace-message-body whitespace-pre-line leading-relaxed text-zinc-500">
+                            <div
+                              className="ai-relevance-text whitespace-pre-line leading-relaxed"
+                              style={{ color: "#64748b" }}
+                            >
                               {m.text}
                             </div>
                           </div>
@@ -1441,80 +2124,23 @@ function ProjectWorkspace({
                       </div>
                     ) : isStrokeBox ? (
                       <div className="ai-stroke-box">
-                        <div className="workspace-message-body whitespace-pre-line">{m.text}</div>
+                        <div
+                          className="workspace-message-body whitespace-pre-line"
+                          style={m.text.includes("I found market intelligence reports from 2025") ? { color: "#64748b" } : undefined}
+                        >
+                          {m.text}
+                        </div>
                       </div>
                     ) : (
-                      <div className="workspace-message-body whitespace-pre-line">{m.text}</div>
+                      <div
+                        className="workspace-message-body whitespace-pre-line"
+                        style={m.text.includes("I found market intelligence reports from 2025") ? { color: "#64748b" } : undefined}
+                      >
+                        {m.text}
+                      </div>
                     )}
 
-                    {m.sender === "assistant" && (
-                      <div className="ai-message-actions">
-                      <button
-                        type="button"
-                        onClick={() => handleCopyMessage(m.id, m.text)}
-                        className="ai-action-btn"
-                        title={copiedMessageId === m.id ? "Copied!" : "Copy"}
-                        aria-label="Copy"
-                      >
-                        {copiedMessageId === m.id ? (
-                          <Check className="h-4 w-4 text-emerald-600" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                      </button>
 
-                      <button
-                        type="button"
-                        className="ai-action-btn"
-                        title="Good response"
-                        aria-label="Good response"
-                      >
-                        <ThumbsUp className="h-4 w-4" />
-                      </button>
-
-                      <button
-                        type="button"
-                        className="ai-action-btn"
-                        title="Bad response"
-                        aria-label="Bad response"
-                      >
-                        <ThumbsDown className="h-4 w-4" />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleSpeakMessage(m.id, m.text)}
-                        className={`ai-action-btn ${speakingMessageId === m.id ? "active" : ""}`}
-                        title={speakingMessageId === m.id ? "Stop reading" : "Read aloud"}
-                        aria-label="Read aloud"
-                      >
-                        <Volume2 className="h-4 w-4" />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (typeof navigator !== "undefined" && navigator.share) {
-                            navigator.share({ text: m.text }).catch(() => {});
-                          }
-                        }}
-                        className="ai-action-btn"
-                        title="Share"
-                        aria-label="Share"
-                      >
-                        <Share2 className="h-4 w-4" />
-                      </button>
-
-                      <button
-                        type="button"
-                        className="ai-action-btn"
-                        title="More options"
-                        aria-label="More options"
-                      >
-                        <MoreHorizontal className="h-4 w-4" />
-                      </button>
-                    </div>
-                  )}
                 </div>
               );
             })}
@@ -1601,7 +2227,6 @@ function ProjectWorkspace({
                       }}
                     >
                       <div className="agent-drawer-card-top">
-                        <span className="agent-drawer-card-badge agent-drawer-card-badge--other">Workspace</span>
                         <h4 className="agent-drawer-card-title">{agent.title}</h4>
                         <p className="agent-drawer-card-desc">{agent.description}</p>
                       </div>
@@ -2723,15 +3348,15 @@ const defaultProjectPackages: ProjectPackageGroup[] = [
         dateAcquired: "June 2026",
         files: [
           {
-            title: "Growth Opportunities in Personal Care for Tier-2 and Tier-3 Cities, South Asia, 2025–2030",
+            title: "Growth Opportunities in Personal Care for Tier-2 & Tier-3 Cities",
             date: "June 2026",
           },
           {
-            title: "Price-Point & Pack-Size Strategy for Mass-Premium Skincare in Emerging South Asian Markets",
+            title: "Price-Point & Pack-Size Strategy for Mass Skincare",
             date: "December 2025",
           },
           {
-            title: "Distribution Channel Optimisation: Modern Trade, Quick Commerce and Kirana Networks",
+            title: "Distribution Channel Optimisation: Modern Trade & Kirana",
             date: "December 2026",
           },
         ],
@@ -2744,15 +3369,15 @@ const defaultProjectPackages: ProjectPackageGroup[] = [
         dateAcquired: "April 2026",
         files: [
           {
-            title: "Top 10 Strategic Imperatives in Personal Care Ingredients, 2026",
+            title: "Top 10 Strategic Imperatives in Personal Care Ingredients",
             date: "April 2026",
           },
           {
-            title: "Personal Care Active Ingredients Market, South Asia Outlook, 2024–2031",
+            title: "Personal Care Active Ingredients, South Asia Outlook",
             date: "March 2026",
           },
           {
-            title: "Climate-Adaptive Formulations for High-Humidity Regional Urban Clusters",
+            title: "Climate-Adaptive Formulations for Regional Urban Clusters",
             date: "February 2026",
           },
         ],
@@ -2773,11 +3398,11 @@ const defaultProjectPackages: ProjectPackageGroup[] = [
         dateAcquired: "May 2026",
         files: [
           {
-            title: "Consumer Purchasing Habits & Demographic Priorities Across 24 Priority Urban Hubs",
+            title: "Consumer Purchasing Habits Across 24 Urban Hubs",
             date: "May 2026",
           },
           {
-            title: "Price Elasticity Analysis & Trial Kit Economics in Emerging South Asian Retail",
+            title: "Price Elasticity Analysis & Trial Kit Economics",
             date: "March 2026",
           },
         ],
@@ -2798,11 +3423,11 @@ const defaultProjectPackages: ProjectPackageGroup[] = [
         dateAcquired: "April 2026",
         files: [
           {
-            title: "Wholesale Trade Margin Benchmark and Distributor Economics for Secondary Cities",
+            title: "Wholesale Trade Margin Benchmark for Secondary Cities",
             date: "April 2026",
           },
           {
-            title: "Competitive Share & Channel Pricing Matrices for Emerging Hubs",
+            title: "Competitive Share & Channel Pricing Matrices",
             date: "January 2026",
           },
         ],
@@ -2921,16 +3546,11 @@ function PackagesPage({ projects, onBack, onSelectProject }: PackagesPageProps) 
 
       {/* Project-Wise Packages Sections Below */}
       <section className="packages-projects-flow">
-        <div className="packages-section-heading-wrap">
-          <h3 className="packages-flow-title">Project Knowledge Packages</h3>
-        </div>
-
         <div className="packages-projects-list">
           {defaultProjectPackages.map((group) => (
             <div key={group.projectId} className="packages-project-group-card">
               <div className="packages-project-group-header">
                 <div className="packages-project-title-row">
-                  <Folder className="h-4 w-4 text-zinc-500 shrink-0" />
                   <h4 className="packages-project-title">{group.projectTitle}</h4>
                 </div>
               </div>

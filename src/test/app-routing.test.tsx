@@ -419,7 +419,7 @@ describe("App routing", () => {
     expect(screen.getByText("CEO Workspace")).toBeDefined();
   });
 
-  it("renders messages matching the conversation screenshot with user bubble and AI action bar", async () => {
+  it("renders messages matching the conversation screenshot with user bubble and verifies AI action bar is removed", async () => {
     const Component = Route.options.component;
     if (!Component) throw new Error("Component is not defined on Route");
 
@@ -443,11 +443,11 @@ describe("App routing", () => {
       await new Promise((resolve) => setTimeout(resolve, 600));
     });
 
-    // Verify AI response action bar icons are present
-    expect(screen.getAllByRole("button", { name: "Copy" }).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole("button", { name: "Good response" }).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole("button", { name: "Bad response" }).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole("button", { name: "Read aloud" }).length).toBeGreaterThan(0);
+    // Verify AI response action bar icons are removed everywhere
+    expect(screen.queryByRole("button", { name: "Copy" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Good response" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Bad response" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Read aloud" })).toBeNull();
   });
 
   it("triggers actions when clicking Help me define the idea", async () => {
@@ -812,7 +812,6 @@ describe("App routing", () => {
     // Verify Matching Knowledge Packages section is rendered without count subtitle
     expect(screen.getByText("Matching Knowledge Packages")).toBeDefined();
     expect(screen.queryByText(/packs recommended for this project/i)).toBeNull();
-    expect(screen.queryByLabelText(/Download /i)).toBeNull();
 
     // Verify Pack 1 heading, subtitle, and tag
     expect(screen.getByText("South Asia Tier-2 & Tier-3 City Market Penetration")).toBeDefined();
@@ -846,15 +845,11 @@ describe("App routing", () => {
     ).toBeGreaterThan(0);
     expect(screen.getByText(/- December 2026/i)).toBeDefined();
 
-    // Verify GET button interactivity
-    const getButtons = screen.getAllByRole("button", { name: /^Get /i });
-    expect(getButtons.length).toBeGreaterThan(0);
-    const firstGetBtn = getButtons[0];
-    expect(firstGetBtn.textContent).toContain("GET");
-
-    // Click GET button to toggle to ADDED ✓
-    fireEvent.click(firstGetBtn);
-    expect(screen.getAllByText("ADDED ✓").length).toBeGreaterThan(0);
+    // Verify pack cards do NOT have GET button at the top, and instead have Download all button at the bottom
+    expect(document.querySelector(".ai-pack-card-top-row .ai-pack-get-btn")).toBeNull();
+    const downloadAllBtns = screen.getAllByRole("button", { name: /Download all reports in /i });
+    expect(downloadAllBtns.length).toBe(2);
+    expect(downloadAllBtns[0].textContent).toContain("Download all");
 
     // Verify "Understood! Expanding..." line is removed
     expect(
@@ -921,17 +916,18 @@ describe("App routing", () => {
 
     // Verify single heading "Agents" and 3 project agents listdown
     expect(screen.getByRole("heading", { level: 2, name: "Agents" })).toBeDefined();
-    expect(screen.getByText("Emerging Markets Specialist Agent")).toBeDefined();
-    expect(screen.getByText("Customer Dynamics & Segmentation Agent")).toBeDefined();
+    expect(screen.getAllByText("Emerging Markets Specialist Agent").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Customer Dynamics & Segmentation Agent").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Geographic Expansion Strategy Agent")).toBeDefined();
 
     const projectAgentCards = document.querySelectorAll(".agent-drawer-card--project");
     expect(projectAgentCards.length).toBe(3);
 
-    // Verify Section 2: Other Agents (below)
+    // Verify Section 2: Other Agents (below) without full capitals tags
     expect(screen.getByText("Other Agents")).toBeDefined();
     expect(screen.queryByText("6 Available")).toBeNull();
     expect(screen.queryByText(/Workspace agents for regulatory compliance/i)).toBeNull();
+    expect(document.querySelector(".agent-drawer-card-badge")).toBeNull();
     const otherAgentCards = document.querySelectorAll(".agent-drawer-card--other");
     expect(otherAgentCards.length).toBe(6);
     expect(screen.getByText("SBI Customer KYC & Document Verification Agent")).toBeDefined();
@@ -943,6 +939,127 @@ describe("App routing", () => {
 
     // Verify Project Agents badge is removed from header
     expect(screen.queryByRole("button", { name: "Project Agents" })).toBeNull();
+  });
+
+  it("slides What I know so far panel above agents panel without closing agents panel, and closing What I know leaves agents panel open", () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    // Open Agents drawer by clicking New chat
+    const newChatBtn = screen.getByRole("button", { name: /new chat/i });
+    fireEvent.click(newChatBtn);
+
+    expect(document.querySelector(".workspace-agents-drawer")).not.toBeNull();
+
+    // Click What I know button
+    const whatIKnowBtn = screen.getByRole("button", { name: "What I know" });
+    fireEvent.click(whatIKnowBtn);
+
+    // Both drawers are present in the DOM (What I know layered above Agents)
+    expect(document.querySelector(".workspace-knowledge-drawer")).not.toBeNull();
+    expect(document.querySelector(".workspace-agents-drawer")).not.toBeNull();
+
+    // Close What I know panel
+    const closeBtn = screen.getByRole("button", { name: "Close panel" });
+    fireEvent.click(closeBtn);
+
+    // Only What I know panel closes; Agents drawer remains open!
+    expect(document.querySelector(".workspace-knowledge-drawer")).toBeNull();
+    expect(document.querySelector(".workspace-agents-drawer")).not.toBeNull();
+  });
+
+  it("suggests two agents on report task in new chat, collects field questions, activates second agent collaboratively, and generates full executive report on continue", async () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    // Open a New chat
+    const newChatBtn = screen.getByRole("button", { name: /new chat/i });
+    fireEvent.click(newChatBtn);
+
+    // Type and send report inquiry in input dock
+    const inputField = screen.getByPlaceholderText(/Reply, attach a file, or tap the mic to talk/i);
+    fireEvent.change(inputField, { target: { value: "Can you prepare a market penetration report for tier-2 cities?" } });
+    fireEvent.submit(inputField.closest("form")!);
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 600));
+    });
+
+    // Verify AI response suggests 2 agents matching home page design
+    expect(screen.getByText(/assembled two specialized agents/i)).toBeDefined();
+    expect(screen.getByText("Suggested Agents")).toBeDefined();
+    const suggestedAgentCards = document.querySelectorAll(".report-flow-agent-card");
+    expect(suggestedAgentCards.length).toBe(2);
+    expect(screen.getAllByText("Emerging Markets Specialist Agent").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Customer Dynamics & Segmentation Agent").length).toBeGreaterThanOrEqual(1);
+
+    // Verify no cheesy AI sparkles/badges exist
+    expect(document.querySelector(".report-flow-container .sparkles")).toBeNull();
+
+    // Click the single Run agents button to activate both agents and start working
+    const runAgentsBtn = screen.getByRole("button", { name: /Run agents/i });
+    expect(runAgentsBtn).toBeDefined();
+    fireEvent.click(runAgentsBtn);
+
+    // Verify agents are active and ask 2 fields each (Reporting Period with calendar dropdown, Geographic Tier Focus, Target Consumer Cohort, Channel Velocity)
+    expect(screen.getByText("Reporting Period")).toBeDefined();
+    expect(screen.getByText("Geographic Tier Focus")).toBeDefined();
+
+    // Verify second agent is also working and asks 2 collaborative fields (Target Consumer Cohort, Channel Distribution Velocity)
+    // exactly 4 fields in total
+    expect(screen.getByText("Target Consumer Cohort")).toBeDefined();
+    expect(screen.getByText("Channel Distribution Velocity")).toBeDefined();
+
+    // Open calendar dropdown and select a month/year
+    const calTrigger = screen.getByRole("button", { name: /Select reporting month and year/i });
+    fireEvent.click(calTrigger);
+    expect(screen.getByText("Select Month")).toBeDefined();
+
+    // Select October 2026 from the month grid
+    const octBtn = screen.getByRole("button", { name: "October 2026" });
+    fireEvent.click(octBtn);
+    expect(screen.getAllByText(/October 2026/i).length).toBeGreaterThanOrEqual(1);
+
+    const tier3Pill = screen.getByRole("button", { name: "Tier-3 Regional Urban Clusters" });
+    fireEvent.click(tier3Pill);
+    expect(tier3Pill.className).toContain("report-flow-pill--active");
+
+    // Open Channel Distribution Velocity dropdown (app theme) and select an option
+    const channelDropdownTrigger = screen.getByRole("button", { name: /Select Channel Distribution Velocity/i });
+    fireEvent.click(channelDropdownTrigger);
+    const kiranaOption = screen.getByRole("option", { name: /Traditional Kirana & Wholesale Networks/i });
+    fireEvent.click(kiranaOption);
+    expect(screen.getAllByText(/Traditional Kirana & Wholesale Networks/i).length).toBeGreaterThanOrEqual(1);
+
+    // Write in the custom focus text input field
+    const writeInput = screen.getByLabelText(/Write custom strategic focus/i);
+    fireEvent.change(writeInput, { target: { value: "Focus on Jaipur & Surat tier-2 corridors" } });
+
+    // Click Continue button to generate report
+    const continueBtn = screen.getByRole("button", { name: /Continue to Generate Report/i });
+    fireEvent.click(continueBtn);
+
+    // Verify generated report is displayed with synthesized insights and custom notes
+    expect(screen.getByText(/Executive Strategic Report: South Asia Secondary Cities Penetration/i)).toBeDefined();
+    expect(screen.getAllByText(/October 2026/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("Tier-3 Regional Urban Clusters")).toBeDefined();
+    expect(screen.getAllByText(/Traditional Kirana & Wholesale Networks/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Focus on Jaipur & Surat tier-2 corridors/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/Synthesized by Emerging Markets Specialist Agent/i)).toBeDefined();
+    expect(screen.getByText("Price-Point & Pack Strategy:")).toBeDefined();
+    expect(screen.getByText("Channel Velocity & Margins:")).toBeDefined();
+    expect(screen.getByText("Formulation Dynamics:")).toBeDefined();
+    expect(screen.getByText("Download report (PDF)")).toBeDefined();
   });
 
   it("navigates to the Packages page on clicking Packages in header menu with overlapping card and project-wise sections", () => {
@@ -974,13 +1091,14 @@ describe("App routing", () => {
     expect(screen.getByText("10")).toBeDefined();
     expect(screen.getByText("Validated Reports")).toBeDefined();
 
-    // Verify project-wise sections below
-    expect(screen.getByText("Project Knowledge Packages")).toBeDefined();
+    // Verify project-wise sections below and removal of Project Knowledge Packages heading
+    expect(screen.queryByText("Project Knowledge Packages")).toBeNull();
     const projectGroups = document.querySelectorAll(".packages-project-group-card");
     expect(projectGroups.length).toBe(3);
 
-    // Verify first project group and absence of unwanted tags and badges
+    // Verify first project group without folder icon and absence of unwanted tags and badges
     expect(screen.getByText("Personal care brand enters South Asia’s smaller cities")).toBeDefined();
+    expect(document.querySelector(".packages-project-title-row svg")).toBeNull();
     expect(screen.queryByText("2 Packages")).toBeNull();
     expect(screen.queryByText(/Acquired · June 2026/i)).toBeNull();
     expect(screen.queryByText(/validated reports included/i)).toBeNull();
