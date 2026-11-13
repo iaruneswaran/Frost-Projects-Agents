@@ -1,33 +1,47 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   ArrowLeft,
   ArrowRight,
   ArrowUp,
   ArrowUpRight,
+  AtSign,
+  AudioLines,
   BookOpen,
+  Brain,
+  Check,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Clock,
-  FileText,
-  LayoutGrid,
+  Clock3,
+  Copy,
+  Folder,
+  Library,
   Menu,
-  MessageSquare,
   Mic,
   Moon,
+  MoreHorizontal,
   PanelLeft,
-  PanelLeftClose,
   Paperclip,
   Pencil,
+  Pin,
   Plus,
   Search,
   Settings,
+  Share2,
   ShieldCheck,
+  Sparkles,
+  SquarePen,
   Sun,
+  ThumbsDown,
+  ThumbsUp,
   Trash2,
   UploadCloud,
+  Users,
+  Volume2,
   X,
 } from "lucide-react";
-import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import frostAtlasLogo from "@/assets/frost-atlas-Dmpxp6zQ.svg";
@@ -42,7 +56,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -83,6 +96,151 @@ interface MessageItem {
   sender: "user" | "assistant";
   text: string;
 }
+
+export function AdobeAcrobatPdfIcon({ className = "kyc-doc-acrobat-icon" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 32 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect width="32" height="32" rx="6" fill="#E5252A" />
+      <path
+        d="M25.525 18.4375C24.025 16.8375 19.9375 17.5375 18.95 17.6375C17.55 16.2375 16.5625 14.65 16.1625 14.05C16.6625 12.55 17.0625 10.8625 17.0625 9.26246C17.0625 7.76246 16.4625 6.27496 14.875 6.27496C14.275 6.27496 13.775 6.57496 13.475 7.07496C12.775 8.27496 13.075 10.6625 14.175 13.15C13.575 14.95 12.575 17.6375 11.3875 19.725C9.7875 20.325 6.3 21.9125 6 23.7125C5.9 24.2125 6.1 24.8125 6.5 25.1125C6.9 25.5125 7.4 25.6125 7.9 25.6125C9.9875 25.6125 12.0875 22.725 13.5875 20.125C14.7875 19.725 16.675 19.125 18.575 18.825C20.7625 20.825 22.7625 21.1125 23.7625 21.1125C25.1625 21.1125 25.6625 20.5125 25.85 20.0125C26.1125 19.5375 25.925 18.8375 25.525 18.4375ZM24.125 19.4375C24.025 19.8375 23.525 20.2375 22.625 20.0375C21.525 19.7375 20.5375 19.2375 19.7375 18.5375C20.4375 18.4375 22.125 18.2375 23.325 18.4375C23.725 18.5375 24.225 18.8375 24.125 19.4375ZM14.45 7.47496C14.55 7.27496 14.75 7.17496 14.95 7.17496C15.45 7.17496 15.55 7.77496 15.55 8.27496C15.45 9.47496 15.25 10.7625 14.85 11.8625C14.05 9.67496 14.15 8.07496 14.45 7.47496ZM14.35 18.7375C14.85 17.8375 15.45 16.15 15.65 15.55C16.15 16.45 17.05 17.45 17.45 17.9375C17.55 17.85 15.75 18.2375 14.35 18.7375ZM10.9625 21.0375C9.575 23.225 8.275 24.625 7.475 24.625C7.375 24.625 7.175 24.625 7.075 24.525C6.975 24.325 6.875 24.125 6.975 23.925C7.075 23.125 8.675 22.025 10.9625 21.0375Z"
+        fill="white"
+      />
+    </svg>
+  );
+}
+
+export interface KnowledgePackFile {
+  title: string;
+  date: string;
+  meta: string;
+}
+
+export interface KnowledgePack {
+  id: string;
+  title: string;
+  subtitle: string;
+  tag: string;
+  filesCount: number;
+  files: KnowledgePackFile[];
+}
+
+export const defaultKnowledgePacks: KnowledgePack[] = [
+  {
+    id: "pack-south-asia-entry",
+    title: "South Asia Tier-2 & Tier-3 City Market Penetration",
+    subtitle: "City selection, price points and channels for smaller-city growth.",
+    tag: "Personal care brand enters South Asia’s smaller cities · 3 files",
+    filesCount: 3,
+    files: [
+      {
+        title: "Growth Opportunities in Personal Care for Tier-2 and Tier-3 Cities, South Asia, 2025–2030",
+        date: "June 2026",
+      },
+      {
+        title: "Price-Point & Pack-Size Strategy for Mass-Premium Skincare in Emerging South Asian Markets",
+        date: "December 2025",
+      },
+      {
+        title: "Distribution Channel Optimisation: Modern Trade, Quick Commerce and Kirana Networks",
+        date: "December 2026",
+      },
+    ],
+  },
+  {
+    id: "pack-active-ingredients",
+    title: "Personal Care Ingredients & Formulation Dynamics",
+    subtitle: "Active, functional and strategic ingredient research.",
+    tag: "Personal care brand enters South Asia’s smaller cities · 3 files",
+    filesCount: 3,
+    files: [
+      {
+        title: "Top 10 Strategic Imperatives in Personal Care Ingredients, 2026",
+        date: "April 2026",
+      },
+      {
+        title: "Personal Care Active Ingredients Market, South Asia Outlook, 2024–2031",
+        date: "April 2025",
+      },
+      {
+        title: "Frost Radar™: Personal Care Functional Ingredients, 2025",
+        date: "June 2025",
+      },
+    ],
+  },
+];
+
+export interface MatchingReport {
+  id: string;
+  title: string;
+  author: string;
+  year: string;
+  summary: string;
+  quote: string;
+  tags: string[];
+}
+
+export const defaultMatchingReports: MatchingReport[] = [
+  {
+    id: "rep-growth-opps",
+    title: "Growth Opportunities in Personal Care for Tier-2 and Tier-3 Cities, South Asia",
+    author: "Robert D. Boss",
+    year: "2026",
+    summary: "Strategic evaluation of consumer spending shifts, purchasing power, and regional brand adoption across 24 secondary urban clusters.",
+    quote: "“Identifies aspirational skincare adoption expanding at 18.4% CAGR in non-metro corridors, with consumers migrating rapidly toward premium formulations.”",
+    tags: ["tier-2 retail", "consumer growth", "market penetration", "regional strategy"],
+  },
+  {
+    id: "rep-price-point",
+    title: "Price-Point & Pack-Size Strategy for Mass-Premium Skincare in Emerging South Asian Markets",
+    author: "Anika Rao",
+    year: "2025",
+    summary: "Price elasticity analysis, sachet trial economics, and mass-premium threshold benchmarks across emerging city retail channels.",
+    quote: "“Finds ₹299–₹449 discovery packs and trial kits generate 2.8x higher repeat adoption than standard full-size SKUs in smaller cities.”",
+    tags: ["pricing strategy", "unit economics", "pack sizes", "price elasticity"],
+  },
+  {
+    id: "rep-dist-channel",
+    title: "Distribution Channel Optimisation: Modern Trade, Quick Commerce and Kirana Networks",
+    author: "Tomás Ferreira",
+    year: "2026",
+    summary: "Retail logistics architecture, regional stockist margin tiers, and dark store quick-commerce penetration across non-metro trade hubs.",
+    quote: "“Compares neighborhood chemist networks with 30-minute quick commerce, demonstrating a 64% increase in regional retail velocity.”",
+    tags: ["quick commerce", "kirana networks", "modern trade", "channel logistics"],
+  },
+  {
+    id: "rep-active-ingredients",
+    title: "Personal Care Active & Functional Ingredients: South Asia Regional Outlook",
+    author: "Marcus Lee",
+    year: "2025",
+    summary: "Climate-adaptive formulation dynamics, barrier-repair efficacy, and tropical skin phototype dermatological requirements.",
+    quote: "“Projects lightweight barrier-repair actives and niacinamide sun-defense hybrids to capture 42% of tier-2 anti-pollution skincare demand.”",
+    tags: ["active ingredients", "formulation", "dermatology", "climate-adaptive"],
+  },
+  {
+    id: "rep-distributor-margins",
+    title: "Wholesale FMCG & General-Trade Distributor Margin Benchmarks across Secondary Hubs",
+    author: "Priya Sundaram",
+    year: "2025",
+    summary: "Distributor trade economics, payment cycles, and shelf-space acquisition dynamics against established domestic FMCG incumbents.",
+    quote: "“Establishes a 14–16% trade margin tier with performance rebates as the critical incentive for distributor shelf-space conversion.”",
+    tags: ["trade margins", "distributor economics", "shelf space", "wholesale FMCG"],
+  },
+  {
+    id: "rep-consumer-habits",
+    title: "Consumer Purchasing Habits & Dermatological Priorities Across 24 Priority Urban Hubs",
+    author: "David Vance",
+    year: "2026",
+    summary: "Demographic survey of skincare ritual adoption, regional influencer impact, and dermatological brand credibility among 4,800 shoppers.",
+    quote: "“Reveals 71% of secondary-city skincare buyers consult verified dermatologist content and peer reviews prior to first-time purchase.”",
+    tags: ["consumer research", "demographics", "brand credibility", "skincare rituals"],
+  },
+];
 
 const initialProjects: ProjectItem[] = [
   {
@@ -131,7 +289,7 @@ const initialProjects: ProjectItem[] = [
   },
   {
     id: "expand-enterprise-accounts",
-    title: "Expand Enterprise Accounts across LATAM",
+    title: "Expand Enterprise Account",
     description: "Enterprise tier client expansion pipeline and partner distribution network.",
     agents: ["Enterprise Sales", "Regional Expansion", "Account Management"],
     url: "#projects",
@@ -190,7 +348,133 @@ const initialAgents: AgentItem[] = [
   },
 ];
 
-const navItems = ["Home", "Profile", "Add Tokens", "Settings"];
+const navItems = ["Home", "Packages", "Settings"];
+
+const projectChatsMap: Record<string, string[]> = {
+  "personal-care-south-asia": [
+    "Tier-2 Market Penetration Strategy",
+    "Regional Distribution Channel Analysis",
+    "Consumer Demographics & Pricing",
+  ],
+  "customer-dynamics": [
+    "Buyer Segments & Purchase Drivers",
+    "Channel Behaviour Analysis",
+    "Customer Journey & Retention",
+  ],
+  "competitive-benchmark-positioning": [
+    "Competitor Market Share Matrix",
+    "Brand Positioning Strategy",
+    "Rival Capabilities & Benchmarks",
+  ],
+  "tech-enabled-gtm-roadmap": [
+    "Sales Technology Integration",
+    "Marketing Automation Pipeline",
+    "GTM Execution Milestones",
+  ],
+  "untitled-project-1": [
+    "Autonomous Agent Execution",
+    "Collaborative Workflow Setup",
+  ],
+  "expand-enterprise-accounts": [
+    "Enterprise Partner Distribution",
+    "Regional Sales Pipeline",
+    "LATAM Account Strategy",
+  ],
+};
+
+const initialProjectConversations: Record<string, MessageItem[]> = {
+  "personal-care-south-asia": [
+    {
+      id: "msg-pc-1",
+      sender: "user",
+      text: "Personal care brand enters South Asia’s smaller cities",
+    },
+    {
+      id: "msg-pc-2",
+      sender: "assistant",
+      text: `Great initiative, Arun! We've received your project brief for Personal care brand enters South Asia’s smaller cities.
+
+What primary outcome do you want to achieve with this project?
+
+Launch a new AI product or service
+
+Automate internal operations & reduce costs
+
+Expand into a new customer segment or region
+
+Accelerate enterprise sales & revenue growth
+
+Or in your own words
+Type your answer and press Enter`,
+    },
+    {
+      id: "msg-pc-3",
+      sender: "user",
+      text: "Expand into a new customer segment or region",
+    },
+    {
+      id: "msg-pc-4",
+      sender: "assistant",
+      text: `I found market intelligence reports from 2025–2026 covering tier-2 & tier-3 city retail, price elasticity, active ingredients, and channel distribution. The most relevant are “Growth Opportunities in Personal Care for Tier-2 and Tier-3 Cities, South Asia” and “Price-Point & Pack-Size Strategy for Mass-Premium Skincare”. Together they discuss how these themes connect, from consumer price sensitivity and local retailer margins to climate-adaptive formulations for regional market penetration.`,
+    },
+  ],
+};
+
+interface SubChatItem {
+  id: string;
+  title: string;
+}
+
+const buildInitialProjectChats = (): Record<string, SubChatItem[]> => {
+  const result: Record<string, SubChatItem[]> = {};
+  Object.entries(projectChatsMap).forEach(([projId, list]) => {
+    result[projId] = list.map((title, idx) => ({
+      id: `${projId}-${idx}`,
+      title,
+    }));
+  });
+  return result;
+};
+
+const getProjectRelatedAgents = (proj: ProjectItem): AgentItem[] => {
+  if (proj.id === "personal-care-south-asia") {
+    return [
+      {
+        id: "proj-agent-emerging-markets",
+        title: "Emerging Markets Specialist Agent",
+        description:
+          "Strategic analysis of Tier-2 and Tier-3 city retail corridors, consumer purchasing shifts, and aspirational brand adoption.",
+        lastUsed: "Active now",
+      },
+      {
+        id: "proj-agent-customer-dynamics",
+        title: "Customer Dynamics & Segmentation Agent",
+        description:
+          "Evaluates demographic buying patterns, price sensitivity, and regional skincare ritual adoption across secondary urban clusters.",
+        lastUsed: "15m ago",
+      },
+      {
+        id: "proj-agent-geographic-expansion",
+        title: "Geographic Expansion Strategy Agent",
+        description:
+          "Models localized channel economics, distributor trade margins, and physical retail distribution velocity across priority hubs.",
+        lastUsed: "1h ago",
+      },
+    ];
+  }
+
+  const tags =
+    proj.agents && proj.agents.length > 0
+      ? proj.agents.slice(0, 3)
+      : ["Strategic Intelligence", "Customer Dynamics", "Operational Roadmap"];
+
+  return tags.slice(0, 3).map((tag, idx) => ({
+    id: `proj-agent-${proj.id}-${idx}`,
+    title: `${tag} Specialist Agent`,
+    description: `Coordinates ${tag.toLowerCase()} workflows, synthesized market datasets, and execution milestones for ${proj.title}.`,
+    lastUsed: idx === 0 ? "Active now" : `${(idx + 1) * 20}m ago`,
+  }));
+};
 
 function ProjectWorkspace({
   project,
@@ -198,157 +482,556 @@ function ProjectWorkspace({
   onSelectProject,
   onBackToDashboard,
   onAddNewProject,
+  agents = initialAgents,
+  onEditAgent,
+  onOpenKyc,
 }: {
   project: ProjectItem;
   projects: ProjectItem[];
   onSelectProject: (id: string) => void;
   onBackToDashboard: () => void;
   onAddNewProject: () => void;
+  agents?: AgentItem[];
+  onEditAgent?: (agent: AgentItem) => void;
+  onOpenKyc?: () => void;
 }) {
+  const [conversations, setConversations] = useState<Record<string, MessageItem[]>>(initialProjectConversations);
+  const [projectChats, setProjectChats] = useState<Record<string, SubChatItem[]>>(buildInitialProjectChats);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [messages, setMessages] = useState<MessageItem[]>([]);
+  const isNewProject = project.id.startsWith("new-project");
+
+  const [selectedChat, setSelectedChat] = useState<string>(
+    isNewProject ? "New chat" : project.title
+  );
+  const [selectedChatKey, setSelectedChatKey] = useState<string>(
+    isNewProject ? "new-chat" : project.id
+  );
+  const [expandedProjectId, setExpandedProjectId] = useState<string | null>(project.id || null);
+  const [searchFilter, setSearchFilter] = useState("");
   const [inputValue, setInputValue] = useState("");
+  const [customOutcome, setCustomOutcome] = useState("");
   const [isKnowledgeOpen, setIsKnowledgeOpen] = useState(false);
+  const [isAgentsDrawerOpen, setIsAgentsDrawerOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
+  const [obtainedPacks, setObtainedPacks] = useState<Record<string, boolean>>({});
+  const [obtainedReports, setObtainedReports] = useState<Record<string, boolean>>({});
+  const [generatingAgentId, setGeneratingAgentId] = useState<string | null>(null);
+  const [generatedAgents, setGeneratedAgents] = useState<Record<string, boolean>>({});
+  const dockFileInputRef = useRef<HTMLInputElement>(null);
+
+  const projectRelatedAgents = useMemo(() => getProjectRelatedAgents(project), [project]);
+  const otherWorkspaceAgents = useMemo(
+    () =>
+      (agents && agents.length > 0 ? agents : initialAgents).filter(
+        (a) => !a.id.startsWith("proj-agent-")
+      ),
+    [agents]
+  );
+
+  const handleTogglePack = (packId: string) => {
+    setObtainedPacks((prev) => ({
+      ...prev,
+      [packId]: !prev[packId],
+    }));
+  };
+
+  const handleToggleReport = (reportId: string) => {
+    setObtainedReports((prev) => ({
+      ...prev,
+      [reportId]: !prev[reportId],
+    }));
+  };
+
+  const handleGenerateWithAgent = (agent: AgentItem) => {
+    setGeneratingAgentId(agent.id);
+
+    setTimeout(() => {
+      setGeneratingAgentId(null);
+      setGeneratedAgents((prev) => ({ ...prev, [agent.id]: true }));
+
+      // If in New chat, update title to the agent
+      if (selectedChat === "New chat") {
+        const cleanTitle = agent.title.length > 28 ? agent.title.slice(0, 28) + "..." : agent.title;
+        setProjectChats((prev) => ({
+          ...prev,
+          [project.id]: (prev[project.id] || []).map((c) =>
+            c.id === currentChatKey ? { ...c, title: cleanTitle } : c
+          ),
+        }));
+        setSelectedChat(cleanTitle);
+      }
+
+      const userMsg: MessageItem = {
+        id: `user-gen-${Date.now()}`,
+        sender: "user",
+        text: `Generate report with ${agent.title}`,
+      };
+
+      const aiMsg: MessageItem = {
+        id: `ai-gen-${Date.now()}`,
+        sender: "assistant",
+        text: `Report generated successfully by **${agent.title}**.\n\n• **Agent Objective**: ${agent.description}\n• **Knowledge Integration**: Synthesized data from 6 validated research reports and regional market entry parameters.\n• **Deliverable**: Executive strategic report compiled with priority tier-2 city matrices, pricing guardrails, and distribution velocity targets.\n\nReady for export or dispatch to autonomous execution agents.`,
+      };
+
+      setConversations((prev) => ({
+        ...prev,
+        [currentChatKey]: [...(prev[currentChatKey] || []), userMsg, aiMsg],
+      }));
+    }, 700);
+  };
+
+  const currentChatKey = selectedChatKey === "new-chat" ? `new-chat-${project.id}` : selectedChatKey;
+  const messages = conversations[currentChatKey] || [];
+
+  const handleCopyMessage = (id: string, text: string) => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      setCopiedMessageId(id);
+      setTimeout(() => setCopiedMessageId(null), 1500);
+    }
+  };
+
+  const handleSpeakMessage = (id: string, text: string) => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      if (speakingMessageId === id) {
+        window.speechSynthesis.cancel();
+        setSpeakingMessageId(null);
+      } else {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.onend = () => setSpeakingMessageId(null);
+        utterance.onerror = () => setSpeakingMessageId(null);
+        setSpeakingMessageId(id);
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+  };
+
+  const handleDockFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const fileNames = Array.from(files).map((f) => f.name).join(", ");
+    handleSend(`Attached file: ${fileNames}`);
+    if (dockFileInputRef.current) dockFileInputRef.current.value = "";
+  };
+
+  const sidebarProjects = projects;
+
+  useEffect(() => {
+    if (project?.id) {
+      setExpandedProjectId(project.id);
+      if (!project.id.startsWith("new-project")) {
+        setSelectedChat(project.title);
+        setSelectedChatKey(project.id);
+      } else {
+        setSelectedChat("New chat");
+        setSelectedChatKey("new-chat");
+      }
+      setIsAgentsDrawerOpen(false);
+    }
+  }, [project?.id, project?.title]);
+
+  const handleNewChat = () => {
+    const currentList = projectChats[project.id] || [];
+    const existingEmpty = currentList.find(
+      (c) => c.title === "New chat" && (!conversations[c.id] || conversations[c.id].length === 0)
+    );
+
+    if (existingEmpty) {
+      setSelectedChat("New chat");
+      setSelectedChatKey(existingEmpty.id);
+      setExpandedProjectId(project.id);
+      setIsAgentsDrawerOpen(true);
+      setIsKnowledgeOpen(false);
+      return;
+    }
+
+    const newChatId = `chat-${Date.now()}`;
+    const newChatTitle = "New chat";
+
+    setProjectChats((prev) => ({
+      ...prev,
+      [project.id]: [{ id: newChatId, title: newChatTitle }, ...(prev[project.id] || [])],
+    }));
+
+    setExpandedProjectId(project.id);
+    setSelectedChat(newChatTitle);
+    setSelectedChatKey(newChatId);
+    setIsAgentsDrawerOpen(true);
+    setIsKnowledgeOpen(false);
+  };
 
   const handleSend = (presetText?: string) => {
     const text = (presetText || inputValue).trim();
     if (!text) return;
+
+    // If chat title is still "New chat", update it to the first message text
+    if (selectedChat === "New chat") {
+      const cleanTitle = text.length > 28 ? text.slice(0, 28) + "..." : text;
+      setProjectChats((prev) => ({
+        ...prev,
+        [project.id]: (prev[project.id] || []).map((c) =>
+          c.id === currentChatKey ? { ...c, title: cleanTitle } : c
+        ),
+      }));
+      setSelectedChat(cleanTitle);
+    }
 
     const userMessage: MessageItem = {
       id: `user-${Date.now()}`,
       sender: "user",
       text,
     };
-    setMessages((prev) => [...prev, userMessage]);
+    setConversations((prev) => ({
+      ...prev,
+      [currentChatKey]: [...(prev[currentChatKey] || []), userMessage],
+    }));
     setInputValue("");
 
     setTimeout(() => {
-      let reply = `Understood. For "${project.title}", I have initialized the core context. I'll coordinate the collaborative agents (${project.agents.join(", ")}) to formulate the exact plan. What target milestone or key outcome would make this project worthwhile?`;
-      if (text.toLowerCase().includes("define the idea")) {
+      let reply = `Understood. For "${project.title}", I have initialized the core context. I found market intelligence reports from 2025–2026 covering regional retail, price elasticity, active ingredients, and channel distribution. Together they detail how consumer price sensitivity, local retailer margins, and climate-adaptive formulations connect to drive sustainable regional market penetration:`;
+      if (text.includes("Expand into a new customer segment or region")) {
+        reply = `I found market intelligence reports from 2025–2026 covering tier-2 & tier-3 city retail, price elasticity, active ingredients, and channel distribution. The most relevant are “Growth Opportunities in Personal Care for Tier-2 and Tier-3 Cities, South Asia” and “Price-Point & Pack-Size Strategy for Mass-Premium Skincare”. Together they discuss how these themes connect, from consumer price sensitivity and local retailer margins to climate-adaptive formulations for regional market penetration.`;
+      } else if (text.includes("Launch a new AI product or service")) {
+        reply = `Understood! For launching a new AI product or service under "${project.title}", I found market intelligence reports evaluating product readiness, architecture, and commercialization models. Together they outline technical feasibility and deployment roadmaps:`;
+      } else if (text.includes("Automate internal operations & reduce costs")) {
+        reply = `Understood! For automating operations & reducing costs under "${project.title}", I found market intelligence reports analyzing operational workflows, process automation, and unit economics:`;
+      } else if (text.includes("Accelerate enterprise sales & revenue growth")) {
+        reply = `Understood! To accelerate sales & revenue growth for "${project.title}", I found market intelligence reports assessing enterprise sales cycles, pricing architecture, and customer lifetime value:`;
+      } else if (text.toLowerCase().includes("define the idea")) {
         reply = `Let's define the scope for "${project.title}":\n1. Target Market & Audience: Which region or customer segment drives maximum initial impact?\n2. Value Proposition: What key advantage differentiates this solution?\n3. Success Criteria: What primary metric determines a successful deployment?`;
       } else if (text.toLowerCase().includes("attach a plan")) {
         reply = `I'm ready to review your plan for "${project.title}". You can upload documents, presentations, or data tables, and I'll extract key milestones, budget assumptions, and required agent capabilities.`;
+      } else if (text.toLowerCase().includes("diwali")) {
+        reply = `Here are creative strategies tailored for "${project.title}":\n• Festive promotional packaging design with traditional gold motifs\n• Limited-edition regional gift boxes for upcoming celebrations\n• Omnichannel visual merchandising campaign across tier-2 cities.`;
+      } else {
+        reply = `Understood! I've registered your strategic outcome: "${text}" for "${project.title}".\n\nI found market intelligence reports covering regional distribution, price sensitivity, active ingredients, and channel logistics. Together they detail the strategic imperatives for this initiative:`;
       }
 
-      setMessages((prev) => [
+      const aiMessage: MessageItem = {
+        id: `ai-${Date.now()}`,
+        sender: "assistant",
+        text: reply,
+      };
+
+      setConversations((prev) => ({
         ...prev,
-        {
-          id: `ai-${Date.now()}`,
-          sender: "assistant",
-          text: reply,
-        },
-      ]);
+        [currentChatKey]: [...(prev[currentChatKey] || []), aiMessage],
+      }));
     }, 500);
   };
 
+  const renderInputDock = () => (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleSend();
+      }}
+      className="chatgpt-input-dock"
+    >
+      <button
+        type="button"
+        onClick={() => handleSend("Attach a plan")}
+        className="chatgpt-dock-add-btn"
+        title="Add file or actions"
+        aria-label="Add file or actions"
+      >
+        <Plus className="h-5 w-5" />
+      </button>
+
+      <input
+        type="text"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        placeholder="Reply, attach a file, or tap the mic to talk"
+        className="chatgpt-dock-input"
+      />
+
+      <div className="chatgpt-dock-right-actions">
+        <input
+          type="file"
+          ref={dockFileInputRef}
+          onChange={handleDockFileUpload}
+          className="hidden"
+          aria-label="Upload file"
+        />
+        <button
+          type="button"
+          onClick={() => dockFileInputRef.current?.click()}
+          className="chatgpt-dock-attach-btn"
+          title="Attach file"
+          aria-label="Attach file"
+        >
+          <Paperclip className="h-4 w-4" />
+        </button>
+
+        {inputValue.trim() ? (
+          <button
+            type="submit"
+            className="chatgpt-dock-send-btn"
+            title="Send message"
+            aria-label="Send message"
+          >
+            <ArrowUp className="h-4 w-4" />
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => handleSend("Voice mode started")}
+            className="chatgpt-dock-voice-btn"
+            title="Start voice mode"
+            aria-label="Start voice mode"
+          >
+            <AudioLines className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+    </form>
+  );
+
   return (
     <div className="workspace-container">
-      {/* Left Sidebar */}
-      <aside className={`workspace-sidebar ${isSidebarCollapsed ? "collapsed" : ""}`}>
-        {/* Workspace Brand / Header */}
-        <div className="workspace-header">
-          <button
-            type="button"
-            onClick={onBackToDashboard}
-            className="workspace-brand"
-            title="Return to Home"
-          >
-            <div className="workspace-brand-avatar">
-              <span className="w-2.5 h-2.5 rounded-sm bg-black inline-block" />
-            </div>
-            <span className="workspace-brand-name">CEO Workspace</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsSidebarCollapsed(true)}
-            className="workspace-collapse-btn"
-            title="Collapse sidebar"
-            aria-label="Collapse sidebar"
-          >
-            <PanelLeftClose className="h-4 w-4" />
-          </button>
-        </div>
-
-        {/* New Project Button */}
-        <div className="workspace-new-project-wrap">
-          <button
-            type="button"
-            onClick={onAddNewProject}
-            className="workspace-new-project-btn"
-          >
-            <Plus className="h-4 w-4 mr-1.5" />
-            <span>New project</span>
-          </button>
-        </div>
-
-        {/* Dashboard Navigation */}
-        <button
-          type="button"
-          onClick={onBackToDashboard}
-          className="workspace-dashboard-btn"
-        >
-          <LayoutGrid className="h-4 w-4 text-muted-foreground mr-2.5" />
-          <span>Dashboard</span>
-        </button>
-
-        {/* Projects Section */}
-        <div className="workspace-section-label">Projects</div>
-        <div className="workspace-projects-list">
-          {projects.map((p) => {
-            const isActive = p.id === project.id;
-            return (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => onSelectProject(p.id)}
-                className={`workspace-project-item ${isActive ? "active" : ""}`}
-              >
-                <span className="workspace-project-item-title">{p.title}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Chats in this project */}
-        <div className="workspace-section-label">Chats in this project</div>
-        <button
-          type="button"
-          onClick={() => {
-            setMessages([]);
-            toast.success("Started a new chat");
-          }}
-          className="workspace-chat-btn"
-        >
-          <Plus className="h-4 w-4 text-muted-foreground mr-2" />
-          <span>New chat</span>
-        </button>
-
-        {/* Sidebar Footer */}
-        <div className="workspace-sidebar-footer">
-          <button
-            type="button"
-            onClick={() => toast.info("Settings")}
-            className="workspace-settings-btn"
-          >
-            <Settings className="h-4 w-4 text-muted-foreground mr-2.5" />
-            <span>Settings</span>
-          </button>
-
-          <div className="workspace-profile-row">
+      {/* Collapsed Sidebar Rail */}
+      {isSidebarCollapsed && (
+        <aside className="chatgpt-sidebar-rail" aria-label="Collapsed navigation">
+          <div className="chatgpt-rail-top">
             <button
               type="button"
-              className="workspace-profile-user"
-              onClick={() => toast.info("User: ARUN PE (CEO)")}
+              onClick={onBackToDashboard}
+              className="chatgpt-rail-icon-btn chatgpt-rail-back-btn"
+              title="Return to Dashboard"
+              aria-label="Return to Dashboard"
             >
-              <div className="workspace-profile-avatar">AP</div>
-              <span className="workspace-profile-name">ARUN PE</span>
-              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground ml-1" />
+              <ChevronLeft className="h-4 w-4 text-zinc-800" />
             </button>
+
             <button
               type="button"
-              className="workspace-theme-toggle"
-              title="Light theme active"
-              onClick={() => toast.info("Brand Lite Theme active")}
+              onClick={() => setIsSidebarCollapsed(false)}
+              className="chatgpt-rail-icon-btn"
+              title="Open sidebar"
+              aria-label="Open sidebar"
+            >
+              <PanelLeft className="h-4 w-4 text-zinc-800" />
+            </button>
+          </div>
+
+          <div className="chatgpt-rail-footer">
+            <button
+              type="button"
+              onClick={() => setIsSidebarCollapsed(false)}
+              className="chatgpt-rail-avatar-btn"
+              title="Arun Eswaran"
+              aria-label="User profile"
+            >
+              <div className="chatgpt-profile-avatar-small">AE</div>
+            </button>
+          </div>
+        </aside>
+      )}
+
+      {/* Expanded Sidebar */}
+      <aside className={`workspace-sidebar ${isSidebarCollapsed ? "collapsed" : ""}`}>
+        {/* Top Header Row with Title, Search, and Collapse Buttons */}
+        <div className="chatgpt-sidebar-header">
+          <div className="chatgpt-brand-row">
+            <button
+              type="button"
+              onClick={onBackToDashboard}
+              className="chatgpt-brand-title"
+              title="Return to Dashboard"
+              aria-label="Return to Dashboard"
+            >
+              <span className="chatgpt-brand-chevron-box">
+                <ChevronLeft className="chatgpt-brand-chevron" />
+              </span>
+              <span>CEO Workspace</span>
+            </button>
+          </div>
+          <div className="chatgpt-header-actions">
+            <button
+              type="button"
+              onClick={() => setIsSidebarCollapsed(true)}
+              className="chatgpt-header-icon-btn"
+              title="Close sidebar"
+              aria-label="Close sidebar"
+            >
+              <PanelLeft className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Search Input Filter Always Below */}
+        <div className="chatgpt-search-wrap">
+          <div className="chatgpt-search-box">
+            <Search className="h-4 w-4 text-zinc-400 shrink-0" />
+            <input
+              type="text"
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+              placeholder="Search projects..."
+              className="chatgpt-search-input"
+            />
+          </div>
+        </div>
+
+        {/* Top Navigation List */}
+        <div className="chatgpt-top-nav">
+          <button
+            type="button"
+            onClick={handleNewChat}
+            className={`chatgpt-new-chat-btn ${selectedChat === "New chat" ? "active" : ""}`}
+          >
+            <SquarePen className="h-4 w-4 shrink-0 text-zinc-800" />
+            <span>New chat</span>
+          </button>
+        </div>
+
+        {/* Scrollable Chats List */}
+        <div className="chatgpt-sidebar-scroll">
+          {/* Projects Section */}
+          <div className="chatgpt-section-label">Projects</div>
+          <div className="chatgpt-chats-list">
+            {sidebarProjects
+              .filter((p) => {
+                if (!searchFilter.trim()) return true;
+                const query = searchFilter.toLowerCase();
+                const titleMatch = p.title.toLowerCase().includes(query);
+                const subchats = projectChats[p.id] || [];
+                return titleMatch || subchats.some((sc) => sc.title.toLowerCase().includes(query));
+              })
+              .map((p) => {
+                const isCurrentProject = p.id === project.id;
+                const isExpanded = expandedProjectId === p.id;
+                const subchats = projectChats[p.id] || [];
+                const isFolderActive = isCurrentProject;
+
+                return (
+                  <div key={p.id} className="chatgpt-folder-group">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onSelectProject(p.id);
+                        setSelectedChat(p.title);
+                        setSelectedChatKey(p.id);
+                        setExpandedProjectId((prev) => (prev === p.id ? null : p.id));
+                        setIsAgentsDrawerOpen(false);
+                      }}
+                      className={`chatgpt-folder-row ${isFolderActive ? "active" : ""}`}
+                    >
+                      <Folder className="h-4 w-4 shrink-0 text-zinc-500" />
+                      <span className="chatgpt-chat-item-text">{p.title}</span>
+                      {subchats.length > 0 && (
+                        <span className="chatgpt-folder-chevron-wrap ml-auto">
+                          {isExpanded ? (
+                            <ChevronDown className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                          ) : (
+                            <ChevronRight className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                          )}
+                        </span>
+                      )}
+                    </button>
+
+                    {isExpanded && subchats.length > 0 && (
+                      <div className="chatgpt-folder-nested">
+                        {subchats.map((subchat) => {
+                          const isSubchatActive =
+                            selectedChatKey === subchat.id ||
+                            (selectedChat === subchat.title && (selectedChatKey.startsWith(p.id) || selectedChatKey.startsWith("chat-")));
+
+                          return (
+                            <button
+                              key={subchat.id}
+                              type="button"
+                              onClick={() => {
+                                setSelectedChat(subchat.title);
+                                setSelectedChatKey(subchat.id);
+                                if (subchat.title === "New chat") {
+                                  setIsAgentsDrawerOpen(true);
+                                  setIsKnowledgeOpen(false);
+                                } else {
+                                  setIsAgentsDrawerOpen(false);
+                                }
+                              }}
+                              className={`chatgpt-subchat-item ${isSubchatActive ? "active" : ""}`}
+                            >
+                              <span className="chatgpt-chat-item-text">{subchat.title}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+
+        {/* Sidebar Footer with Settings and Arun Eswaran Profile */}
+        <div className="chatgpt-sidebar-footer">
+          <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+            <DialogTrigger asChild>
+              <button
+                type="button"
+                className="chatgpt-settings-btn"
+                title="Settings"
+                aria-label="Settings"
+              >
+                <Settings className="h-4 w-4" />
+                <span>Settings</span>
+              </button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Settings</DialogTitle>
+                <DialogDescription>
+                  Manage workspace preferences, agent autonomy, and model configurations.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 pt-2">
+                <div className="flex items-center justify-between py-2 border-b border-zinc-100">
+                  <div>
+                    <div className="font-medium text-sm text-zinc-900">Workspace Theme</div>
+                    <div className="text-sm text-zinc-500">Light clean interface</div>
+                  </div>
+                  <span className="text-sm font-medium px-2.5 py-1 bg-zinc-100 rounded text-zinc-700">Light</span>
+                </div>
+                <div className="flex items-center justify-between py-2 border-b border-zinc-100">
+                  <div>
+                    <div className="font-medium text-sm text-zinc-900">Voice & Audio Mode</div>
+                    <div className="text-sm text-zinc-500">High-fidelity voice synthesis</div>
+                  </div>
+                  <span className="text-sm font-medium px-2.5 py-1 bg-zinc-100 rounded text-zinc-700">Enabled</span>
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <div>
+                    <div className="font-medium text-sm text-zinc-900">Agent Collaboration</div>
+                    <div className="text-sm text-zinc-500">Autonomous multi-agent orchestration</div>
+                  </div>
+                  <span className="text-sm font-medium px-2.5 py-1 bg-zinc-100 rounded text-zinc-700">Active</span>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <div className="chatgpt-profile-row">
+            <div className="chatgpt-profile-left">
+              <div className="chatgpt-profile-avatar">
+                <span>AE</span>
+              </div>
+              <div className="chatgpt-profile-info">
+                <span className="chatgpt-profile-name">Arun Eswaran</span>
+                <span className="sr-only">ARUN PE</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="chatgpt-theme-toggle-btn"
+              title="Light mode"
+              aria-label="Theme toggle"
             >
               <Sun className="h-4 w-4" />
             </button>
@@ -356,165 +1039,669 @@ function ProjectWorkspace({
         </div>
       </aside>
 
-      {/* Main Workspace Area */}
+      {/* Main Workspace Area (Image 1 & Image 2) */}
       <div className="workspace-main">
         {/* Topbar */}
-        <header className="workspace-topbar">
-          <div className="workspace-topbar-left">
-            <button
-              type="button"
-              onClick={onBackToDashboard}
-              className="workspace-back-btn"
-              title="Back to Home"
-              aria-label="Back to Home"
-            >
-              <ArrowLeft className="h-4 w-4 mr-1.5" />
-              <span>Back to Home</span>
-            </button>
-            {isSidebarCollapsed && (
-              <button
-                type="button"
-                onClick={() => setIsSidebarCollapsed(false)}
-                className="workspace-sidebar-open-btn"
-                title="Open sidebar"
-                aria-label="Open sidebar"
-              >
-                <PanelLeft className="h-4 w-4" />
-              </button>
-            )}
-            <span className="workspace-topbar-divider" aria-hidden="true" />
-            <h2 className="workspace-topbar-title">{project.title}</h2>
+        <header className="chatgpt-topbar">
+          <div className="chatgpt-topbar-left">
+            <span className="chatgpt-topbar-project-title">
+              {isNewProject && (project.title === "New project" || !project.title)
+                ? "Untitled project"
+                : (project.title || "Untitled project")}
+            </span>
           </div>
 
-          <div className="workspace-topbar-right">
-            <Dialog open={isKnowledgeOpen} onOpenChange={setIsKnowledgeOpen}>
-              <DialogTrigger asChild>
-                <button type="button" className="workspace-topbar-btn">
-                  <BookOpen className="h-4 w-4 mr-2" />
-                  <span>What I know</span>
-                </button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md workspace-knowledge-dialog">
-                <DialogHeader>
-                  <DialogTitle className="text-zinc-900 font-bold">Project Knowledge Base</DialogTitle>
-                  <DialogDescription className="text-zinc-500">
-                    Context and active collaborative agents for {project.title}.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 pt-2">
-                  <div>
-                    <h4 className="font-semibold text-zinc-900 mb-1 text-sm">Executive Summary</h4>
-                    <p className="text-zinc-600 leading-relaxed text-sm">{project.description}</p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-zinc-900 mb-2 text-sm">Assigned Autonomous Agents</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {project.agents.map((agent) => (
-                        <span key={agent} className="px-3 py-1 bg-zinc-100 text-zinc-800 border border-zinc-200 rounded-full font-medium text-sm">
-                          {agent}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+          <div className="chatgpt-topbar-right">
+            {!isKnowledgeOpen && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsKnowledgeOpen(true);
+                  setIsAgentsDrawerOpen(false);
+                }}
+                className="chatgpt-what-i-know-btn"
+                title="What I know so far"
+                aria-label="What I know"
+              >
+                <BookOpen className="h-4 w-4 mr-1.5" />
+                <span>What I know</span>
+              </button>
+            )}
           </div>
         </header>
 
-        {/* Canvas Body */}
-        <div className="workspace-canvas">
-          <div className="workspace-content-container">
-            <h1 className="workspace-heading">What is this project about?</h1>
-            <h3 className="workspace-subheading">What outcome would make this project worthwhile?</h3>
-            <p className="workspace-prompt">
-              Reply below in a sentence or two, and I'll build the picture with you.
-            </p>
+        {/* Center Canvas */}
+        <div className={`workspace-canvas ${messages.length > 0 ? "has-messages" : "is-empty-canvas"}`}>
+          {messages.length === 0 && (
+            <div className="chatgpt-center-card">
+              {isNewProject ? (
+                <>
+                  <h1 className="chatgpt-greeting">Hey Arun, what project is on your mind?</h1>
+                  <p className="chatgpt-context-sub">
+                    Tell me what you'd like to build, and we'll assemble the right agents.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h1 className="chatgpt-greeting">Hey Arun, What is this project about?</h1>
+                  <p className="chatgpt-context-sub">What outcome would make this project worthwhile?</p>
+                </>
+              )}
 
-            {/* Action Buttons */}
-            <div className="workspace-actions">
-              <button
-                type="button"
-                onClick={() => handleSend("Help me define the idea")}
-                className="workspace-btn-primary"
-              >
-                <span>Help me define the idea</span>
-                <ArrowUpRight className="h-4 w-4 ml-1.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSend("Attach a plan")}
-                className="workspace-btn-secondary"
-              >
-                <Paperclip className="h-4 w-4 mr-2" />
-                <span>Attach a plan</span>
-              </button>
+              {/* Action Buttons */}
+              <div className="workspace-actions">
+                <button
+                  type="button"
+                  onClick={() => handleSend("Help me define the idea")}
+                  className="workspace-btn-primary"
+                >
+                  <span>Help me define the idea</span>
+                  <ArrowUpRight className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSend("Attach a plan")}
+                  className="workspace-btn-secondary"
+                >
+                  <Paperclip className="h-4 w-4" />
+                  <span>Attach a plan</span>
+                </button>
+              </div>
+
+              {/* Center Input Dock */}
+              <div className="workspace-dock-wrapper center-dock-wrapper">
+                {renderInputDock()}
+              </div>
             </div>
+          )}
 
-            {/* Messages Thread */}
-            {messages.length > 0 && (
-              <div className="workspace-conversation">
-                {messages.map((m) => (
+          {/* Messages Thread if Any */}
+          {messages.length > 0 && (
+            <div className="workspace-conversation">
+              {messages.map((m) => {
+                const isOutcomeMessage =
+                  m.sender === "assistant" &&
+                  m.text.includes("What primary outcome do you want to achieve");
+
+                const isKnowledgePackMsg =
+                  m.sender === "assistant" &&
+                  (m.text.includes("Knowledge Packs") ||
+                    m.text.includes("Knowledge Pack") ||
+                    m.text.includes("Tier-2 & Tier-3 City Market Penetration") ||
+                    m.text.includes("Frost & Sullivan Knowledge Packs") ||
+                    m.text.includes("market intelligence reports") ||
+                    m.text.includes("Matching reports") ||
+                    m.text.includes("reports covering"));
+
+                const isStrokeBox =
+                  m.sender === "assistant" &&
+                  (m.text.includes("Let's define the scope") ||
+                    m.text.includes("Target Market & Audience") ||
+                    m.text.includes("Success Criteria") ||
+                    m.text.includes("primary goal"));
+
+                return (
                   <div
                     key={m.id}
                     className={`workspace-message ${m.sender === "user" ? "user-message" : "ai-message"}`}
                   >
-                    <div className="whitespace-pre-line">{m.text}</div>
-                  </div>
-                ))}
-              </div>
-            )}
+                    {isOutcomeMessage ? (
+                      <div className="ai-intake-and-outcome-container">
+                        {/* Project brief message section above the box */}
+                        <div className="ai-intake-card">
+                          <h4 className="ai-intake-title">
+                            Great initiative, Arun!
+                          </h4>
+                          <p className="ai-intake-text">
+                            We've received your project brief for "{project.title}". Autonomous collaborative agents are ready to coordinate market dynamics, unit economics, and execution milestones. To configure the optimal agent workflow, let's establish your direction:
+                          </p>
+                        </div>
+
+                        {/* Outcome Choice Box */}
+                        <div className="ai-stroke-box">
+                          <div className="ai-outcome-container">
+                            <h3 className="ai-outcome-question">
+                              What primary outcome do you want to achieve with this project?
+                            </h3>
+
+                            <div className="ai-outcome-options-grid">
+                              {[
+                                "Launch a new AI product or service",
+                                "Automate internal operations & reduce costs",
+                                "Expand into a new customer segment or region",
+                                "Accelerate enterprise sales & revenue growth",
+                              ].map((opt) => (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => handleSend(opt)}
+                                  className="ai-outcome-option-btn"
+                                >
+                                  <span className="ai-outcome-option-text">{opt}</span>
+                                  <ArrowUpRight className="ai-outcome-option-arrow" />
+                                </button>
+                              ))}
+                            </div>
+
+                            <div className="ai-outcome-divider-row">
+                              <div className="ai-outcome-divider-line" />
+                              <span className="ai-outcome-footer-label">Or in your own words</span>
+                              <div className="ai-outcome-divider-line" />
+                            </div>
+
+                            <form
+                              onSubmit={(e) => {
+                                e.preventDefault();
+                                if (customOutcome.trim()) {
+                                  handleSend(customOutcome.trim());
+                                  setCustomOutcome("");
+                                }
+                              }}
+                              className="ai-outcome-input-form"
+                            >
+                              <input
+                                type="text"
+                                value={customOutcome}
+                                onChange={(e) => setCustomOutcome(e.target.value)}
+                                placeholder="Type your answer and press Enter"
+                                className="ai-outcome-input-field"
+                                aria-label="Type your answer and press Enter"
+                              />
+                              <span className="sr-only">Type your answer and press Enter</span>
+                              <button
+                                type="submit"
+                                disabled={!customOutcome.trim()}
+                                className="ai-outcome-submit-btn"
+                                aria-label="Submit answer"
+                                title="Send"
+                              >
+                                <ArrowUp className="h-4 w-4" />
+                              </button>
+                            </form>
+                          </div>
+                        </div>
+                      </div>
+                    ) : isKnowledgePackMsg ? (
+                      <div className="ai-knowledge-flow-container">
+                        {/* Matching Knowledge Packages */}
+                        <div className="ai-knowledge-packs-wrapper">
+                          <div className="ai-knowledge-packs-header">
+                            <h3 className="ai-knowledge-packs-title">Matching Knowledge Packages</h3>
+                          </div>
+
+                          <div className="ai-knowledge-packs-grid">
+                            {defaultKnowledgePacks.map((pack) => {
+                              const isAdded = !!obtainedPacks[pack.id];
+                              return (
+                                <div key={pack.id} className="ai-knowledge-pack-card">
+                                  <div className="ai-pack-card-header">
+                                    <div className="ai-pack-card-top-row">
+                                      <h4 className="ai-pack-title">{pack.title}</h4>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleTogglePack(pack.id)}
+                                        className={`ai-pack-get-btn ${isAdded ? "ai-pack-get-btn--added" : ""}`}
+                                        aria-label={isAdded ? `${pack.title} added` : `Get ${pack.title}`}
+                                        title={isAdded ? "Pack added to project context" : "Add knowledge pack to project context"}
+                                      >
+                                        {isAdded ? (
+                                          <>
+                                            <Check className="h-3.5 w-3.5 mr-1 text-emerald-600" />
+                                            <span>ADDED ✓</span>
+                                          </>
+                                        ) : (
+                                          <span>GET</span>
+                                        )}
+                                      </button>
+                                    </div>
+
+                                    <p className="ai-pack-subtitle" title={pack.subtitle}>
+                                      <Folder className="h-3.5 w-3.5 text-zinc-400 flex-shrink-0" />
+                                      <span className="ai-pack-subtitle-text">{pack.subtitle}</span>
+                                    </p>
+                                  </div>
+
+                                  <div className="ai-pack-divider" />
+
+                                  <div className="ai-pack-files-list">
+                                    {pack.files.map((file, fileIdx) => (
+                                      <div key={fileIdx} className="ai-pack-file-row">
+                                        <div className="ai-pack-file-left">
+                                          <AdobeAcrobatPdfIcon className="ai-pack-pdf-icon" />
+                                          <div className="ai-pack-file-info">
+                                            <h5 className="ai-pack-file-title">
+                                              {file.title} <span className="ai-pack-file-date">- {file.date}</span>
+                                            </h5>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* Summary Box: How this knowledge supports your project */}
+                          <div className="ai-relevance-box ai-relevance-summary-wrapper">
+                            <h4 className="ai-relevance-title">How this knowledge supports your project</h4>
+                            <div className="ai-relevance-text workspace-message-body whitespace-pre-line leading-relaxed text-zinc-500">
+                              {m.text}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Why these reports are relevant Section */}
+                        <div className="ai-matching-reports-wrapper">
+                          <div className="ai-matching-reports-header">
+                            <h3 className="ai-matching-reports-title">Why these reports are relevant</h3>
+                          </div>
+
+                          <div className="ai-matching-reports-grid">
+                            {defaultMatchingReports.slice(0, 2).map((report) => {
+                              const isAdded = !!obtainedReports[report.id];
+                              return (
+                                <div key={report.id} className="ai-matching-report-card">
+                                  <div className="ai-matching-report-top">
+                                    <div className="ai-matching-report-header-info">
+                                      <h4 className="ai-matching-report-title">{report.title}</h4>
+                                      <p className="ai-matching-report-meta">
+                                        {report.author} · {report.year}
+                                      </p>
+                                    </div>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => handleToggleReport(report.id)}
+                                      className={`ai-pack-get-btn ${isAdded ? "ai-pack-get-btn--added" : ""}`}
+                                      aria-label={isAdded ? `${report.title} added` : `Get ${report.title}`}
+                                      title={isAdded ? "Report added to project context" : "Add report to project context"}
+                                    >
+                                      {isAdded ? (
+                                        <>
+                                          <Check className="h-3.5 w-3.5 mr-1 text-emerald-600" />
+                                          <span>ADDED ✓</span>
+                                        </>
+                                      ) : (
+                                        <span>GET</span>
+                                      )}
+                                    </button>
+                                  </div>
+
+                                  <p className="ai-matching-report-summary">{report.summary}</p>
+
+                                  <div className="ai-matching-report-tags">
+                                    {report.tags.map((tag) => (
+                                      <span key={tag} className="ai-matching-report-tag">
+                                        {tag}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Recommended Agents Section */}
+                        <div className="ai-recommended-agents-wrapper">
+                          <div className="ai-recommended-agents-header">
+                            <h3 className="ai-recommended-agents-title">Recommended Agents</h3>
+                          </div>
+
+                          <div className="ai-recommended-agents-grid">
+                            {(agents && agents.length > 0 ? agents : initialAgents).slice(0, 2).map((agent) => {
+                              const isGenerated = !!generatedAgents[agent.id];
+                              const isGenerating = generatingAgentId === agent.id;
+                              return (
+                                <article
+                                  key={agent.id}
+                                  className="project-card agent-card ai-agent-recommend-card"
+                                  onClick={(e) => {
+                                    if ((e.target as HTMLElement).closest("button")) {
+                                      return;
+                                    }
+                                    if (agent.id === "agent-sbi-kyc" || agent.title.includes("KYC")) {
+                                      if (onOpenKyc) {
+                                        onOpenKyc();
+                                        return;
+                                      }
+                                    }
+                                    handleGenerateWithAgent(agent);
+                                  }}
+                                >
+                                  <div className="project-card-main">
+                                    <div className="project-card-header">
+                                      <h3 className="project-card-title">
+                                        <button
+                                          type="button"
+                                          className="project-title-link"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (agent.id === "agent-sbi-kyc" || agent.title.includes("KYC")) {
+                                              if (onOpenKyc) {
+                                                onOpenKyc();
+                                                return;
+                                              }
+                                            }
+                                            handleGenerateWithAgent(agent);
+                                          }}
+                                        >
+                                          {agent.title}
+                                        </button>
+                                      </h3>
+                                    </div>
+
+                                    <p className="project-card-description">{agent.description}</p>
+                                  </div>
+
+                                  <div className="agent-card-footer">
+                                    <span className="agent-last-used">
+                                      <Clock className="agent-clock-icon" aria-hidden="true" />
+                                      <span>Last used {agent.lastUsed || "recently"}</span>
+                                    </span>
+
+                                    <button
+                                      type="button"
+                                      className="project-action-btn project-action-btn--run"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleGenerateWithAgent(agent);
+                                      }}
+                                      disabled={isGenerating}
+                                      aria-label={
+                                        isGenerated
+                                          ? `Report generated with ${agent.title}`
+                                          : isGenerating
+                                            ? `Generating report with ${agent.title}...`
+                                            : `Run agent with ${agent.title}`
+                                      }
+                                      title={isGenerated ? "Agent running" : "Run agent"}
+                                    >
+                                      {isGenerating ? (
+                                        <span>Running...</span>
+                                      ) : isGenerated ? (
+                                        <>
+                                          <Check className="h-3.5 w-3.5 mr-1 text-emerald-400" />
+                                          <span>Running ✓</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <span>Run agent</span>
+                                          <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5 ml-1" />
+                                        </>
+                                      )}
+                                    </button>
+                                  </div>
+                                </article>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    ) : isStrokeBox ? (
+                      <div className="ai-stroke-box">
+                        <div className="workspace-message-body whitespace-pre-line">{m.text}</div>
+                      </div>
+                    ) : (
+                      <div className="workspace-message-body whitespace-pre-line">{m.text}</div>
+                    )}
+
+                    {m.sender === "assistant" && (
+                      <div className="ai-message-actions">
+                      <button
+                        type="button"
+                        onClick={() => handleCopyMessage(m.id, m.text)}
+                        className="ai-action-btn"
+                        title={copiedMessageId === m.id ? "Copied!" : "Copy"}
+                        aria-label="Copy"
+                      >
+                        {copiedMessageId === m.id ? (
+                          <Check className="h-4 w-4 text-emerald-600" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        className="ai-action-btn"
+                        title="Good response"
+                        aria-label="Good response"
+                      >
+                        <ThumbsUp className="h-4 w-4" />
+                      </button>
+
+                      <button
+                        type="button"
+                        className="ai-action-btn"
+                        title="Bad response"
+                        aria-label="Bad response"
+                      >
+                        <ThumbsDown className="h-4 w-4" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleSpeakMessage(m.id, m.text)}
+                        className={`ai-action-btn ${speakingMessageId === m.id ? "active" : ""}`}
+                        title={speakingMessageId === m.id ? "Stop reading" : "Read aloud"}
+                        aria-label="Read aloud"
+                      >
+                        <Volume2 className="h-4 w-4" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (typeof navigator !== "undefined" && navigator.share) {
+                            navigator.share({ text: m.text }).catch(() => {});
+                          }
+                        }}
+                        className="ai-action-btn"
+                        title="Share"
+                        aria-label="Share"
+                      >
+                        <Share2 className="h-4 w-4" />
+                      </button>
+
+                      <button
+                        type="button"
+                        className="ai-action-btn"
+                        title="More options"
+                        aria-label="More options"
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
+          )}
         </div>
 
-        {/* Bottom Floating Input Dock */}
-        <div className="workspace-dock-wrapper">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSend();
-            }}
-            className="workspace-dock"
-          >
-            <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Reply, attach a file, or tap the mic to talk"
-              className="workspace-dock-input"
-            />
-            <div className="workspace-dock-actions">
+        {/* Bottom Dock (Only when conversation is active) */}
+        {messages.length > 0 && (
+          <div className="workspace-dock-wrapper bottom-dock-wrapper">
+            {renderInputDock()}
+          </div>
+        )}
+      </div>
+
+      {/* Right Side Slide-In Panel (Project Agents) */}
+      {isAgentsDrawerOpen && (
+        <aside
+          className="workspace-agents-drawer"
+          aria-label="Agents"
+        >
+          <div className="workspace-agents-inner">
+            {/* Single Heading: Agents */}
+            <div className="agents-panel-header">
+              <div className="agents-panel-title-wrap">
+                <h2 className="agents-panel-title">Agents</h2>
+              </div>
+            </div>
+
+            {/* Project Agents (3 agents listdown) */}
+            <div className="agents-drawer-section">
+              <div className="agents-cards-stack">
+                {projectRelatedAgents.map((agent) => {
+                  const isGenerating = generatingAgentId === agent.id;
+                  const isGenerated = !!generatedAgents[agent.id];
+
+                  return (
+                    <article
+                      key={agent.id}
+                      className="agent-drawer-card agent-drawer-card--project"
+                      onClick={() => handleGenerateWithAgent(agent)}
+                    >
+                      <div className="agent-drawer-card-top">
+                        <h4 className="agent-drawer-card-title">{agent.title}</h4>
+                        <p className="agent-drawer-card-desc">{agent.description}</p>
+                      </div>
+
+                      <div className="agent-drawer-card-footer">
+                        <span className="agent-drawer-last-used">
+                          <Clock className="h-3.5 w-3.5 text-zinc-400" />
+                          <span>{agent.lastUsed || "Active now"}</span>
+                        </span>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="agents-drawer-divider" />
+
+            {/* Section 2: Other Agents */}
+            <div className="agents-drawer-section">
+              <div className="agents-section-header">
+                <h3 className="agents-section-title">Other Agents</h3>
+              </div>
+
+              <div className="agents-cards-stack">
+                {otherWorkspaceAgents.map((agent) => {
+                  const isGenerating = generatingAgentId === agent.id;
+                  const isGenerated = !!generatedAgents[agent.id];
+                  const isKyc = agent.id === "agent-sbi-kyc" || agent.title.includes("KYC");
+
+                  return (
+                    <article
+                      key={agent.id}
+                      className="agent-drawer-card agent-drawer-card--other"
+                      onClick={() => {
+                        if (isKyc && onOpenKyc) {
+                          onOpenKyc();
+                          return;
+                        }
+                        handleGenerateWithAgent(agent);
+                      }}
+                    >
+                      <div className="agent-drawer-card-top">
+                        <span className="agent-drawer-card-badge agent-drawer-card-badge--other">Workspace</span>
+                        <h4 className="agent-drawer-card-title">{agent.title}</h4>
+                        <p className="agent-drawer-card-desc">{agent.description}</p>
+                      </div>
+
+                      <div className="agent-drawer-card-footer">
+                        <span className="agent-drawer-last-used">
+                          <Clock className="h-3.5 w-3.5 text-zinc-400" />
+                          <span>{agent.lastUsed || "Available"}</span>
+                        </span>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </aside>
+      )}
+
+      {/* Right Side Slide-In Panel (What I know so far / Knowledge Base) */}
+      {isKnowledgeOpen && (
+        <aside
+          className="workspace-knowledge-drawer"
+          aria-label="What I know so far"
+        >
+          <div className="workspace-knowledge-inner">
+            {/* Header */}
+            <div className="knowledge-panel-header">
+              <div className="knowledge-panel-title-wrap">
+                <BookOpen className="h-4 w-4 text-zinc-800 shrink-0" />
+                <h2 className="knowledge-panel-title">What I know so far</h2>
+              </div>
               <button
                 type="button"
-                onClick={() => handleSend("Attach a plan")}
-                className="workspace-dock-icon-btn"
-                title="Attach file"
-                aria-label="Attach file"
+                onClick={() => setIsKnowledgeOpen(false)}
+                className="knowledge-panel-close-btn"
+                title="Close panel"
+                aria-label="Close panel"
               >
-                <Paperclip className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => toast.info("Microphone listening...")}
-                className="workspace-dock-icon-btn"
-                title="Voice input"
-                aria-label="Voice input"
-              >
-                <Mic className="h-4 w-4" />
-              </button>
-              <button
-                type="submit"
-                disabled={!inputValue.trim()}
-                className="workspace-dock-send-btn"
-                title="Send reply"
-                aria-label="Send reply"
-              >
-                <ArrowUp className="h-4 w-4" />
+                <X className="h-4 w-4" />
               </button>
             </div>
-          </form>
-        </div>
-      </div>
+
+            <div className="knowledge-panel-status">Waiting on you</div>
+
+            {/* Project score (No dash line) */}
+            <div className="knowledge-panel-section">
+              <div className="knowledge-section-title">Project score</div>
+              <div className="knowledge-score-value">not scored yet</div>
+              <p className="knowledge-score-hint">
+                Still need: goal, who it's for, investment, expected annual impact, target date, delivery owner.
+              </p>
+            </div>
+
+            {/* Core facts known */}
+            <div className="knowledge-panel-section">
+              <div className="knowledge-section-title">Core facts known</div>
+              <div className="knowledge-facts-progress">
+                <div className="knowledge-facts-bar" style={{ width: "0%" }} />
+              </div>
+              <div className="knowledge-facts-sub">0 of 6 core facts</div>
+            </div>
+
+            {/* Still to learn */}
+            <div className="knowledge-still-to-learn">
+              <span className="knowledge-still-left">
+                <span className="knowledge-plus">+</span>
+                <span>Still to learn</span>
+              </span>
+              <span className="knowledge-still-count">6</span>
+            </div>
+
+            {/* Project Knowledge Base / Context */}
+            <div className="knowledge-panel-section">
+              <div className="knowledge-section-title">Project Knowledge Base</div>
+              <p className="knowledge-context-desc">
+                Context and active collaborative agents for {project.title}.
+              </p>
+            </div>
+
+            {/* Executive Summary */}
+            <div className="knowledge-panel-section">
+              <div className="knowledge-section-title">Executive Summary</div>
+              <p className="knowledge-summary-text">{project.description}</p>
+            </div>
+
+            {/* Assigned Autonomous Agents */}
+            <div className="knowledge-panel-section">
+              <div className="knowledge-section-title">Assigned Autonomous Agents</div>
+              <div className="knowledge-agents-list">
+                {project.agents.map((agent) => (
+                  <span key={agent} className="knowledge-agent-pill">
+                    {agent}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </aside>
+      )}
     </div>
   );
 }
@@ -531,6 +1718,7 @@ interface KycVerificationPageProps {
   onProceedToWorkspace?: (notes?: string, docs?: string[]) => void;
 }
 
+
 function KycVerificationPage({ onBack, onProceedToWorkspace }: KycVerificationPageProps) {
   const [documents, setDocuments] = useState<AttachedFile[]>([
     {
@@ -544,6 +1732,12 @@ function KycVerificationPage({ onBack, onProceedToWorkspace }: KycVerificationPa
       name: "Customer_PAN_Card.jpg",
       size: "820 KB",
       type: "image/jpeg",
+    },
+    {
+      id: "doc-3",
+      name: "Customer_Passport_Front_Back.pdf",
+      size: "2.1 MB",
+      type: "application/pdf",
     },
   ]);
   const [notes, setNotes] = useState("");
@@ -574,18 +1768,15 @@ function KycVerificationPage({ onBack, onProceedToWorkspace }: KycVerificationPa
     }));
 
     setDocuments((prev) => [...prev, ...newDocs]);
-    toast.success(`Attached ${newDocs.length} document${newDocs.length > 1 ? "s" : ""}`);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleRemoveDoc = (id: string) => {
     setDocuments((prev) => prev.filter((d) => d.id !== id));
-    toast.info("Document removed");
   };
 
   const handleVerify = () => {
     if (documents.length === 0) {
-      toast.error("Please attach at least one customer document to verify");
       return;
     }
 
@@ -603,7 +1794,6 @@ function KycVerificationPage({ onBack, onProceedToWorkspace }: KycVerificationPa
           authenticityScore: "99.8% Match",
         },
       });
-      toast.success("Document verification completed successfully!");
     }, 1000);
   };
 
@@ -634,11 +1824,9 @@ function KycVerificationPage({ onBack, onProceedToWorkspace }: KycVerificationPa
                 href={
                   item === "Home"
                     ? "#top"
-                    : item === "Profile"
-                      ? "#profile"
-                      : item === "Add Tokens"
-                        ? "#tokens"
-                        : "#settings"
+                    : item === "Packages"
+                      ? "#packages"
+                      : "#settings"
                 }
                 onClick={(e) => {
                   if (item === "Home") {
@@ -646,7 +1834,6 @@ function KycVerificationPage({ onBack, onProceedToWorkspace }: KycVerificationPa
                     onBack();
                   } else {
                     e.preventDefault();
-                    toast.info(item);
                   }
                 }}
               >
@@ -658,7 +1845,6 @@ function KycVerificationPage({ onBack, onProceedToWorkspace }: KycVerificationPa
             <button
               type="button"
               className="aircond-login inline-flex items-center"
-              onClick={() => toast.info("Log in modal")}
             >
               Log in
               <ArrowUpRight className="ml-1 h-3.5 w-3.5" aria-hidden="true" />
@@ -667,7 +1853,7 @@ function KycVerificationPage({ onBack, onProceedToWorkspace }: KycVerificationPa
         </div>
 
         {/* Heading, shortened subline and unwrapped back navigation inline inside header */}
-        <div className="aircond-header-bottom kyc-header-bottom">
+        <div className="aircond-header-bottom text-center">
           <div className="kyc-heading-inline-row">
             <button
               type="button"
@@ -682,7 +1868,7 @@ function KycVerificationPage({ onBack, onProceedToWorkspace }: KycVerificationPa
               SBI Customer KYC & Document Verification
             </h1>
           </div>
-          <p className="aircond-header-subline kyc-header-subline-left">
+          <p className="aircond-header-subline text-center">
             Verifies uploaded customer documents for authenticity and KYC compliance.
           </p>
         </div>
@@ -716,7 +1902,6 @@ function KycVerificationPage({ onBack, onProceedToWorkspace }: KycVerificationPa
                 type: file.type || "document",
               }));
               setDocuments((prev) => [...prev, ...newDocs]);
-              toast.success(`Attached ${newDocs.length} document${newDocs.length > 1 ? "s" : ""}`);
             }
           }}
         >
@@ -740,10 +1925,13 @@ function KycVerificationPage({ onBack, onProceedToWorkspace }: KycVerificationPa
           {/* Attached Documents List */}
           {documents.length > 0 && (
             <div className="kyc-docs-list">
-              {documents.map((doc) => (
-                <div key={doc.id} className="kyc-doc-item">
+              {documents.map((doc, idx) => (
+                <div
+                  key={doc.id}
+                  className={`kyc-doc-item ${idx === 2 ? "kyc-doc-item-bottom" : ""}`}
+                >
                   <div className="kyc-doc-info">
-                    <FileText className="kyc-doc-icon" aria-hidden="true" />
+                    <AdobeAcrobatPdfIcon className="kyc-doc-acrobat-icon" />
                     <div className="kyc-doc-text">
                       <span className="kyc-doc-name">{doc.name}</span>
                       <span className="kyc-doc-size">{doc.size}</span>
@@ -865,6 +2053,71 @@ interface TeamMember {
   role: string;
 }
 
+function MemberRoleDropdown({
+  role,
+  onChange,
+  memberName,
+}: {
+  role: string;
+  onChange: (newRole: string) => void;
+  memberName: string;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
+  const roles = ["Analyst", "Owner", "Strategist", "Specialist"];
+
+  return (
+    <div className="dark-agent-member-role-select" ref={containerRef}>
+      <button
+        type="button"
+        className="dark-agent-select"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label={`Role for ${memberName}`}
+        aria-expanded={isOpen}
+      >
+        <span>{role}</span>
+        <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+
+      {isOpen && (
+        <div className="dark-agent-dropdown-menu" role="listbox">
+          {roles.map((r) => (
+            <button
+              key={r}
+              type="button"
+              className={`dark-agent-dropdown-item ${r === role ? "selected" : ""}`}
+              onClick={() => {
+                onChange(r);
+                setIsOpen(false);
+              }}
+              role="option"
+              aria-selected={r === role}
+            >
+              <span>{r}</span>
+              {r === role && <Check className="h-3.5 w-3.5 text-white" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CreateAgentPage({ onBack, onCreateAgent, initialData, isEdit }: CreateAgentPageProps) {
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [name, setName] = useState(initialData?.name || "");
@@ -892,7 +2145,6 @@ function CreateAgentPage({ onBack, onCreateAgent, initialData, isEdit }: CreateA
 
   const handleAddMember = () => {
     if (!inviteEmail.trim()) {
-      toast.error("Please enter a member email address");
       return;
     }
     const cleanEmail = inviteEmail.trim();
@@ -909,7 +2161,6 @@ function CreateAgentPage({ onBack, onCreateAgent, initialData, isEdit }: CreateA
       },
     ]);
     setInviteEmail("");
-    toast.success("Member added");
   };
 
   const handleUpdateMemberRole = (id: string, newRole: string) => {
@@ -949,12 +2200,7 @@ function CreateAgentPage({ onBack, onCreateAgent, initialData, isEdit }: CreateA
   };
 
   const handleNextFromStep1 = () => {
-    if (!name.trim()) {
-      toast.error("Please enter an Agent Name");
-      return;
-    }
-    if (!role.trim()) {
-      toast.error("Please enter an Agent Role");
+    if (!name.trim() || !role.trim()) {
       return;
     }
     setCurrentStep(2);
@@ -962,13 +2208,7 @@ function CreateAgentPage({ onBack, onCreateAgent, initialData, isEdit }: CreateA
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) {
-      toast.error("Please enter an Agent Name");
-      setCurrentStep(1);
-      return;
-    }
-    if (!role.trim()) {
-      toast.error("Please enter an Agent Role");
+    if (!name.trim() || !role.trim()) {
       setCurrentStep(1);
       return;
     }
@@ -992,9 +2232,7 @@ function CreateAgentPage({ onBack, onCreateAgent, initialData, isEdit }: CreateA
           <button
             type="button"
             onClick={() => {
-              if (!name.trim() || !role.trim()) {
-                toast.error("Please complete Agent Name and Role in Step 1 first");
-              } else {
+              if (name.trim() && role.trim()) {
                 setCurrentStep(2);
               }
             }}
@@ -1007,9 +2245,7 @@ function CreateAgentPage({ onBack, onCreateAgent, initialData, isEdit }: CreateA
           <button
             type="button"
             onClick={() => {
-              if (!name.trim() || !role.trim()) {
-                toast.error("Please complete Agent Name and Role in Step 1 first");
-              } else {
+              if (name.trim() && role.trim()) {
                 setCurrentStep(3);
               }
             }}
@@ -1020,11 +2256,6 @@ function CreateAgentPage({ onBack, onCreateAgent, initialData, isEdit }: CreateA
           </button>
         </nav>
 
-        {/* Hero Icon Badge */}
-        <div className="dark-agent-icon-badge" aria-hidden="true">
-          <Plus className="h-5 w-5" />
-        </div>
-
         {/* Main Title & Subtitle */}
         <div className="dark-agent-header-text">
           <h1 className="dark-agent-heading">
@@ -1033,7 +2264,7 @@ function CreateAgentPage({ onBack, onCreateAgent, initialData, isEdit }: CreateA
             {currentStep === 3 && (isEdit ? "Review & save instructions" : "Review & launch instructions")}
           </h1>
           <p className="dark-agent-subheading">
-            {currentStep === 1 && "You can create more agents later or coordinate collaborative workflows with a single agent"}
+            {currentStep === 1 && "Create more agents or coordinate collaborative workflows."}
             {currentStep === 2 && "Configure operational responsibilities, research variables, and knowledge sources"}
             {currentStep === 3 && "Verify agent parameters and launch instructions before saving"}
           </p>
@@ -1123,19 +2354,11 @@ function CreateAgentPage({ onBack, onCreateAgent, initialData, isEdit }: CreateA
                           <span className="dark-agent-member-email">{member.email}</span>
                         </div>
                       </div>
-                      <div className="dark-agent-member-role-select">
-                        <select
-                          value={member.role}
-                          onChange={(e) => handleUpdateMemberRole(member.id, e.target.value)}
-                          className="dark-agent-select"
-                          aria-label={`Role for ${member.name}`}
-                        >
-                          <option value="Analyst">Analyst</option>
-                          <option value="Owner">Owner</option>
-                          <option value="Strategist">Strategist</option>
-                          <option value="Specialist">Specialist</option>
-                        </select>
-                      </div>
+                      <MemberRoleDropdown
+                        role={member.role}
+                        onChange={(newRole) => handleUpdateMemberRole(member.id, newRole)}
+                        memberName={member.name}
+                      />
                     </div>
                   ))}
                 </div>
@@ -1472,10 +2695,289 @@ function CreateAgentPage({ onBack, onCreateAgent, initialData, isEdit }: CreateA
   );
 }
 
+interface ProjectPackageGroup {
+  projectId: string;
+  projectTitle: string;
+  projectDescription: string;
+  packages: {
+    id: string;
+    title: string;
+    subtitle: string;
+    dateAcquired: string;
+    files: { title: string; date: string }[];
+  }[];
+}
+
+const defaultProjectPackages: ProjectPackageGroup[] = [
+  {
+    projectId: "personal-care-south-asia",
+    projectTitle: "Personal care brand enters South Asia’s smaller cities",
+    projectDescription:
+      "A mid-sized European skincare company expanding across Tier-2 and Tier-3 urban clusters in South Asia.",
+    packages: [
+      {
+        id: "pkg-1",
+        title: "South Asia Tier-2 & Tier-3 City Market Penetration",
+        subtitle:
+          "Strategic city prioritization, price elasticity benchmarks, and retail channel access for non-metro market penetration.",
+        dateAcquired: "June 2026",
+        files: [
+          {
+            title: "Growth Opportunities in Personal Care for Tier-2 and Tier-3 Cities, South Asia, 2025–2030",
+            date: "June 2026",
+          },
+          {
+            title: "Price-Point & Pack-Size Strategy for Mass-Premium Skincare in Emerging South Asian Markets",
+            date: "December 2025",
+          },
+          {
+            title: "Distribution Channel Optimisation: Modern Trade, Quick Commerce and Kirana Networks",
+            date: "December 2026",
+          },
+        ],
+      },
+      {
+        id: "pkg-2",
+        title: "Personal Care Ingredients & Formulation Dynamics",
+        subtitle:
+          "Active, functional, and strategic ingredient research tailored to climate-adaptive skincare formulations.",
+        dateAcquired: "April 2026",
+        files: [
+          {
+            title: "Top 10 Strategic Imperatives in Personal Care Ingredients, 2026",
+            date: "April 2026",
+          },
+          {
+            title: "Personal Care Active Ingredients Market, South Asia Outlook, 2024–2031",
+            date: "March 2026",
+          },
+          {
+            title: "Climate-Adaptive Formulations for High-Humidity Regional Urban Clusters",
+            date: "February 2026",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    projectId: "customer-dynamics",
+    projectTitle: "Customer Dynamics: who is buying, and why",
+    projectDescription:
+      "Buyer segments, purchase drivers and channel behaviour behind current demand across priority secondary urban markets.",
+    packages: [
+      {
+        id: "pkg-3",
+        title: "Consumer Purchasing Habits & Demographic Intelligence Hub",
+        subtitle:
+          "Demographic survey of skincare ritual adoption, regional influencer impact, and dermatological brand credibility.",
+        dateAcquired: "May 2026",
+        files: [
+          {
+            title: "Consumer Purchasing Habits & Demographic Priorities Across 24 Priority Urban Hubs",
+            date: "May 2026",
+          },
+          {
+            title: "Price Elasticity Analysis & Trial Kit Economics in Emerging South Asian Retail",
+            date: "March 2026",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    projectId: "competitive-benchmark-positioning",
+    projectTitle: "Competitive Benchmark & Positioning",
+    projectDescription:
+      "Comparing rivals on market share, trade pricing architecture, distributor margins, and physical retail shelf space.",
+    packages: [
+      {
+        id: "pkg-4",
+        title: "Tier-2 Trade Margins & Wholesale Distributor Economics",
+        subtitle:
+          "Wholesale FMCG distribution structures, distributor performance rebates, and shelf-space conversion economics.",
+        dateAcquired: "April 2026",
+        files: [
+          {
+            title: "Wholesale Trade Margin Benchmark and Distributor Economics for Secondary Cities",
+            date: "April 2026",
+          },
+          {
+            title: "Competitive Share & Channel Pricing Matrices for Emerging Hubs",
+            date: "January 2026",
+          },
+        ],
+      },
+    ],
+  },
+];
+
+interface PackagesPageProps {
+  projects: ProjectItem[];
+  onBack: () => void;
+  onSelectProject: (id: string) => void;
+}
+
+function PackagesPage({ projects, onBack, onSelectProject }: PackagesPageProps) {
+  const totalPackages = 4;
+  const lastDateAcquired = "June 2026";
+
+  return (
+    <main className="packages-page min-h-screen bg-background text-foreground">
+      {/* Black header matching home page with logo and nav */}
+      <header className="aircond-header mx-auto flex flex-col">
+        <div className="aircond-header-top flex items-center justify-between">
+          <button
+            type="button"
+            onClick={onBack}
+            className="aircond-wordmark bg-transparent border-0 p-0 cursor-pointer"
+            aria-label="Return to Dashboard"
+          >
+            <img
+              src={frostAtlasLogo}
+              alt="Frost Atlas"
+              className="aircond-logo-img"
+            />
+          </button>
+          <nav className="aircond-nav" aria-label="Main navigation">
+            {navItems.map((item) => (
+              <a
+                key={item}
+                href={
+                  item === "Home"
+                    ? "#top"
+                    : item === "Packages"
+                      ? "#packages"
+                      : "#settings"
+                }
+                className={`aircond-nav-link ${item === "Packages" ? "active" : ""}`}
+                onClick={(e) => {
+                  if (item === "Home") {
+                    e.preventDefault();
+                    onBack();
+                  } else {
+                    e.preventDefault();
+                  }
+                }}
+              >
+                {item}
+              </a>
+            ))}
+          </nav>
+          <Button className="aircond-login" asChild>
+            <a href="#solutions">
+              Log in <ArrowUpRight aria-hidden="true" />
+            </a>
+          </Button>
+          <Button
+            className="aircond-mobile-menu"
+            variant="ghost"
+            size="icon"
+            aria-label="Open menu"
+            onClick={onBack}
+          >
+            <Menu aria-hidden="true" />
+          </Button>
+        </div>
+        <div className="aircond-header-bottom text-center">
+          <h1 className="aircond-header-heading">
+            Research &amp; Knowledge Packages
+          </h1>
+          <p className="aircond-header-subline">
+            Curated research packages and verified market intelligence.
+          </p>
+        </div>
+      </header>
+
+      {/* Overlapping Stylish Single UI Card for Packages */}
+      <section className="packages-overview-section">
+        <div className="packages-overview-card">
+          <div className="packages-overview-top-row">
+            <div className="packages-overview-meta-left">
+              <h2 className="packages-overview-headline">Acquired Research Packages</h2>
+            </div>
+            <div className="packages-overview-meta-right">
+              <span className="packages-last-update-text">
+                Last acquired: {lastDateAcquired}
+              </span>
+            </div>
+          </div>
+
+          <div className="packages-metrics-grid">
+            <div className="packages-metric-col">
+              <div className="packages-metric-value">{totalPackages}</div>
+              <div className="packages-metric-label">Packages Acquired</div>
+            </div>
+            <div className="packages-metric-col">
+              <div className="packages-metric-value">10</div>
+              <div className="packages-metric-label">Validated Reports</div>
+            </div>
+            <div className="packages-metric-col">
+              <div className="packages-metric-value">{defaultProjectPackages.length}</div>
+              <div className="packages-metric-label">Connected Projects</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Project-Wise Packages Sections Below */}
+      <section className="packages-projects-flow">
+        <div className="packages-section-heading-wrap">
+          <h3 className="packages-flow-title">Project Knowledge Packages</h3>
+        </div>
+
+        <div className="packages-projects-list">
+          {defaultProjectPackages.map((group) => (
+            <div key={group.projectId} className="packages-project-group-card">
+              <div className="packages-project-group-header">
+                <div className="packages-project-title-row">
+                  <Folder className="h-4 w-4 text-zinc-500 shrink-0" />
+                  <h4 className="packages-project-title">{group.projectTitle}</h4>
+                </div>
+              </div>
+
+              <div className="packages-cards-grid">
+                {group.packages.map((pack) => (
+                  <article key={pack.id} className="packages-item-card">
+                    <div className="packages-item-header">
+                      <h5 className="packages-item-title">{pack.title}</h5>
+                    </div>
+
+                    <div className="packages-item-divider" />
+
+                    <div className="packages-item-files-list">
+                      {pack.files.map((file, fIdx) => (
+                        <div key={fIdx} className="packages-file-row">
+                          <AdobeAcrobatPdfIcon className="ai-pack-pdf-icon shrink-0" />
+                          <div className="packages-file-info">
+                            <span className="packages-file-title">
+                              {file.title} <span className="packages-file-date">- {file.date}</span>
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="packages-item-footer">
+                      <button
+                        type="button"
+                        className="packages-download-all-btn"
+                        title={`Download all reports in ${pack.title}`}
+                      >
+                        Download all
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </main>
+  );
+}
+
 function Index() {
-  const [isProjectOpen, setIsProjectOpen] = useState(false);
-  const [projectName, setProjectName] = useState("");
-  const [projectGoal, setProjectGoal] = useState("");
   const [agentsCount, setAgentsCount] = useState(3);
   const [projects, setProjects] = useState<ProjectItem[]>(initialProjects);
   const [projectsCount, setProjectsCount] = useState(initialProjects.length);
@@ -1486,7 +2988,23 @@ function Index() {
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [isCreateAgentView, setIsCreateAgentView] = useState(false);
   const [isKycVerificationView, setIsKycVerificationView] = useState(false);
+  const [isPackagesView, setIsPackagesView] = useState(false);
   const [expandedBadges, setExpandedBadges] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (window.location.hash === "#packages") {
+        setIsPackagesView(true);
+      }
+      const handleHashChange = () => {
+        if (window.location.hash === "#packages") {
+          setIsPackagesView(true);
+        }
+      };
+      window.addEventListener("hashchange", handleHashChange);
+      return () => window.removeEventListener("hashchange", handleHashChange);
+    }
+  }, []);
 
   const filteredProjects = projects.filter((project) => {
     const q = searchQuery.toLowerCase().trim();
@@ -1507,6 +3025,24 @@ function Index() {
       agent.description.toLowerCase().includes(q)
     );
   });
+
+  if (isPackagesView) {
+    return (
+      <PackagesPage
+        projects={projects}
+        onBack={() => {
+          setIsPackagesView(false);
+          if (typeof window !== "undefined" && window.location.hash === "#packages") {
+            window.location.hash = "#top";
+          }
+        }}
+        onSelectProject={(id) => {
+          setIsPackagesView(false);
+          setActiveProjectId(id);
+        }}
+      />
+    );
+  }
 
   if (isCreateAgentView) {
     return (
@@ -1536,100 +3072,91 @@ function Index() {
                     : a
                 )
               );
-              toast.success(`Agent "${data.name}" updated successfully!`);
             } else {
               setAgentsCount((prev) => prev + 1);
-              toast.success(`Agent "${data.name}" created successfully!`);
             }
             setIsCreateAgentView(false);
             setEditingAgent(null);
           }}
         />
-        <Toaster position="top-center" richColors />
       </>
     );
   }
 
   if (isKycVerificationView) {
     return (
-      <>
-        <KycVerificationPage
-          onBack={() => setIsKycVerificationView(false)}
-          onProceedToWorkspace={() => {
-            setIsKycVerificationView(false);
-            const kycProj = projects.find((p) => p.title.includes("KYC"));
-            if (kycProj) {
-              setActiveProjectId(kycProj.id);
-            } else {
-              const newKycProject: ProjectItem = {
-                id: "agent-sbi-kyc",
-                title: "SBI Customer KYC & Document Verification Agent",
-                description:
-                  "Inspects and verifies uploaded customer documents (Aadhaar, PAN, Passport, DL) for authenticity, data extraction, and regulatory KYC compliance.",
-                agents: ["SBI KYC Specialist", "Document Authenticator"],
-                url: "#agent-sbi-kyc",
-              };
-              setProjects((prev) => [newKycProject, ...prev]);
-              setActiveProjectId("agent-sbi-kyc");
-            }
-          }}
-        />
-        <Toaster position="top-center" richColors />
-      </>
+      <KycVerificationPage
+        onBack={() => setIsKycVerificationView(false)}
+        onProceedToWorkspace={() => {
+          setIsKycVerificationView(false);
+          const kycProj = projects.find((p) => p.title.includes("KYC"));
+          if (kycProj) {
+            setActiveProjectId(kycProj.id);
+          } else {
+            const newKycProject: ProjectItem = {
+              id: "agent-sbi-kyc",
+              title: "SBI Customer KYC & Document Verification Agent",
+              description:
+                "Inspects and verifies uploaded customer documents (Aadhaar, PAN, Passport, DL) for authenticity, data extraction, and regulatory KYC compliance.",
+              agents: ["SBI KYC Specialist", "Document Authenticator"],
+              url: "#agent-sbi-kyc",
+            };
+            setProjects((prev) => [newKycProject, ...prev]);
+            setActiveProjectId("agent-sbi-kyc");
+          }
+        }}
+      />
     );
   }
 
-  const activeProject = projects.find((p) => p.id === activeProjectId) || projects[0];
+  const activeProject =
+    projects.find((p) => p.id === activeProjectId) || projects[0];
 
   if (activeProjectId && activeProject) {
     return (
-      <>
-        <ProjectWorkspace
-          project={activeProject}
-          projects={projects}
-          onSelectProject={(id) => setActiveProjectId(id)}
-          onBackToDashboard={() => setActiveProjectId(null)}
-          onAddNewProject={() => {
-            const newId = `untitled-${Date.now()}`;
-            const newP: ProjectItem = {
-              id: newId,
-              title: "Untitled project",
-              description: "New autonomous collaborative initiative scoping.",
-              agents: ["Autonomous Agent"],
-              url: `#${newId}`,
-            };
-            setProjects((prev) => [newP, ...prev]);
-            setProjectsCount((prev) => prev + 1);
-            setActiveProjectId(newId);
-            toast.success("Created new untitled project");
-          }}
-        />
-        <Toaster position="top-center" richColors />
-      </>
+      <ProjectWorkspace
+        project={activeProject}
+        projects={projects}
+        agents={agents}
+        onSelectProject={(id) => setActiveProjectId(id)}
+        onBackToDashboard={() => setActiveProjectId(null)}
+        onEditAgent={(agent) => {
+          setActiveProjectId(null);
+          setEditingAgent(agent);
+          setIsCreateAgentView(true);
+        }}
+        onOpenKyc={() => {
+          setIsKycVerificationView(true);
+        }}
+        onAddNewProject={() => {
+          const newId = `untitled-${Date.now()}`;
+          const newP: ProjectItem = {
+            id: newId,
+            title: "Untitled project",
+            description: "New autonomous collaborative initiative scoping.",
+            agents: ["Autonomous Agent"],
+            url: `#${newId}`,
+          };
+          setProjects((prev) => [newP, ...prev]);
+          setProjectsCount((prev) => prev + 1);
+          setActiveProjectId(newId);
+        }}
+      />
     );
   }
 
-  const handleCreateProject = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!projectName.trim()) {
-      toast.error("Please enter a project name");
-      return;
-    }
+  const handleCreateProject = () => {
+    const newId = `new-project-${Date.now()}`;
     const newProject: ProjectItem = {
-      id: `project-${Date.now()}`,
-      title: projectName.trim(),
-      description:
-        projectGoal.trim() ||
-        "Collaborative multi-agent execution pipeline configured for workspace goals.",
+      id: newId,
+      title: "Untitled project",
+      description: "Define goals, collaborative agents, and milestones for your new initiative.",
       agents: ["Autonomous Agent"],
-      url: "#projects",
+      url: `#${newId}`,
     };
     setProjects((prev) => [newProject, ...prev]);
     setProjectsCount((prev) => prev + 1);
-    toast.success(`Project "${projectName}" created successfully!`);
-    setProjectName("");
-    setProjectGoal("");
-    setIsProjectOpen(false);
+    setActiveProjectId(newId);
   };
 
   return (
@@ -1650,16 +3177,16 @@ function Index() {
                 href={
                   item === "Home"
                     ? "#top"
-                    : item === "Profile"
-                      ? "#profile"
-                      : item === "Add Tokens"
-                        ? "#tokens"
-                        : "#settings"
+                    : item === "Packages"
+                      ? "#packages"
+                      : "#settings"
                 }
                 onClick={(e) => {
-                  if (item !== "Home") {
+                  if (item === "Packages") {
                     e.preventDefault();
-                    toast.info(item);
+                    setIsPackagesView(true);
+                  } else if (item !== "Home") {
+                    e.preventDefault();
                   }
                 }}
               >
@@ -1713,48 +3240,14 @@ function Index() {
               <p className="tile-copy">Coordinate multi-agent teams and workspace goals.</p>
             </div>
 
-            <Dialog open={isProjectOpen} onOpenChange={setIsProjectOpen}>
-              <DialogTrigger asChild>
-                <Button className="tile-action-btn">
-                  Create Project
-                  <ArrowUpRight className="ml-1.5 h-4 w-4" aria-hidden="true" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Create New Project</DialogTitle>
-                  <DialogDescription>
-                    Group agents into a cohesive project with unified goals and shared resources.
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleCreateProject} className="space-y-4 pt-2">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="project-name">Project Name</Label>
-                    <Input
-                      id="project-name"
-                      placeholder="e.g. Customer Support Swarm, Market Tracker"
-                      value={projectName}
-                      onChange={(e) => setProjectName(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="project-goal">Primary Objective</Label>
-                    <Input
-                      id="project-goal"
-                      placeholder="e.g. Automate end-to-end customer triage"
-                      value={projectGoal}
-                      onChange={(e) => setProjectGoal(e.target.value)}
-                    />
-                  </div>
-                  <DialogFooter className="pt-2">
-                    <Button type="submit" className="rounded-full bg-foreground text-background">
-                      Create Project
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
+            <Button
+              type="button"
+              onClick={handleCreateProject}
+              className="tile-action-btn"
+            >
+              Create Project
+              <ArrowUpRight className="ml-1.5 h-4 w-4" aria-hidden="true" />
+            </Button>
           </div>
         </div>
       </section>
@@ -1768,7 +3261,6 @@ function Index() {
 
           <div className="projects-header-toolbar">
             <div className="projects-search-bar">
-              <Search className="search-icon" aria-hidden="true" />
               <input
                 type="text"
                 value={searchQuery}
@@ -2056,7 +3548,6 @@ function Index() {
           </div>
         )}
       </section>
-      <Toaster position="top-center" richColors />
     </main>
   );
 }

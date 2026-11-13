@@ -1,7 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter, rootRouteId } from "@tanstack/react-router";
 import { describe, expect, it } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, act } from "@testing-library/react";
 
 import { routeTree } from "@/routeTree.gen";
 import { Route } from "@/routes/index";
@@ -27,11 +27,12 @@ describe("App routing", () => {
     expect(screen.getByAltText("Frost Atlas")).toBeDefined();
     expect(screen.getByText("Autonomous Collaborative Projects")).toBeDefined();
 
-    // Verify main navigation has Home, Profile, Add Tokens, and Settings
+    // Verify main navigation has Home, Packages, and Settings
     expect(screen.getByRole("navigation", { name: "Main navigation" })).toBeDefined();
     expect(screen.getByRole("link", { name: "Home" })).toBeDefined();
-    expect(screen.getByRole("link", { name: "Profile" })).toBeDefined();
-    expect(screen.getByRole("link", { name: "Add Tokens" })).toBeDefined();
+    expect(screen.getByRole("link", { name: "Packages" })).toBeDefined();
+    expect(screen.queryByRole("link", { name: "Profile" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Add Tokens" })).toBeNull();
     expect(screen.getByRole("link", { name: "Settings" })).toBeDefined();
     expect(screen.queryByRole("link", { name: "Advantages" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Career" })).toBeNull();
@@ -42,29 +43,44 @@ describe("App routing", () => {
     // Click project to enter Workspace UI
     fireEvent.click(projectCardBtn);
 
-    // Verify Project Workspace UI elements (100% match with screenshot requirements)
+    // Verify Project Workspace UI elements (shows done conversation on project click)
     expect(screen.getByText("CEO Workspace")).toBeDefined();
-    expect(screen.getByText("What is this project about?")).toBeDefined();
+    expect(screen.getAllByText(/Personal care brand enters South Asia’s smaller cities/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/What primary outcome do you want to achieve with this project\?/i)).toBeDefined();
+
+    // Verify clicking New chat reveals the project starter prompts
+    const newChatBtn = screen.getByRole("button", { name: /new chat/i });
+    fireEvent.click(newChatBtn);
+    expect(screen.getByText("Hey Arun, What is this project about?")).toBeDefined();
     expect(screen.getByText("What outcome would make this project worthwhile?")).toBeDefined();
+    expect(screen.queryByText("Good to see you, Arun.")).toBeNull();
+    // Verify prompt action buttons
+    expect(screen.queryByText("Make Diwali your own")).toBeNull();
     expect(screen.getByText("Help me define the idea")).toBeDefined();
     expect(screen.getByText("Attach a plan")).toBeDefined();
     expect(screen.getByText("ARUN PE")).toBeDefined();
+    expect(screen.getByRole("button", { name: "Settings" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "Theme toggle" })).toBeDefined();
+    expect(screen.queryByText(/^Go$/)).toBeNull();
     expect(screen.getByText("What I know")).toBeDefined();
     expect(screen.getByPlaceholderText("Reply, attach a file, or tap the mic to talk")).toBeDefined();
-    expect(screen.getByRole("button", { name: "Back to Home" })).toBeDefined();
+    // Verify Claim offer, Back to Home, and Dashboard buttons are removed
+    expect(screen.queryByText("Claim offer")).toBeNull();
+    expect(screen.queryByText("Back to Home")).toBeNull();
+    expect(screen.queryByText("Dashboard")).toBeNull();
 
-    // Click "Back to Home" in topbar to return to the home page
-    const backBtn = screen.getByRole("button", { name: "Back to Home" });
+    // Click CEO Workspace return button in sidebar to return to the home page
+    const backBtn = screen.getByRole("button", { name: "Return to Dashboard" });
     fireEvent.click(backBtn);
 
     // Verify back on home page
     expect(screen.getByText("Autonomous Collaborative Projects")).toBeDefined();
 
-    // Re-enter workspace and test sidebar "Dashboard" navigation
+    // Re-enter workspace and test Return to Dashboard navigation
     fireEvent.click(screen.getByText("Personal care brand enters South Asia’s smaller cities"));
     expect(screen.getByText("CEO Workspace")).toBeDefined();
-    const dashboardBtn = screen.getByRole("button", { name: /^dashboard$/i });
-    fireEvent.click(dashboardBtn);
+    const returnDashboardBtn = screen.getByRole("button", { name: "Return to Dashboard" });
+    fireEvent.click(returnDashboardBtn);
     expect(screen.getByText("Autonomous Collaborative Projects")).toBeDefined();
   });
 
@@ -275,5 +291,711 @@ describe("App routing", () => {
     const returnProjectsTab = screen.getByRole("tab", { name: "Projects" });
     fireEvent.click(returnProjectsTab);
     expect(screen.getByText("Personal care brand enters South Asia’s smaller cities")).toBeDefined();
+  });
+
+  it("expands only the clicked project in the sidebar to show its inside chats list", () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    // Click project to enter Workspace UI
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    expect(screen.getByText("CEO Workspace")).toBeDefined();
+
+    // Initially, Personal care brand is the active project and expanded
+    expect(screen.getByText("Tier-2 Market Penetration Strategy")).toBeDefined();
+    expect(screen.queryByText("Wedding")).toBeNull();
+
+    // Click Customer Dynamics in the sidebar
+    const customerDynamicsBtn = screen.getByRole("button", { name: /^Customer Dynamics: who is buying, and why$/i });
+    fireEvent.click(customerDynamicsBtn);
+
+    // Customer Dynamics is now expanded with its subchats
+    expect(screen.getByText("Buyer Segments & Purchase Drivers")).toBeDefined();
+    // Personal care brand subchats are now collapsed
+    expect(screen.queryByText("Tier-2 Market Penetration Strategy")).toBeNull();
+
+    // Click Tech-Enabled Go-to-Market Roadmap in the sidebar
+    const gtmBtn = screen.getByRole("button", { name: /^Tech-Enabled Go-to-Market Roadmap$/i });
+    fireEvent.click(gtmBtn);
+
+    // GTM subchats are now expanded
+    expect(screen.getByText("Sales Technology Integration")).toBeDefined();
+    // Customer Dynamics subchats are now collapsed
+    expect(screen.queryByText("Buyer Segments & Purchase Drivers")).toBeNull();
+  });
+
+  it("renders the 6 projects on the home page and ensures Wedding project is removed", () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    // Verify all 6 projects are present on the home page
+    expect(screen.queryByRole("heading", { name: "Wedding" })).toBeNull();
+    expect(screen.queryByText("Wedding")).toBeNull();
+    expect(screen.queryByText("South Indian Wedding Design")).toBeNull();
+    expect(screen.queryByText("South Indian Background Redesign")).toBeNull();
+
+    expect(screen.getByText("Personal care brand enters South Asia’s smaller cities")).toBeDefined();
+    expect(screen.getByText("Customer Dynamics: who is buying, and why")).toBeDefined();
+    expect(screen.getByText("Competitive Benchmark & Positioning")).toBeDefined();
+    expect(screen.getByText("Tech-Enabled Go-to-Market Roadmap")).toBeDefined();
+    expect(screen.getByText("Untitled project")).toBeDefined();
+    expect(screen.getByText(/Expand Enterprise Account/i)).toBeDefined();
+
+    // Click project card to open CEO Workspace
+    const projectCard = screen.getByRole("button", { name: "Personal care brand enters South Asia’s smaller cities" });
+    fireEvent.click(projectCard);
+
+    // Verify workspace is opened
+    expect(screen.getByText("CEO Workspace")).toBeDefined();
+    expect(screen.getAllByText("Personal care brand enters South Asia’s smaller cities").length).toBeGreaterThan(0);
+  });
+
+  it("replaces Think and Mic with Attach button and changes wave icon to arrow icon when typing", () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    // Click project to enter Workspace UI
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    // Verify Attach button is present
+    expect(screen.getByRole("button", { name: "Attach file" })).toBeDefined();
+
+    // Verify Think button and Mic button are removed
+    expect(screen.queryByRole("button", { name: /deep thinking/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Voice input" })).toBeNull();
+
+    // When input is empty, voice wave button is shown and send button is not
+    expect(screen.getByRole("button", { name: "Start voice mode" })).toBeDefined();
+    expect(screen.queryByRole("button", { name: "Send message" })).toBeNull();
+
+    // Start typing
+    const input = screen.getByPlaceholderText("Reply, attach a file, or tap the mic to talk");
+    fireEvent.change(input, { target: { value: "Hello world" } });
+
+    // When typing, wave icon button changes to send arrow button
+    expect(screen.queryByRole("button", { name: "Start voice mode" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Send message" })).toBeDefined();
+
+    // Clear input
+    fireEvent.change(input, { target: { value: "" } });
+
+    // Returns back to wave icon button
+    expect(screen.getByRole("button", { name: "Start voice mode" })).toBeDefined();
+    expect(screen.queryByRole("button", { name: "Send message" })).toBeNull();
+  });
+
+  it("renders back navigation first in the collapsed rail followed by collapse icon without circle", () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    // Click project to enter Workspace UI
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    // Collapse sidebar
+    const closeSidebarBtn = screen.getByRole("button", { name: "Close sidebar" });
+    fireEvent.click(closeSidebarBtn);
+
+    // In collapsed rail, back navigation and open sidebar exist
+    expect(screen.getAllByRole("button", { name: "Return to Dashboard" }).length).toBe(2);
+    expect(screen.getByRole("button", { name: "Open sidebar" })).toBeDefined();
+
+    // Re-open sidebar
+    const openSidebarBtn = screen.getByRole("button", { name: "Open sidebar" });
+    fireEvent.click(openSidebarBtn);
+
+    // Expanded sidebar is back
+    expect(screen.getByText("CEO Workspace")).toBeDefined();
+  });
+
+  it("renders messages matching the conversation screenshot with user bubble and AI action bar", async () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    // Click project to enter Workspace UI
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    // Send a message
+    const input = screen.getByPlaceholderText("Reply, attach a file, or tap the mic to talk");
+    fireEvent.change(input, { target: { value: "hi how are you" } });
+    const sendBtn = screen.getByRole("button", { name: "Send message" });
+    fireEvent.click(sendBtn);
+
+    // User message is in the document
+    expect(screen.getByText("hi how are you")).toBeDefined();
+
+    // Fast-forward / wait for AI reply
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 600));
+    });
+
+    // Verify AI response action bar icons are present
+    expect(screen.getAllByRole("button", { name: "Copy" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("button", { name: "Good response" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("button", { name: "Bad response" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("button", { name: "Read aloud" }).length).toBeGreaterThan(0);
+  });
+
+  it("triggers actions when clicking Help me define the idea", async () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    // Click New chat to reveal starter prompt
+    const newChatBtn = screen.getByRole("button", { name: /new chat/i });
+    fireEvent.click(newChatBtn);
+
+    const defineIdeaBtn = screen.getByRole("button", { name: /help me define the idea/i });
+    expect(defineIdeaBtn).toBeDefined();
+
+    fireEvent.click(defineIdeaBtn);
+
+    expect(screen.getAllByText("Help me define the idea").length).toBeGreaterThan(0);
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 600));
+    });
+
+    expect(screen.getByText(/Target Market & Audience/i)).toBeDefined();
+    // Verify answer is wrapped inside stroke box
+    const strokeBox = document.querySelector(".ai-stroke-box");
+    expect(strokeBox).not.toBeNull();
+    expect(strokeBox?.textContent).toContain("Target Market & Audience");
+
+    // Verify after conversation start, greeting and starter actions are hidden
+    expect(screen.queryByText("What outcome would make this project worthwhile?")).toBeNull();
+    expect(screen.queryByText("Hey Arun, What is this project about?")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Attach a plan" })).toBeNull();
+  });
+
+  it("slides in the right-side What I know so far panel on click without popup", () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    const projectCardBtn = screen.getByText("Customer Dynamics: who is buying, and why");
+    fireEvent.click(projectCardBtn);
+
+    const whatIKnowBtn = screen.getByRole("button", { name: "What I know" });
+    expect(whatIKnowBtn).toBeDefined();
+
+    // Click to open right-side slide panel
+    fireEvent.click(whatIKnowBtn);
+
+    expect(screen.getByText("What I know so far")).toBeDefined();
+    expect(screen.getByText("Waiting on you")).toBeDefined();
+    expect(screen.getByText("not scored yet")).toBeDefined();
+    expect(screen.getByText("Core facts known")).toBeDefined();
+    expect(screen.getByText("0 of 6 core facts")).toBeDefined();
+    expect(screen.getByText("Still to learn")).toBeDefined();
+    expect(screen.getByText("Project Knowledge Base")).toBeDefined();
+    expect(screen.getByText(/Context and active collaborative agents for Customer Dynamics/i)).toBeDefined();
+    expect(screen.getByText("Buyer segments, purchase drivers and channel behaviour behind current demand.")).toBeDefined();
+
+    // Verify outer one is removed while panel is open to avoid repetition
+    expect(screen.queryByRole("button", { name: "What I know" })).toBeNull();
+
+    // Click close button
+    const closeBtn = screen.getByRole("button", { name: "Close panel" });
+    fireEvent.click(closeBtn);
+
+    // Verify panel closed and outer button restored
+    expect(screen.queryByLabelText("What I know so far")).toBeNull();
+    expect(screen.getByRole("button", { name: "What I know" })).toBeDefined();
+  });
+
+  it("navigates directly to AI chat page with 'what's on your mind' copy when clicking Create Project on hero tile without popup", () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    const createProjectBtn = screen.getByRole("button", { name: /create project/i });
+    expect(createProjectBtn).toBeDefined();
+
+    // Click Create Project on hero tile
+    fireEvent.click(createProjectBtn);
+
+    // Verify navigates directly into AI chat page
+    expect(screen.getByText("CEO Workspace")).toBeDefined();
+
+    // Verify conversational prompt asking what project is on their mind
+    expect(screen.getByText("Hey Arun, what project is on your mind?")).toBeDefined();
+    expect(
+      screen.getByText(/Tell me what you'd like to build, and we'll assemble the right agents/i)
+    ).toBeDefined();
+
+    // Verify action buttons
+    expect(screen.getByText("Help me define the idea")).toBeDefined();
+    expect(screen.getByText("Attach a plan")).toBeDefined();
+
+    // Verify right-side agents drawer is NOT open on Create Project
+    expect(document.querySelector(".workspace-agents-drawer")).toBeNull();
+  });
+
+  it("renders folder icon only for all projects in the sidebar list", () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    // Verify all specified projects are present in the sidebar
+    expect(screen.queryByText("Wedding")).toBeNull();
+    expect(screen.getAllByText("Personal care brand enters South Asia’s smaller cities").length).toBeGreaterThan(0);
+    expect(screen.getByText("Customer Dynamics: who is buying, and why")).toBeDefined();
+    expect(screen.getByText("Competitive Benchmark & Positioning")).toBeDefined();
+    expect(screen.getByText("Tech-Enabled Go-to-Market Roadmap")).toBeDefined();
+    expect(screen.getByText("Untitled project")).toBeDefined();
+    expect(screen.getByText("Expand Enterprise Account")).toBeDefined();
+
+    // Verify all 6 folder rows render lucide-folder
+    const folderButtons = document.querySelectorAll(".chatgpt-folder-row");
+    expect(folderButtons.length).toBe(6);
+    folderButtons.forEach((btn) => {
+      const svg = btn.querySelector("svg");
+      expect(svg).not.toBeNull();
+      expect(svg?.classList.contains("lucide-folder")).toBe(true);
+    });
+  });
+
+  it("renders unwrapped outer What I know button with 24px above padding and #1d4ed8 blue color on outer button only", () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    // Verify outer What I know button
+    const whatIKnowBtn = screen.getByRole("button", { name: "What I know" });
+    expect(whatIKnowBtn).toBeDefined();
+    expect(whatIKnowBtn.classList.contains("chatgpt-what-i-know-btn")).toBe(true);
+
+    // Open knowledge panel to check inner header
+    fireEvent.click(whatIKnowBtn);
+    const innerTitle = screen.getByText("What I know so far");
+    expect(innerTitle).toBeDefined();
+    expect(innerTitle.classList.contains("knowledge-panel-title")).toBe(true);
+  });
+
+  it("shows project main conversation when selecting in menu, keeps project active, and starts new chat under that project", () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    const projectCardBtn = screen.getByText("Customer Dynamics: who is buying, and why");
+    fireEvent.click(projectCardBtn);
+
+    // Click project row in sidebar to view conversation starter
+    const projectFolderRow = screen.getByRole("button", { name: /Customer Dynamics: who is buying, and why/i });
+    fireEvent.click(projectFolderRow);
+
+    // Verify canned bot monologues ("workspace active...") are removed
+    expect(screen.queryByText(/Customer Dynamics workspace active/i)).toBeNull();
+    expect(screen.queryByText(/Collaborative agents \(Customer Segmentation, Purchase Drivers, Channel Behaviour\)/i)).toBeNull();
+
+    // Verify clean conversation starter is displayed
+    expect(screen.getByText("Hey Arun, What is this project about?")).toBeDefined();
+    expect(screen.getByText("What outcome would make this project worthwhile?")).toBeDefined();
+    expect(screen.getByText("Help me define the idea")).toBeDefined();
+    expect(screen.getByText("Attach a plan")).toBeDefined();
+
+    // Verify the project row is selected/active in the menu
+    expect(projectFolderRow.classList.contains("active")).toBe(true);
+
+    // Click New chat in sidebar
+    const newChatBtn = screen.getByRole("button", { name: /new chat/i });
+    fireEvent.click(newChatBtn);
+
+    // Verify new chat content under project
+    expect(screen.getByText("Hey Arun, What is this project about?")).toBeDefined();
+    expect(screen.getByText("What outcome would make this project worthwhile?")).toBeDefined();
+    expect(screen.getByText("Help me define the idea")).toBeDefined();
+    expect(screen.getByText("Attach a plan")).toBeDefined();
+
+    // Verify project in the sidebar menu stays selected as it is
+    expect(projectFolderRow.classList.contains("active")).toBe(true);
+  });
+
+  it("shows already done mock conversation with primary outcome options in stroke box for Personal care brand", () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    // Click project row in sidebar to view main conversation
+    const projectFolderRow = screen.getByRole("button", { name: /Personal care brand enters South Asia’s smaller cities/i });
+    fireEvent.click(projectFolderRow);
+
+    // Verify mock conversation messages are rendered
+    expect(screen.getAllByText(/Personal care brand enters South Asia’s smaller cities/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/What primary outcome do you want to achieve with this project\?/i)).toBeDefined();
+    expect(screen.getByText(/Launch a new AI product or service/i)).toBeDefined();
+    expect(screen.getByText(/Automate internal operations & reduce costs/i)).toBeDefined();
+    expect(screen.getAllByText(/Expand into a new customer segment or region/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Accelerate enterprise sales & revenue growth/i)).toBeDefined();
+    expect(screen.getByText(/Or in your own words/i)).toBeDefined();
+    expect(screen.getByText(/Type your answer and press Enter/i)).toBeDefined();
+
+    // Verify AI options response is wrapped in a stroke box with interactive outcome buttons
+    const strokeBoxes = document.querySelectorAll(".ai-stroke-box");
+    expect(strokeBoxes.length).toBeGreaterThan(0);
+    const optionBtns = document.querySelectorAll(".ai-outcome-option-btn");
+    expect(optionBtns.length).toBe(4);
+  });
+
+  it("creates a new chat under the selected project when clicking New chat and updates title on message send", async () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    // Click New chat
+    const newChatBtn = screen.getByRole("button", { name: /new chat/i });
+    fireEvent.click(newChatBtn);
+
+    // Verify a new chat item is created under the selected project
+    const subchatItems = document.querySelectorAll(".chatgpt-subchat-item");
+    expect(subchatItems.length).toBeGreaterThan(3);
+    const activeSubchat = document.querySelector(".chatgpt-subchat-item.active");
+    expect(activeSubchat).not.toBeNull();
+    expect(activeSubchat?.textContent).toContain("New chat");
+
+    // Click Help me define the idea
+    const defineIdeaBtn = screen.getByRole("button", { name: /help me define the idea/i });
+    fireEvent.click(defineIdeaBtn);
+
+    // Verify subchat item title updates to Help me define the idea
+    expect(activeSubchat?.textContent).toContain("Help me define the idea");
+  });
+
+  it("renders header bar with project name on the left and What I know on the right with blue text and icon", () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    // Verify topbar header
+    const topbar = document.querySelector(".chatgpt-topbar");
+    expect(topbar).not.toBeNull();
+
+    // Verify project name on the left
+    const projectTitleInHeader = document.querySelector(".chatgpt-topbar-project-title");
+    expect(projectTitleInHeader).not.toBeNull();
+    expect(projectTitleInHeader?.textContent).toBe("Personal care brand enters South Asia’s smaller cities");
+
+    // Verify What I know button on the right
+    const whatIKnowBtn = screen.getByRole("button", { name: "What I know" });
+    expect(whatIKnowBtn).toBeDefined();
+    expect(whatIKnowBtn.classList.contains("chatgpt-what-i-know-btn")).toBe(true);
+
+    const svgIcon = whatIKnowBtn.querySelector("svg");
+    expect(svgIcon).not.toBeNull();
+    expect(svgIcon?.classList.contains("lucide-book-open")).toBe(true);
+  });
+
+  it("applies 1100px max-width to workspace-conversation while keeping the chat input dock at 760px", () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    const conversationContainer = document.querySelector(".workspace-conversation");
+    expect(conversationContainer).not.toBeNull();
+
+    const inputDock = document.querySelector(".chatgpt-input-dock");
+    expect(inputDock).not.toBeNull();
+  });
+
+  it("renders the in-card typing field with home page pill styling and handles submission", async () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    // Verify 4 outcome option cards in 2-column grid with ArrowUpRight
+    const optionCards = document.querySelectorAll(".ai-outcome-option-btn");
+    expect(optionCards.length).toBe(4);
+    expect(document.querySelector(".ai-outcome-options-grid")).not.toBeNull();
+
+    // Verify in-card typing field
+    const inCardInput = screen.getByRole("textbox", { name: /type your answer and press enter/i });
+    expect(inCardInput).toBeDefined();
+    expect(inCardInput.getAttribute("placeholder")).toBe("Type your answer and press Enter");
+
+    const submitBtn = screen.getByRole("button", { name: "Submit answer" });
+    expect(submitBtn).toBeDefined();
+
+    // Type a custom answer in the card field
+    fireEvent.change(inCardInput, { target: { value: "Build a regional franchise network" } });
+    fireEvent.click(submitBtn);
+
+    // Verify user message is added
+    expect(screen.getByText("Build a regional franchise network")).toBeDefined();
+  });
+
+  it("renders a Project Intake message card above the outcome choices with better card design", () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    // Verify Project Intake card exists above the outcome stroke box
+    const intakeCard = document.querySelector(".ai-intake-card");
+    expect(intakeCard).not.toBeNull();
+    const outcomeBox = document.querySelector(".ai-outcome-container")?.closest(".ai-stroke-box");
+    expect(outcomeBox).not.toBeNull();
+    expect(outcomeBox?.contains(intakeCard)).toBe(false);
+
+    // Verify tags "Project Intake" and "Brief registered" are removed
+    expect(screen.queryByText("Project Intake")).toBeNull();
+    expect(screen.queryByText("Brief registered")).toBeNull();
+    expect(
+      screen.getByText(/We've received your project brief for "Personal care brand enters South Asia’s smaller cities"/i)
+    ).toBeDefined();
+    expect(
+      screen.getByText(/Autonomous collaborative agents are ready to coordinate market dynamics/i)
+    ).toBeDefined();
+  });
+
+  it("renders curated Knowledge Packs with Adobe Acrobat PDF icons, GET buttons, and report metadata", () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    // Verify Matching Knowledge Packages section is rendered without count subtitle
+    expect(screen.getByText("Matching Knowledge Packages")).toBeDefined();
+    expect(screen.queryByText(/packs recommended for this project/i)).toBeNull();
+    expect(screen.queryByLabelText(/Download /i)).toBeNull();
+
+    // Verify Pack 1 heading, subtitle, and tag
+    expect(screen.getByText("South Asia Tier-2 & Tier-3 City Market Penetration")).toBeDefined();
+    expect(
+      screen.getByText(/City selection, price points and channels for smaller-city growth/i)
+    ).toBeDefined();
+    // Verify tag line "Personal care brand enters South Asia’s smaller cities · 3 files" is removed
+    expect(screen.queryByText(/Personal care brand enters South Asia’s smaller cities · 3 files/i)).toBeNull();
+
+    // Verify Pack 2 heading and subtitle
+    expect(screen.getByText("Personal Care Ingredients & Formulation Dynamics")).toBeDefined();
+    expect(
+      screen.getByText(/Active, functional and strategic ingredient research/i)
+    ).toBeDefined();
+
+    // Verify Adobe Acrobat PDF icons are rendered
+    const acrobatIcons = document.querySelectorAll(".ai-pack-pdf-icon");
+    expect(acrobatIcons.length).toBeGreaterThan(0);
+
+    // Verify specific reports with publication dates
+    expect(
+      screen.getAllByText(/Growth Opportunities in Personal Care for Tier-2 and Tier-3 Cities/i).length
+    ).toBeGreaterThan(0);
+    expect(screen.getByText(/- June 2026/i)).toBeDefined();
+    expect(
+      screen.getAllByText("Price-Point & Pack-Size Strategy for Mass-Premium Skincare in Emerging South Asian Markets").length
+    ).toBeGreaterThan(0);
+    expect(screen.getByText(/- December 2025/i)).toBeDefined();
+    expect(
+      screen.getAllByText(/Distribution Channel Optimisation: Modern Trade, Quick Commerce and Kirana Networks/i).length
+    ).toBeGreaterThan(0);
+    expect(screen.getByText(/- December 2026/i)).toBeDefined();
+
+    // Verify GET button interactivity
+    const getButtons = screen.getAllByRole("button", { name: /^Get /i });
+    expect(getButtons.length).toBeGreaterThan(0);
+    const firstGetBtn = getButtons[0];
+    expect(firstGetBtn.textContent).toContain("GET");
+
+    // Click GET button to toggle to ADDED ✓
+    fireEvent.click(firstGetBtn);
+    expect(screen.getAllByText("ADDED ✓").length).toBeGreaterThan(0);
+
+    // Verify "Understood! Expanding..." line is removed
+    expect(
+      screen.queryByText(/Understood! Expanding into a new customer segment or region is the primary focus/i)
+    ).toBeNull();
+
+    // Verify "Why these reports are relevant" heading and text placed at packages bottom
+    expect(screen.getByText("Why these reports are relevant")).toBeDefined();
+    expect(
+      screen.getByText(/I found market intelligence reports from 2025–2026 covering tier-2 & tier-3 city retail/i)
+    ).toBeDefined();
+
+    // Verify summary box heading (How this knowledge supports your project)
+    expect(screen.getByText("How this knowledge supports your project")).toBeDefined();
+    expect(document.querySelectorAll(".ai-matching-report-card").length).toBe(2);
+    expect(screen.getByText(/Robert D. Boss · 2026/i)).toBeDefined();
+    expect(screen.getByText(/Anika Rao · 2025/i)).toBeDefined();
+    expect(screen.getByText(/tier-2 retail/i)).toBeDefined();
+    expect(screen.getByText(/pricing strategy/i)).toBeDefined();
+
+    // Verify report GET button toggle
+    const getReportBtn = screen.getByRole("button", {
+      name: /Get Growth Opportunities in Personal Care for Tier-2 and Tier-3 Cities, South Asia/i,
+    });
+    fireEvent.click(getReportBtn);
+    expect(
+      screen.getByRole("button", {
+        name: /Growth Opportunities in Personal Care for Tier-2 and Tier-3 Cities, South Asia added/i,
+      })
+    ).toBeDefined();
+
+    // Verify Recommended Agents section using home page card layout (limited to 2 agents)
+    expect(screen.getByText("Recommended Agents")).toBeDefined();
+    expect(document.querySelectorAll(".ai-agent-recommend-card").length).toBe(2);
+    expect(screen.getAllByText(/SBI Home Loan Monthly Report/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/SBI Customer KYC & Document Verification Agent/i).length).toBeGreaterThan(0);
+
+    // Verify Run agent button interactivity
+    const runBtn = screen.getByRole("button", {
+      name: /(Run agent|Generate report).*SBI Home Loan Monthly Report/i,
+    });
+    expect(runBtn).toBeDefined();
+    fireEvent.click(runBtn);
+    expect(screen.getByText("Running...")).toBeDefined();
+  });
+
+  it("opens right-side slide panel with 3 project related agents and other agents below on clicking New chat under a project", () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    // Click New chat
+    const newChatBtn = screen.getByRole("button", { name: /new chat/i });
+    fireEvent.click(newChatBtn);
+
+    // Verify right-side slide-in drawer is open with single Agents heading
+    const agentsDrawer = document.querySelector(".workspace-agents-drawer");
+    expect(agentsDrawer).not.toBeNull();
+    expect(screen.getByRole("complementary", { name: "Agents" })).toBeDefined();
+
+    // Verify single heading "Agents" and 3 project agents listdown
+    expect(screen.getByRole("heading", { level: 2, name: "Agents" })).toBeDefined();
+    expect(screen.getByText("Emerging Markets Specialist Agent")).toBeDefined();
+    expect(screen.getByText("Customer Dynamics & Segmentation Agent")).toBeDefined();
+    expect(screen.getByText("Geographic Expansion Strategy Agent")).toBeDefined();
+
+    const projectAgentCards = document.querySelectorAll(".agent-drawer-card--project");
+    expect(projectAgentCards.length).toBe(3);
+
+    // Verify Section 2: Other Agents (below)
+    expect(screen.getByText("Other Agents")).toBeDefined();
+    expect(screen.queryByText("6 Available")).toBeNull();
+    expect(screen.queryByText(/Workspace agents for regulatory compliance/i)).toBeNull();
+    const otherAgentCards = document.querySelectorAll(".agent-drawer-card--other");
+    expect(otherAgentCards.length).toBe(6);
+    expect(screen.getByText("SBI Customer KYC & Document Verification Agent")).toBeDefined();
+    expect(screen.getByText("AIIMS ICU Occupancy Report")).toBeDefined();
+
+    // Verify right-side close button and Run agent buttons are removed from drawer
+    expect(screen.queryByRole("button", { name: "Close agents panel" })).toBeNull();
+    expect(document.querySelector(".workspace-agents-drawer .agent-drawer-run-btn")).toBeNull();
+
+    // Verify Project Agents badge is removed from header
+    expect(screen.queryByRole("button", { name: "Project Agents" })).toBeNull();
+  });
+
+  it("navigates to the Packages page on clicking Packages in header menu with overlapping card and project-wise sections", () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    // Click Packages link in main navigation
+    const packagesLink = screen.getByRole("link", { name: "Packages" });
+    fireEvent.click(packagesLink);
+
+    // Verify Packages page is rendered with preserved header
+    expect(screen.getByRole("heading", { level: 1, name: /Research & Knowledge Packages/i })).toBeDefined();
+    expect(
+      screen.getByText(/Curated research packages and verified market intelligence/i)
+    ).toBeDefined();
+
+    // Verify overlapping stylish single UI card
+    const overviewCard = document.querySelector(".packages-overview-card");
+    expect(overviewCard).not.toBeNull();
+    expect(screen.getByText("Acquired Research Packages")).toBeDefined();
+    expect(screen.getByText("Last acquired: June 2026")).toBeDefined();
+    expect(document.querySelector(".packages-last-update-pill")).toBeNull();
+    expect(document.querySelector(".packages-last-update-text")).not.toBeNull();
+    expect(screen.getByText("4")).toBeDefined();
+    expect(screen.getByText("Packages Acquired")).toBeDefined();
+    expect(screen.queryByText("Last Date Mentioned")).toBeNull();
+    expect(screen.getByText("10")).toBeDefined();
+    expect(screen.getByText("Validated Reports")).toBeDefined();
+
+    // Verify project-wise sections below
+    expect(screen.getByText("Project Knowledge Packages")).toBeDefined();
+    const projectGroups = document.querySelectorAll(".packages-project-group-card");
+    expect(projectGroups.length).toBe(3);
+
+    // Verify first project group and absence of unwanted tags and badges
+    expect(screen.getByText("Personal care brand enters South Asia’s smaller cities")).toBeDefined();
+    expect(screen.queryByText("2 Packages")).toBeNull();
+    expect(screen.queryByText(/Acquired · June 2026/i)).toBeNull();
+    expect(screen.queryByText(/validated reports included/i)).toBeNull();
+    expect(screen.queryByText("Open in Workspace")).toBeNull();
+    expect(screen.queryByText("View in Project")).toBeNull();
+    expect(screen.getAllByRole("button", { name: /Download all/i }).length).toBeGreaterThan(0);
+    expect(screen.getByText("South Asia Tier-2 & Tier-3 City Market Penetration")).toBeDefined();
+    expect(screen.getByText("Personal Care Ingredients & Formulation Dynamics")).toBeDefined();
+
+    // Verify return to dashboard by clicking Home in the header
+    const homeLink = screen.getByRole("link", { name: "Home" });
+    fireEvent.click(homeLink);
+
+    // Verify back on main dashboard
+    expect(screen.getByText("Autonomous Collaborative Projects")).toBeDefined();
+    expect(document.querySelector(".packages-overview-card")).toBeNull();
   });
 });
