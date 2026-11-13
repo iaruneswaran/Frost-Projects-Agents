@@ -703,7 +703,7 @@ const initialAgents: AgentItem[] = [
   },
 ];
 
-const navItems = ["Home", "Packages", "Settings"];
+const navItems = ["Home", "Library", "Packages", "Settings"];
 
 const projectChatsMap: Record<string, string[]> = {
   "personal-care-south-asia": [
@@ -4304,6 +4304,476 @@ const defaultProjectPackages: ProjectPackageGroup[] = [
   },
 ];
 
+// ─── Library Page Data ──────────────────────────────────────────────────────
+
+interface LibraryReport {
+  id: string;
+  projectId: string;
+  projectTitle: string;
+  title: string;
+  subtitle: string;
+  date: string;
+  metrics: { value: string; label: string; delta?: string }[];
+  expandedContent: React.ReactNode;
+}
+
+const libraryReportsData: Omit<LibraryReport, "expandedContent">[] = [
+  {
+    id: "report-south-asia-market",
+    projectId: "personal-care-south-asia",
+    projectTitle: "Personal care brand enters South Asia's smaller cities",
+    title: "South Asia Tier-2 & Tier-3 Market Entry Report",
+    subtitle: "Across all secondary urban retail corridors in 2026, 142,850 households surveyed with 98.6% channel velocity confidence.",
+    date: "November 2026",
+    metrics: [
+      { value: "142,850", label: "Target consumer households", delta: "+8.6% MoM" },
+      { value: "98.6%", label: "Retail placement velocity", delta: "+2.4% vs Category" },
+      { value: "₹380–₹450", label: "Mass-premium sweet spot", delta: "< ₹500 Threshold" },
+    ],
+  },
+  {
+    id: "report-channel-distribution",
+    projectId: "personal-care-south-asia",
+    projectTitle: "Personal care brand enters South Asia's smaller cities",
+    title: "Channel Distribution Velocity & Retail Network Report",
+    subtitle: "Four strategic retail channels mapped across 24 secondary urban clusters with 99.8% overall market alignment.",
+    date: "October 2026",
+    metrics: [
+      { value: "4", label: "Strategic retail channels", delta: "Pan South Asia" },
+      { value: "24", label: "Urban clusters covered", delta: "+6 YoY" },
+      { value: "99.8%", label: "Market alignment score", delta: "Validated" },
+    ],
+  },
+  {
+    id: "report-consumer-dynamics",
+    projectId: "customer-dynamics",
+    projectTitle: "Customer Dynamics: who is buying, and why",
+    title: "Consumer Cohort & Purchase Behaviour Report",
+    subtitle: "Buyer segment analysis across 24 urban hubs — mass-premium, young urban, and value-conscious cohorts profiled.",
+    date: "September 2026",
+    metrics: [
+      { value: "58%", label: "Mass-premium cohort share", delta: "+4% YoY" },
+      { value: "28%", label: "Young urban adopters", delta: "High velocity" },
+      { value: "₹199–₹449", label: "Optimal trial price band", delta: "2-tier pack" },
+    ],
+  },
+  {
+    id: "report-competitive-benchmark",
+    projectId: "competitive-benchmark-positioning",
+    projectTitle: "Competitive Benchmark & Positioning",
+    title: "Trade Margins & Competitive Positioning Report",
+    subtitle: "Wholesale FMCG distribution economics and shelf-space conversion benchmarks across Tier-2 trade corridors.",
+    date: "August 2026",
+    metrics: [
+      { value: "3", label: "Major rivals benchmarked", delta: "Full market scan" },
+      { value: "18–22%", label: "Distributor margin range", delta: "Kirana corridors" },
+      { value: "2.4×", label: "Shelf conversion uplift", delta: "vs Category avg" },
+    ],
+  },
+];
+
+function LibraryReportCard({ report }: { report: Omit<LibraryReport, "expandedContent"> }) {
+  const [expanded, setExpanded] = useState(false);
+
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov"];
+  const distributedData = [8200,10400,12600,15800,18200,20100,22400,24100,25800,26900,28500];
+  const repeatData =       [1200, 2100, 3600, 5200, 7400, 9800,12200,14600,17100,19800,22600];
+  const maxBar = 32000;
+  const barW = 18;
+  const gap = 8;
+  const svgW = months.length * (barW * 2 + gap + 6) + 48;
+  const svgH = 160;
+  const plotH = 120;
+  const plotTop = 16;
+
+  const areaYears = [2021,2022,2023,2024,2025,2026];
+  const repeatSeries = [22000,38000,54000,78000,105000,142850];
+  const initSeries =   [45000,70000,95000,118000,133000,150000];
+  const maxArea = 160000;
+  const areaSvgW = 440;
+  const areaSvgH = 140;
+  const areaPlotH = 100;
+  const areaPlotTop = 16;
+  const areaPlotLeft = 48;
+  const areaPlotW = areaSvgW - areaPlotLeft - 16;
+
+  function areaX(i: number) { return areaPlotLeft + (i / (areaYears.length - 1)) * areaPlotW; }
+  function areaY(v: number) { return areaPlotTop + areaPlotH - (v / maxArea) * areaPlotH; }
+  function polyline(series: number[]) { return series.map((v,i)=>`${areaX(i)},${areaY(v)}`).join(" "); }
+
+  return (
+    <article className="lib-report-card">
+      <div className="lib-report-card-top">
+        <div className="lib-report-card-info">
+          <h4 className="lib-report-title">{report.title}</h4>
+          <p className="lib-report-subtitle">{report.subtitle}</p>
+        </div>
+        <div className="lib-report-card-actions">
+          <span className="lib-report-date">{report.date}</span>
+          <button
+            type="button"
+            className="lib-report-expand-btn"
+            onClick={() => setExpanded((v) => !v)}
+            aria-expanded={expanded}
+            aria-label={expanded ? "Collapse report" : "Expand report"}
+          >
+            {expanded ? "Collapse" : "View report"}
+            <ChevronDown
+              className={`lib-report-chevron ${expanded ? "rotated" : ""}`}
+              aria-hidden="true"
+            />
+          </button>
+        </div>
+      </div>
+
+      <div className="lib-report-metrics-row">
+        {report.metrics.map((m, i) => (
+          <div key={i} className="lib-report-metric">
+            <span className="lib-report-metric-value">{m.value}</span>
+            <span className="lib-report-metric-label">{m.label}</span>
+            {m.delta && <span className="lib-report-metric-delta">{m.delta}</span>}
+          </div>
+        ))}
+      </div>
+
+      {expanded && (
+        <div className="lib-report-expanded">
+          <div className="lib-report-expanded-inner">
+
+            {/* Bar Chart */}
+            <div className="lib-expanded-panel">
+              <div className="lib-panel-header">
+                <span className="lib-panel-title">Monthly Trial Kit Distribution & Conversion Velocity</span>
+                <div className="lib-legend-row">
+                  <span className="lib-legend-dot" style={{background:"#111827"}} />
+                  <span className="lib-legend-text">Distributed Samples</span>
+                  <span className="lib-legend-dot" style={{background:"#d1d5db"}} />
+                  <span className="lib-legend-text">Repeat Purchases</span>
+                </div>
+              </div>
+              <div className="lib-svg-scroll">
+                <svg width={svgW} height={svgH} aria-label="Monthly distribution bar chart">
+                  {[0,10000,20000,30000].map((v) => {
+                    const y = plotTop + plotH - (v / maxBar) * plotH;
+                    return (
+                      <g key={v}>
+                        <line x1={40} x2={svgW - 4} y1={y} y2={y} stroke="rgba(0,0,0,0.06)" strokeWidth={1} />
+                        <text x={36} y={y + 4} textAnchor="end" fontSize={12} fill="#9ca3af">{v === 0 ? "0" : `${v/1000}k`}</text>
+                      </g>
+                    );
+                  })}
+                  {months.map((mo, i) => {
+                    const x = 44 + i * (barW * 2 + gap + 6);
+                    const hD = (distributedData[i] / maxBar) * plotH;
+                    const hR = (repeatData[i] / maxBar) * plotH;
+                    return (
+                      <g key={mo}>
+                        <rect x={x} y={plotTop + plotH - hD} width={barW} height={hD} rx={3} fill="#111827" />
+                        <rect x={x + barW + 2} y={plotTop + plotH - hR} width={barW} height={hR} rx={3} fill="#d1d5db" />
+                        <text x={x + barW} y={plotTop + plotH + 14} textAnchor="middle" fontSize={12} fill="#9ca3af">{mo}</text>
+                      </g>
+                    );
+                  })}
+                </svg>
+              </div>
+            </div>
+
+            {/* Bottom two panels */}
+            <div className="lib-bottom-grid">
+              {/* Donut */}
+              <div className="lib-expanded-panel">
+                <div className="lib-panel-header">
+                  <span className="lib-panel-title">Consumer Cohort & Market Segmentation</span>
+                </div>
+                <div className="lib-donut-wrap">
+                  <svg width={140} height={140} viewBox="0 0 140 140" aria-label="Consumer cohort donut chart">
+                    <circle cx={70} cy={70} r={52} fill="none" stroke="#f3f4f6" strokeWidth={22} />
+                    <circle cx={70} cy={70} r={52} fill="none" stroke="#111827" strokeWidth={22}
+                      strokeDasharray={`${0.58 * 326.7} ${326.7}`} strokeDashoffset={81.7} />
+                    <circle cx={70} cy={70} r={52} fill="none" stroke="#374151" strokeWidth={22}
+                      strokeDasharray={`${0.28 * 326.7} ${326.7}`} strokeDashoffset={81.7 - 0.58 * 326.7} />
+                    <circle cx={70} cy={70} r={52} fill="none" stroke="#9ca3af" strokeWidth={22}
+                      strokeDasharray={`${0.09 * 326.7} ${326.7}`} strokeDashoffset={81.7 - 0.86 * 326.7} />
+                    <circle cx={70} cy={70} r={52} fill="none" stroke="#d1d5db" strokeWidth={22}
+                      strokeDasharray={`${0.05 * 326.7} ${326.7}`} strokeDashoffset={81.7 - 0.95 * 326.7} />
+                    <text x={70} y={66} textAnchor="middle" fontSize={15} fontWeight={700} fill="#111827">142.8k</text>
+                    <text x={70} y={82} textAnchor="middle" fontSize={12} fill="#6b7280">Total</text>
+                  </svg>
+                  <div className="lib-donut-legend">
+                    {[
+                      {label:"Mass-Premium",pct:"58%",color:"#111827"},
+                      {label:"Young Urban",pct:"28%",color:"#374151"},
+                      {label:"Value-Conscious",pct:"9%",color:"#9ca3af"},
+                      {label:"Tier-3 Adopters",pct:"5%",color:"#d1d5db"},
+                    ].map((s) => (
+                      <div key={s.label} className="lib-donut-legend-row">
+                        <span className="lib-donut-swatch" style={{background:s.color}} />
+                        <span className="lib-donut-label">{s.label}</span>
+                        <span className="lib-donut-pct">{s.pct}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Area chart */}
+              <div className="lib-expanded-panel">
+                <div className="lib-panel-header">
+                  <span className="lib-panel-title">Regional sales velocity & market penetration over time</span>
+                  <span className="lib-area-badge">4.2× since 2021</span>
+                </div>
+                <svg width="100%" height={areaSvgH} viewBox={`0 0 ${areaSvgW} ${areaSvgH}`} preserveAspectRatio="xMidYMid meet" aria-label="Area chart">
+                  <defs>
+                    <linearGradient id="libAreaGrad1" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#111827" stopOpacity="0.15" />
+                      <stop offset="100%" stopColor="#111827" stopOpacity="0.02" />
+                    </linearGradient>
+                    <linearGradient id="libAreaGrad2" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#9ca3af" stopOpacity="0.2" />
+                      <stop offset="100%" stopColor="#9ca3af" stopOpacity="0.02" />
+                    </linearGradient>
+                  </defs>
+                  {[0,50000,100000,150000].map((v)=>{
+                    const y = areaY(v);
+                    return (
+                      <g key={v}>
+                        <line x1={areaPlotLeft} x2={areaSvgW-8} y1={y} y2={y} stroke="rgba(0,0,0,0.06)" strokeWidth={1}/>
+                        <text x={areaPlotLeft-4} y={y+4} textAnchor="end" fontSize={11} fill="#9ca3af">{v===0?"0":`${v/1000}k`}</text>
+                      </g>
+                    );
+                  })}
+                  {areaYears.map((yr,i)=>(
+                    <text key={yr} x={areaX(i)} y={areaSvgH-4} textAnchor="middle" fontSize={11} fill="#9ca3af">{yr}</text>
+                  ))}
+                  <polygon points={`${areaPlotLeft},${areaY(0)} ${polyline(initSeries)} ${areaX(areaYears.length-1)},${areaY(0)}`} fill="url(#libAreaGrad2)" />
+                  <polyline points={polyline(initSeries)} fill="none" stroke="#9ca3af" strokeWidth={2} />
+                  <polygon points={`${areaPlotLeft},${areaY(0)} ${polyline(repeatSeries)} ${areaX(areaYears.length-1)},${areaY(0)}`} fill="url(#libAreaGrad1)" />
+                  <polyline points={polyline(repeatSeries)} fill="none" stroke="#111827" strokeWidth={2.5} />
+                </svg>
+                <div className="lib-area-legend">
+                  <span className="lib-legend-dot" style={{background:"#111827"}}/>
+                  <span className="lib-legend-text">Repeat Retail Purchases</span>
+                  <span className="lib-legend-dot" style={{background:"#9ca3af"}}/>
+                  <span className="lib-legend-text">Initial Sampling Inflow</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Table */}
+            <div className="lib-expanded-panel">
+              <div className="lib-panel-header">
+                <span className="lib-panel-title">Channel Distribution Velocity & Retail Network Breakdown</span>
+              </div>
+              <div className="lib-table-wrap">
+                <table className="lib-table">
+                  <thead>
+                    <tr>
+                      {["Distribution Channel","Network Infrastructure","Target Cohort","Velocity Confidence","Strategic Viability"].map(h=>(
+                        <th key={h} className="lib-th">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      ["Traditional Kirana & General Trade","Secondary City FMCG Wholesale Distributors","Value-Conscious Households","99.8%","Priority Expansion"],
+                      ["Quick Commerce & Modern Trade","Blinkit / Zepto / Regional Fulfillment Hubs","Young Urban Skincare Adopters","99.9%","High Velocity"],
+                      ["Pharmacy & Dermatologist Corridors","Apollo / MedPlus Regional Outlets","Aspirational Mass-Premium","99.6%","High Margin Anchor"],
+                      ["Omnichannel Trial Kits & D2C","Direct Logistics & Regional Pop-Up Sampling","Digital-First Skincare Switchers","99.4%","Validated Driver"],
+                      ["Total Market Synthesis","4 Strategic Retail Channels","Pan-South Asia Secondary Urban","99.8% Overall","100% Market Alignment"],
+                    ].map((row,ri)=>(
+                      <tr key={ri} className={ri===4?"lib-tr-total":""}>
+                        {row.map((cell,ci)=><td key={ci} className="lib-td">{cell}</td>)}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Governance box */}
+            <div className="lib-governance-box">
+              <div className="lib-governance-block">
+                <h5 className="lib-governance-heading">Climate-Adaptive Skincare & Regional Formulation Fit</h5>
+                <p className="lib-governance-body">Formulations engineered for South Asian seasonal heat, monsoon humidity, and UV exposure. Prioritizes lightweight gel-creams and skin barrier ceramides over heavy occlusives to match regional cleansing rituals.</p>
+              </div>
+              <div className="lib-governance-block">
+                <h5 className="lib-governance-heading">Retail Price Elasticity & Pack Sizing Governance</h5>
+                <p className="lib-governance-body">Dual-tier pack architecture implemented: entry-level 30ml trial formats at ₹199–₹249 and 100ml core SKUs at ₹399–₹449. Mitigates trial friction while protecting distributor margins across Tier-2 and Tier-3 Kirana corridors.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+    </article>
+  );
+}
+
+interface LibraryPageProps {
+  onBack: () => void;
+}
+
+function LibraryPage({ onBack }: LibraryPageProps) {
+  const [activeTab, setActiveTab] = useState<"reports" | "packages">("reports");
+
+  const totalReports = libraryReportsData.length;
+  const totalPackages = 4;
+
+  // Group reports by project
+  const reportsByProject = libraryReportsData.reduce<Record<string, typeof libraryReportsData>>((acc, r) => {
+    if (!acc[r.projectId]) acc[r.projectId] = [];
+    acc[r.projectId].push(r);
+    return acc;
+  }, {});
+
+  return (
+    <main className="lib-page min-h-screen">
+      {/* Header */}
+      <header className="aircond-header mx-auto flex flex-col">
+        <div className="aircond-header-top flex items-center justify-between">
+          <button
+            type="button"
+            onClick={onBack}
+            className="aircond-wordmark bg-transparent border-0 p-0 cursor-pointer"
+            aria-label="Return to Dashboard"
+          >
+            <img src={frostAtlasLogo} alt="Frost Atlas" className="aircond-logo-img" />
+          </button>
+          <nav className="aircond-nav" aria-label="Main navigation">
+            {navItems.map((item) => (
+              <a
+                key={item}
+                href={item === "Home" ? "#top" : item === "Library" ? "#library" : item === "Packages" ? "#packages" : "#settings"}
+                className={`aircond-nav-link ${item === "Library" ? "active" : ""}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (item === "Home") onBack();
+                }}
+              >
+                {item}
+              </a>
+            ))}
+          </nav>
+          <Button className="aircond-login" asChild>
+            <a href="#solutions">Log in <ArrowUpRight aria-hidden="true" /></a>
+          </Button>
+          <Button className="aircond-mobile-menu" variant="ghost" size="icon" aria-label="Open menu" onClick={onBack}>
+            <Menu aria-hidden="true" />
+          </Button>
+        </div>
+        <div className="aircond-header-bottom text-center">
+          <h1 className="aircond-header-heading">Research Library</h1>
+          <p className="aircond-header-subline">Agent-generated reports and curated research packages.</p>
+        </div>
+      </header>
+
+      {/* Overview card */}
+      <section className="lib-overview-section">
+        <div className="lib-overview-card">
+          <div className="lib-overview-top-row">
+            <h2 className="lib-overview-headline">Project Research Library</h2>
+            <span className="lib-overview-date">Last updated: November 2026</span>
+          </div>
+          <div className="lib-overview-metrics">
+            <div className="lib-overview-metric">
+              <span className="lib-overview-metric-value">{totalReports}</span>
+              <span className="lib-overview-metric-label">Agent Reports</span>
+            </div>
+            <div className="lib-overview-metric">
+              <span className="lib-overview-metric-value">{totalPackages}</span>
+              <span className="lib-overview-metric-label">Research Packages</span>
+            </div>
+            <div className="lib-overview-metric">
+              <span className="lib-overview-metric-value">{defaultProjectPackages.length}</span>
+              <span className="lib-overview-metric-label">Connected Projects</span>
+            </div>
+          </div>
+          {/* Tab switcher */}
+          <div className="lib-tabs" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === "reports"}
+              className={`lib-tab-btn ${activeTab === "reports" ? "active" : ""}`}
+              onClick={() => setActiveTab("reports")}
+            >
+              Reports
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === "packages"}
+              className={`lib-tab-btn ${activeTab === "packages" ? "active" : ""}`}
+              onClick={() => setActiveTab("packages")}
+            >
+              Packages
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Tab content */}
+      <section className="lib-content-section">
+        {activeTab === "reports" && (
+          <div className="lib-projects-list">
+            {Object.entries(reportsByProject).map(([projectId, reports]) => (
+              <div key={projectId} className="lib-project-group">
+                <h3 className="lib-project-group-title">{reports[0].projectTitle}</h3>
+                <div className="lib-reports-grid">
+                  {reports.map((report) => (
+                    <LibraryReportCard key={report.id} report={report} />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === "packages" && (
+          <div className="packages-projects-list">
+            {defaultProjectPackages.map((group) => (
+              <div key={group.projectId} className="packages-project-group-card">
+                <div className="packages-project-group-header">
+                  <div className="packages-project-title-row">
+                    <h4 className="packages-project-title">{group.projectTitle}</h4>
+                  </div>
+                </div>
+                <div className="packages-cards-grid">
+                  {group.packages.map((pack) => (
+                    <article key={pack.id} className="packages-item-card">
+                      <div className="packages-item-header">
+                        <h5 className="packages-item-title">{pack.title}</h5>
+                      </div>
+                      <div className="packages-item-divider" />
+                      <div className="packages-item-files-list">
+                        {pack.files.map((file, fIdx) => (
+                          <div key={fIdx} className="packages-file-row">
+                            <AdobeAcrobatPdfIcon className="ai-pack-pdf-icon shrink-0" />
+                            <div className="packages-file-info">
+                              <span className="packages-file-title">
+                                {file.title} <span className="packages-file-date">- {file.date}</span>
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="packages-item-footer">
+                        <button type="button" className="packages-download-all-btn">
+                          Download all
+                        </button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+    </main>
+  );
+}
+
 interface PackagesPageProps {
   projects: ProjectItem[];
   onBack: () => void;
@@ -4477,6 +4947,7 @@ function Index() {
   const [isCreateAgentView, setIsCreateAgentView] = useState(false);
   const [isKycVerificationView, setIsKycVerificationView] = useState(false);
   const [isPackagesView, setIsPackagesView] = useState(false);
+  const [isLibraryView, setIsLibraryView] = useState(false);
   const [expandedBadges, setExpandedBadges] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -4513,6 +4984,14 @@ function Index() {
       agent.description.toLowerCase().includes(q)
     );
   });
+
+  if (isLibraryView) {
+    return (
+      <LibraryPage
+        onBack={() => setIsLibraryView(false)}
+      />
+    );
+  }
 
   if (isPackagesView) {
     return (
@@ -4667,12 +5146,17 @@ function Index() {
                     ? "#top"
                     : item === "Packages"
                       ? "#packages"
-                      : "#settings"
+                      : item === "Library"
+                        ? "#library"
+                        : "#settings"
                 }
                 onClick={(e) => {
                   if (item === "Packages") {
                     e.preventDefault();
                     setIsPackagesView(true);
+                  } else if (item === "Library") {
+                    e.preventDefault();
+                    setIsLibraryView(true);
                   } else if (item !== "Home") {
                     e.preventDefault();
                   }
