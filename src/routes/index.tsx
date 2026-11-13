@@ -1025,8 +1025,8 @@ function LibraryReportCard({ report }: { report: Omit<LibraryReport, "expandedCo
   const barW = 18;
   const gap = 8;
   const svgW = months.length * (barW * 2 + gap + 6) + 48;
-  const svgH = 160;
-  const plotH = 120;
+  const svgH = 180;
+  const plotH = 130;
   const plotTop = 16;
 
   const areaYears = [2021,2022,2023,2024,2025,2026];
@@ -1034,10 +1034,10 @@ function LibraryReportCard({ report }: { report: Omit<LibraryReport, "expandedCo
   const initSeries =   [45000,70000,95000,118000,133000,150000];
   const maxArea = 160000;
   const areaSvgW = 440;
-  const areaSvgH = 140;
-  const areaPlotH = 100;
+  const areaSvgH = 170;
+  const areaPlotH = 120;
   const areaPlotTop = 16;
-  const areaPlotLeft = 48;
+  const areaPlotLeft = 56;
   const areaPlotW = areaSvgW - areaPlotLeft - 16;
 
   function areaX(i: number) { return areaPlotLeft + (i / (areaYears.length - 1)) * areaPlotW; }
@@ -1119,7 +1119,7 @@ function LibraryReportCard({ report }: { report: Omit<LibraryReport, "expandedCo
                     return (
                       <g key={v}>
                         <line x1={40} x2={svgW - 4} y1={y} y2={y} stroke="rgba(0,0,0,0.06)" strokeWidth={1} />
-                        <text x={36} y={y + 4} textAnchor="end" fontSize={12} fill="#9ca3af">{v === 0 ? "0" : `${v/1000}k`}</text>
+                        <text x={36} y={y + 4} textAnchor="end" fontSize={14} fill="#9ca3af">{v === 0 ? "0" : `${v/1000}k`}</text>
                       </g>
                     );
                   })}
@@ -1131,7 +1131,7 @@ function LibraryReportCard({ report }: { report: Omit<LibraryReport, "expandedCo
                       <g key={mo}>
                         <rect x={x} y={plotTop + plotH - hD} width={barW} height={hD} rx={3} fill="#111827" />
                         <rect x={x + barW + 2} y={plotTop + plotH - hR} width={barW} height={hR} rx={3} fill="#d1d5db" />
-                        <text x={x + barW} y={plotTop + plotH + 14} textAnchor="middle" fontSize={12} fill="#9ca3af">{mo}</text>
+                        <text x={x + barW} y={plotTop + plotH + 14} textAnchor="middle" fontSize={14} fill="#9ca3af">{mo}</text>
                       </g>
                     );
                   })}
@@ -1158,7 +1158,7 @@ function LibraryReportCard({ report }: { report: Omit<LibraryReport, "expandedCo
                     <circle cx={70} cy={70} r={52} fill="none" stroke="#d1d5db" strokeWidth={22}
                       strokeDasharray={`${0.05 * 326.7} ${326.7}`} strokeDashoffset={81.7 - 0.95 * 326.7} />
                     <text x={70} y={66} textAnchor="middle" fontSize={15} fontWeight={700} fill="#111827">142.8k</text>
-                    <text x={70} y={82} textAnchor="middle" fontSize={12} fill="#6b7280">Total</text>
+                    <text x={70} y={82} textAnchor="middle" fontSize={14} fill="#6b7280">Total</text>
                   </svg>
                   <div className="lib-donut-legend">
                     {[
@@ -1199,12 +1199,12 @@ function LibraryReportCard({ report }: { report: Omit<LibraryReport, "expandedCo
                     return (
                       <g key={v}>
                         <line x1={areaPlotLeft} x2={areaSvgW-8} y1={y} y2={y} stroke="rgba(0,0,0,0.06)" strokeWidth={1}/>
-                        <text x={areaPlotLeft-4} y={y+4} textAnchor="end" fontSize={11} fill="#9ca3af">{v===0?"0":`${v/1000}k`}</text>
+                        <text x={areaPlotLeft-4} y={y+4} textAnchor="end" fontSize={14} fill="#9ca3af">{v===0?"0":`${v/1000}k`}</text>
                       </g>
                     );
                   })}
                   {areaYears.map((yr,i)=>(
-                    <text key={yr} x={areaX(i)} y={areaSvgH-4} textAnchor="middle" fontSize={11} fill="#9ca3af">{yr}</text>
+                    <text key={yr} x={areaX(i)} y={areaSvgH-4} textAnchor="middle" fontSize={14} fill="#9ca3af">{yr}</text>
                   ))}
                   <polygon points={`${areaPlotLeft},${areaY(0)} ${polyline(initSeries)} ${areaX(areaYears.length-1)},${areaY(0)}`} fill="url(#libAreaGrad2)" />
                   <polyline points={polyline(initSeries)} fill="none" stroke="#9ca3af" strokeWidth={2} />
