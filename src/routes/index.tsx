@@ -703,7 +703,7 @@ const initialAgents: AgentItem[] = [
   },
 ];
 
-const navItems = ["Home", "Library", "Packages", "Settings"];
+const navItems = ["Home", "Packages", "Settings"];
 
 const projectChatsMap: Record<string, string[]> = {
   "personal-care-south-asia": [
@@ -840,6 +840,7 @@ function ProjectWorkspace({
   agents = initialAgents,
   onEditAgent,
   onOpenKyc,
+  onOpenLibrary,
 }: {
   project: ProjectItem;
   projects: ProjectItem[];
@@ -849,6 +850,7 @@ function ProjectWorkspace({
   agents?: AgentItem[];
   onEditAgent?: (agent: AgentItem) => void;
   onOpenKyc?: () => void;
+  onOpenLibrary?: () => void;
 }) {
   const [conversations, setConversations] = useState<Record<string, MessageItem[]>>(initialProjectConversations);
   const [projectChats, setProjectChats] = useState<Record<string, SubChatItem[]>>(buildInitialProjectChats);
@@ -2150,6 +2152,16 @@ function ProjectWorkspace({
             <SquarePen className="h-4 w-4 shrink-0 text-zinc-800" />
             <span>New chat</span>
           </button>
+          {onOpenLibrary && (
+            <button
+              type="button"
+              onClick={onOpenLibrary}
+              className="chatgpt-sidebar-nav-btn"
+            >
+              <Library className="h-4 w-4 shrink-0 text-zinc-600" />
+              <span>Library</span>
+            </button>
+          )}
         </div>
 
         {/* Scrollable Chats List */}
@@ -5095,6 +5107,10 @@ function Index() {
         onOpenKyc={() => {
           setIsKycVerificationView(true);
         }}
+        onOpenLibrary={() => {
+          setActiveProjectId(null);
+          setIsLibraryView(true);
+        }}
         onAddNewProject={() => {
           const newId = `untitled-${Date.now()}`;
           const newP: ProjectItem = {
@@ -5146,17 +5162,12 @@ function Index() {
                     ? "#top"
                     : item === "Packages"
                       ? "#packages"
-                      : item === "Library"
-                        ? "#library"
-                        : "#settings"
+                      : "#settings"
                 }
                 onClick={(e) => {
                   if (item === "Packages") {
                     e.preventDefault();
                     setIsPackagesView(true);
-                  } else if (item === "Library") {
-                    e.preventDefault();
-                    setIsLibraryView(true);
                   } else if (item !== "Home") {
                     e.preventDefault();
                   }
