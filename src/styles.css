@@ -1387,7 +1387,7 @@
   height: 42px;
   padding: 0 12px;
   border-radius: 12px;
-  background: #f1f1f1;
+  background: transparent;
   border: none;
   color: #0d0d0d;
   font-size: 15px;
@@ -1398,7 +1398,7 @@
 }
 
 .chatgpt-new-chat-btn:hover {
-  background: #e5e5e5;
+  background: #f4f4f4;
   color: #0d0d0d;
 }
 
