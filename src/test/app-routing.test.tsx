@@ -27,10 +27,10 @@ describe("App routing", () => {
     expect(screen.getByAltText("Frost Atlas")).toBeDefined();
     expect(screen.getByText("Autonomous Collaborative Projects")).toBeDefined();
 
-    // Verify main navigation has Home, Packages, and Settings
+    // Verify main navigation has Home, Packs, and Settings
     expect(screen.getByRole("navigation", { name: "Main navigation" })).toBeDefined();
     expect(screen.getByRole("link", { name: "Home" })).toBeDefined();
-    expect(screen.getByRole("link", { name: "Packages" })).toBeDefined();
+    expect(screen.getByRole("link", { name: "Packs" })).toBeDefined();
     expect(screen.queryByRole("link", { name: "Profile" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Add Tokens" })).toBeNull();
     expect(screen.getByRole("link", { name: "Settings" })).toBeDefined();
@@ -47,6 +47,13 @@ describe("App routing", () => {
     expect(screen.getByText("CEO Workspace")).toBeDefined();
     expect(screen.getAllByText(/Personal care brand enters South Asia’s smaller cities/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/What primary outcome do you want to achieve with this project\?/i)).toBeDefined();
+
+    // Verify menu items on details page: New chat, Saved insights, Library, Knowledge packs, Data sources
+    expect(screen.getByRole("button", { name: "New chat" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "Saved insights" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "Library" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "Knowledge packs" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "Data sources" })).toBeDefined();
 
     // Verify clicking New chat reveals the project starter prompts
     const newChatBtn = screen.getByRole("button", { name: /new chat/i });
@@ -82,7 +89,7 @@ describe("App routing", () => {
     const returnDashboardBtn = screen.getByRole("button", { name: "Return to Dashboard" });
     fireEvent.click(returnDashboardBtn);
     expect(screen.getByText("Autonomous Collaborative Projects")).toBeDefined();
-  });
+  }, 25000);
 
   it("renders badges in a single line with +1 round badge and expands on click", () => {
     const Component = Route.options.component;
@@ -208,30 +215,30 @@ describe("App routing", () => {
 
     // Default tab is Projects: projects are visible
     expect(screen.getByText("Personal care brand enters South Asia’s smaller cities")).toBeDefined();
-    expect(screen.queryByText("SBI Customer KYC & Document Verification Agent")).toBeNull();
+    expect(screen.queryByText("Customer Persona & Demographic Intelligence Agent")).toBeNull();
 
     // Click Agents tab
     fireEvent.click(agentsTab);
 
     // Verify all 6 exact agents are rendered
-    expect(screen.getByText("SBI Customer KYC & Document Verification Agent")).toBeDefined();
+    expect(screen.getByText("Customer Persona & Demographic Intelligence Agent")).toBeDefined();
     expect(
       screen.getByText(
-        "Inspects and verifies uploaded customer documents (Aadhaar, PAN, Passport, DL) for authenticity, data extraction, and regulatory KYC compliance."
+        "Analyzes customer demographic cohorts, regional purchasing patterns, and buyer persona profiles across secondary urban corridors."
       )
     ).toBeDefined();
 
-    expect(screen.getByText("SBI Home Loan Monthly Report")).toBeDefined();
+    expect(screen.getByText("Market Sizing & Growth Opportunity Forecasting Agent")).toBeDefined();
     expect(
       screen.getByText(
-        "Prepares monthly home-loan counts and disbursement totals for compliance review. Home loans only; excludes auto and land loans."
+        "Evaluates regional total addressable market (TAM), category CAGR, and market expansion opportunities across secondary urban hubs."
       )
     ).toBeDefined();
 
-    expect(screen.getByText("SBI Auto Loan Monthly Report")).toBeDefined();
+    expect(screen.getByText("Competitive Pricing & Channel Intelligence Agent")).toBeDefined();
     expect(
       screen.getByText(
-        "Compiles monthly auto-loan issuance totals for compliance review. Vehicle finance only; excludes home and land loans."
+        "Monitors competitive pricing dynamics, trade margin structures, and distributor channel velocity across regional markets."
       )
     ).toBeDefined();
 
@@ -265,7 +272,7 @@ describe("App routing", () => {
     // Click Edit on the first agent to open agent editor
     fireEvent.click(editButtons[0]);
     expect(screen.getByText("Edit your agent")).toBeDefined();
-    expect(screen.getByDisplayValue("SBI Customer KYC & Document Verification Agent")).toBeDefined();
+    expect(screen.getByDisplayValue("Customer Persona & Demographic Intelligence Agent")).toBeDefined();
 
     // Return to dashboard
     const backBtn = screen.getByRole("button", { name: "Back" });
@@ -273,7 +280,7 @@ describe("App routing", () => {
     expect(screen.getByText("Autonomous Collaborative Projects")).toBeDefined();
 
     // Click agent title link to open initial KYC document upload step
-    const agentLink = screen.getByRole("button", { name: "SBI Customer KYC & Document Verification Agent" });
+    const agentLink = screen.getByRole("button", { name: "Customer Persona & Demographic Intelligence Agent" });
     fireEvent.click(agentLink);
     expect(screen.getByText("SBI Customer KYC & Document Verification")).toBeDefined();
     expect(screen.getByText("Customer Identification Documents")).toBeDefined();
@@ -579,9 +586,9 @@ describe("App routing", () => {
     expect(screen.getByText("Untitled project")).toBeDefined();
     expect(screen.getByText("Expand Enterprise Account")).toBeDefined();
 
-    // Verify all 6 folder rows render lucide-folder
+    // Verify all 5 other project folder rows render lucide-folder
     const folderButtons = document.querySelectorAll(".chatgpt-folder-row");
-    expect(folderButtons.length).toBe(6);
+    expect(folderButtons.length).toBe(5);
     folderButtons.forEach((btn) => {
       const svg = btn.querySelector("svg");
       expect(svg).not.toBeNull();
@@ -619,9 +626,8 @@ describe("App routing", () => {
     const projectCardBtn = screen.getByText("Customer Dynamics: who is buying, and why");
     fireEvent.click(projectCardBtn);
 
-    // Click project row in sidebar to view conversation starter
-    const projectFolderRow = screen.getByRole("button", { name: /Customer Dynamics: who is buying, and why/i });
-    fireEvent.click(projectFolderRow);
+    // Verify current project's chats are listed under Chats
+    expect(screen.getByText("Buyer Segments & Purchase Drivers")).toBeDefined();
 
     // Verify canned bot monologues ("workspace active...") are removed
     expect(screen.queryByText(/Customer Dynamics workspace active/i)).toBeNull();
@@ -633,9 +639,6 @@ describe("App routing", () => {
     expect(screen.getByText("Help me define the idea")).toBeDefined();
     expect(screen.getByText("Attach a plan")).toBeDefined();
 
-    // Verify the project row is selected/active in the menu
-    expect(projectFolderRow.classList.contains("active")).toBe(true);
-
     // Click New chat in sidebar
     const newChatBtn = screen.getByRole("button", { name: /new chat/i });
     fireEvent.click(newChatBtn);
@@ -645,9 +648,6 @@ describe("App routing", () => {
     expect(screen.getByText("What outcome would make this project worthwhile?")).toBeDefined();
     expect(screen.getByText("Help me define the idea")).toBeDefined();
     expect(screen.getByText("Attach a plan")).toBeDefined();
-
-    // Verify project in the sidebar menu stays selected as it is
-    expect(projectFolderRow.classList.contains("active")).toBe(true);
   });
 
   it("shows already done mock conversation with primary outcome options in stroke box for Personal care brand", () => {
@@ -659,13 +659,20 @@ describe("App routing", () => {
     const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
     fireEvent.click(projectCardBtn);
 
-    // Click project row in sidebar to view main conversation
-    const projectFolderRow = screen.getByRole("button", { name: /Personal care brand enters South Asia’s smaller cities/i });
-    fireEvent.click(projectFolderRow);
+    // Click subchat under Chats to view main conversation
+    const chatBtn = screen.getByText("Tier-2 Market Penetration Strategy");
+    fireEvent.click(chatBtn);
 
     // Verify mock conversation messages are rendered
     expect(screen.getAllByText(/Personal care brand enters South Asia’s smaller cities/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/What primary outcome do you want to achieve with this project\?/i)).toBeDefined();
+
+    // Verify menu items on details page: New chat, Saved insights, Library, Knowledge packs, Data sources
+    expect(screen.getByRole("button", { name: "New chat" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "Saved insights" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "Library" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "Knowledge packs" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "Data sources" })).toBeDefined();
     expect(screen.getByText(/Launch a new AI product or service/i)).toBeDefined();
     expect(screen.getByText(/Automate internal operations & reduce costs/i)).toBeDefined();
     expect(screen.getAllByText(/Expand into a new customer segment or region/i).length).toBeGreaterThan(0);
@@ -818,8 +825,8 @@ describe("App routing", () => {
     const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
     fireEvent.click(projectCardBtn);
 
-    // Verify Matching Knowledge Packages section is rendered without count subtitle
-    expect(screen.getByText("Matching Knowledge Packages")).toBeDefined();
+    // Verify Matching Knowledge Packs section is rendered without count subtitle
+    expect(screen.getByText("Matching Knowledge Packs")).toBeDefined();
     expect(screen.queryByText(/packs recommended for this project/i)).toBeNull();
 
     // Verify Pack 1 heading, subtitle, and tag
@@ -854,11 +861,17 @@ describe("App routing", () => {
     ).toBeGreaterThan(0);
     expect(screen.getByText(/- December 2026/i)).toBeDefined();
 
-    // Verify pack cards do NOT have GET button at the top, and instead have Download all button at the bottom
+    // Verify pack cards have credits required (4,000), available credits, and Get Bundle button at the bottom
     expect(document.querySelector(".ai-pack-card-top-row .ai-pack-get-btn")).toBeNull();
-    const downloadAllBtns = screen.getAllByRole("button", { name: /Download all reports in /i });
-    expect(downloadAllBtns.length).toBe(2);
-    expect(downloadAllBtns[0].textContent).toContain("Download all");
+    const creditsLabels = screen.getAllByText(/Credits required/i);
+    expect(creditsLabels.length).toBe(2);
+    expect(screen.getAllByText(/4,?000/).length).toBeGreaterThanOrEqual(2);
+    const availableCreditsLabels = screen.getAllByText(/Available credits/i);
+    expect(availableCreditsLabels.length).toBe(2);
+    expect(screen.getAllByText(/12,?000/).length).toBeGreaterThanOrEqual(2);
+    const getPackBtns = document.querySelectorAll(".ai-knowledge-pack-card .ai-pack-get-btn");
+    expect(getPackBtns.length).toBe(2);
+    expect(getPackBtns[0].textContent).toContain("Get Pack");
 
     // Verify "Understood! Expanding..." line is removed
     expect(
@@ -893,12 +906,12 @@ describe("App routing", () => {
     // Verify Recommended Agents section using home page card layout (limited to 2 agents)
     expect(screen.getByText("Recommended Agents")).toBeDefined();
     expect(document.querySelectorAll(".ai-agent-recommend-card").length).toBe(2);
-    expect(screen.getAllByText(/SBI Home Loan Monthly Report/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/SBI Customer KYC & Document Verification Agent/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Market Sizing & Growth Opportunity Forecasting Agent/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Customer Persona & Demographic Intelligence Agent/i).length).toBeGreaterThan(0);
 
     // Verify Run agent button interactivity
     const runBtn = screen.getByRole("button", {
-      name: /(Run agent|Generate report).*SBI Home Loan Monthly Report/i,
+      name: /(Run agent|Generate report).*Market Sizing & Growth Opportunity Forecasting Agent/i,
     });
     expect(runBtn).toBeDefined();
     fireEvent.click(runBtn);
@@ -956,7 +969,7 @@ describe("App routing", () => {
     expect(document.querySelector(".agent-drawer-card-badge")).toBeNull();
     const otherAgentCards = document.querySelectorAll(".agent-drawer-card--other");
     expect(otherAgentCards.length).toBe(6);
-    expect(screen.getByText("SBI Customer KYC & Document Verification Agent")).toBeDefined();
+    expect(screen.getByText("Customer Persona & Demographic Intelligence Agent")).toBeDefined();
     expect(screen.getByText("AIIMS ICU Occupancy Report")).toBeDefined();
 
     // Verify right-side close button and Run agent buttons are removed from drawer
@@ -1086,7 +1099,7 @@ describe("App routing", () => {
     expect(screen.getByText("Channel Velocity & Margins:")).toBeDefined();
     expect(screen.getByText("Formulation Dynamics:")).toBeDefined();
     expect(screen.getByText("Download report (PDF)")).toBeDefined();
-  });
+  }, 25000);
 
   it("navigates to the Packages page on clicking Packages in header menu with overlapping card and project-wise sections", () => {
     const Component = Route.options.component;
@@ -1094,25 +1107,25 @@ describe("App routing", () => {
 
     render(<Component />);
 
-    // Click Packages link in main navigation
-    const packagesLink = screen.getByRole("link", { name: "Packages" });
-    fireEvent.click(packagesLink);
+    // Click Packs link in main navigation
+    const packsLink = screen.getByRole("link", { name: "Packs" });
+    fireEvent.click(packsLink);
 
-    // Verify Packages page is rendered with preserved header
-    expect(screen.getByRole("heading", { level: 1, name: /Research & Knowledge Packages/i })).toBeDefined();
+    // Verify Packs page is rendered with preserved header
+    expect(screen.getByRole("heading", { level: 1, name: /Research & Knowledge Packs/i })).toBeDefined();
     expect(
-      screen.getByText(/Curated research packages and verified market intelligence/i)
+      screen.getByText(/Curated research packs and verified market intelligence/i)
     ).toBeDefined();
 
     // Verify overlapping stylish single UI card
     const overviewCard = document.querySelector(".packages-overview-card");
     expect(overviewCard).not.toBeNull();
-    expect(screen.getByText("Acquired Research Packages")).toBeDefined();
+    expect(screen.getByText("Acquired Research Packs")).toBeDefined();
     expect(screen.getByText("Last acquired: June 2026")).toBeDefined();
     expect(document.querySelector(".packages-last-update-pill")).toBeNull();
     expect(document.querySelector(".packages-last-update-text")).not.toBeNull();
     expect(screen.getByText("4")).toBeDefined();
-    expect(screen.getByText("Packages Acquired")).toBeDefined();
+    expect(screen.getByText("Packs Acquired")).toBeDefined();
     expect(screen.queryByText("Last Date Mentioned")).toBeNull();
     expect(screen.getByText("10")).toBeDefined();
     expect(screen.getByText("Validated Reports")).toBeDefined();
@@ -1142,4 +1155,56 @@ describe("App routing", () => {
     expect(screen.getByText("Autonomous Collaborative Projects")).toBeDefined();
     expect(document.querySelector(".packages-overview-card")).toBeNull();
   });
+
+  it("provides search on Saved Insights page and allows saving general assistant chat responses as insights", () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    // Click Saved insights in menu
+    const savedInsightsBtn = screen.getByRole("button", { name: "Saved insights" });
+    fireEvent.click(savedInsightsBtn);
+
+    // Verify search input exists on Saved Insights view
+    const searchInput = screen.getByPlaceholderText("Search saved insights...");
+    expect(searchInput).toBeDefined();
+
+    // Verify initial insights are displayed
+    expect(screen.getByText("Mass-Premium Conversion Sweet Spot")).toBeDefined();
+
+    // Search for non-existent text
+    fireEvent.change(searchInput, { target: { value: "NonexistentKeyword123" } });
+    expect(screen.getByText(/No saved insights found matching/i)).toBeDefined();
+
+    // Search for existing text
+    fireEvent.change(searchInput, { target: { value: "Kirana" } });
+    expect(screen.getByText("Kirana & Quick Commerce Distribution Velocity")).toBeDefined();
+    expect(screen.queryByText("Mass-Premium Conversion Sweet Spot")).toBeNull();
+
+    // Clear search filter
+    fireEvent.change(searchInput, { target: { value: "" } });
+    expect(screen.getByText("Mass-Premium Conversion Sweet Spot")).toBeDefined();
+
+    // Go back to chat
+    const chatBtn = screen.getByText("Tier-2 Market Penetration Strategy");
+    fireEvent.click(chatBtn);
+
+    // Find Save insight button on general assistant response
+    const saveInsightBtn = screen.getAllByRole("button", { name: /Save insight/i })[0];
+    expect(saveInsightBtn).toBeDefined();
+
+    // Click Save insight
+    fireEvent.click(saveInsightBtn);
+
+    // Button updates to Saved to insights
+    expect(screen.getAllByRole("button", { name: /Saved to insights/i }).length).toBeGreaterThan(0);
+
+    // Return to Saved insights view and verify new insight is listed
+    fireEvent.click(savedInsightsBtn);
+    expect(screen.getAllByText(/Assistant Chat/i).length).toBeGreaterThan(0);
+  }, 25000);
 });

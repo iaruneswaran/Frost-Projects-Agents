@@ -1351,8 +1351,8 @@
 .chatgpt-top-nav {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 18px;
+  gap: 2px;
+  margin-bottom: 10px;
 }
 
 .chatgpt-nav-item {
@@ -1360,13 +1360,13 @@
   align-items: center;
   gap: 12px;
   width: 100%;
-  height: 42px;
-  padding: 0 12px;
-  border-radius: 12px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 10px;
   background: transparent;
   border: none;
   color: #0d0d0d;
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 400;
   cursor: pointer;
   text-align: left;
@@ -1382,15 +1382,15 @@
 .chatgpt-new-chat-btn {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
-  height: 42px;
-  padding: 0 12px;
-  border-radius: 12px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 10px;
   background: transparent;
   border: none;
   color: #0d0d0d;
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 500;
   cursor: pointer;
   text-align: left;
@@ -1422,20 +1422,20 @@
 .chatgpt-sidebar-nav-btn {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
-  height: 42px;
-  padding: 0 12px;
-  border-radius: 12px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 10px;
   background: transparent;
   border: none;
   color: #0d0d0d;
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 500;
   cursor: pointer;
   text-align: left;
   transition: background-color 0.15s ease, color 0.15s ease;
-  margin-top: 4px;
+  margin: 0;
 }
 
 .chatgpt-sidebar-nav-btn:hover {
@@ -3250,10 +3250,58 @@
 .ai-pack-footer {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   padding-top: 14px;
   border-top: 1px solid rgba(17, 28, 29, 0.08);
   margin-top: 14px;
+  gap: 12px;
+}
+
+.ai-pack-credits-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ai-pack-price-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.ai-pack-price-label {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.ai-pack-price-val {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.ai-pack-available-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.ai-pack-available-label {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.ai-pack-available-val {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: #059669;
 }
 
 /* AI Relevance Summary Section - Boxed inside Curated Knowledge Packs */
@@ -6705,6 +6753,301 @@ button:hover,
   color: #1d4ed8;
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+/* Saved Insights Header & Search */
+.workspace-library-title-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.workspace-library-title {
+  font-size: 30px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.025em;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.workspace-library-subline {
+  font-size: 14px;
+  color: #64748b;
+  margin: 4px 0 0;
+  line-height: 1.45;
+}
+
+.saved-insights-header-bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .saved-insights-header-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.saved-insights-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  padding: 8px 14px;
+  width: 290px;
+  max-width: 100%;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.saved-insights-search-box:focus-within {
+  border-color: #0f172a;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08);
+}
+
+.saved-insights-search-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: #0f172a;
+  width: 100%;
+}
+
+.saved-insights-search-input::placeholder {
+  color: #94a3b8;
+}
+
+.saved-insights-empty {
+  padding: 40px 20px;
+  text-align: center;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px dashed rgba(0, 0, 0, 0.12);
+  grid-column: 1 / -1;
+}
+
+/* Chat Message Actions & Save Insight Button */
+.message-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.save-insight-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: #475569;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.save-insight-btn:hover {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: rgba(0, 0, 0, 0.22);
+}
+
+.save-insight-btn.saved {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: rgba(15, 23, 42, 0.25);
+  font-weight: 600;
+}
+
+/* Saved Insights Grid & Cards */
+.saved-insights-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+@media (max-width: 860px) {
+  .saved-insights-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.saved-insight-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.saved-insight-card:hover {
+  border-color: rgba(0, 0, 0, 0.16);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.saved-insight-top {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.saved-insight-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.saved-insight-date {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.saved-insight-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.saved-insight-body {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #475569;
+  margin: 0;
+}
+
+.saved-insight-footer {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.saved-insight-source {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Data Sources Grid & Cards */
+.data-sources-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+@media (max-width: 860px) {
+  .data-sources-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.data-source-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.data-source-card:hover {
+  border-color: rgba(0, 0, 0, 0.16);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.data-source-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.data-source-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.data-source-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0;
+}
+
+.data-source-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  font-size: 11.5px;
+  font-weight: 500;
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.data-source-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: #10b981;
+}
+
+.data-source-desc {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #475569;
+  margin: 0;
+}
+
+.data-source-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.05);
+  margin: 2px 0;
+}
+
+.data-source-meta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.data-source-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.data-source-meta-label {
+  font-weight: 600;
+  color: #334155;
 }
 
 @media (max-width: 900px) {
