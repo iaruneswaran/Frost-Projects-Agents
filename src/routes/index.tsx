@@ -98,6 +98,10 @@ interface MessageItem {
 
 export interface ReportFlowState {
   activeAgentId: string | null;
+  selectedAgentId: string | null;
+  selectedAgentIds?: string[];
+  hasRunAgents?: boolean;
+  isGenerating?: boolean;
   agent1Fields: {
     period: string;
     geography: string;
@@ -115,6 +119,10 @@ export interface ReportFlowState {
 
 export const defaultReportFlowState: ReportFlowState = {
   activeAgentId: null,
+  selectedAgentId: null,
+  selectedAgentIds: [],
+  hasRunAgents: false,
+  isGenerating: false,
   agent1Fields: {
     period: "June 2026",
     geography: "Tier-2 Priority Growth Cities",
@@ -775,6 +783,10 @@ Accelerate enterprise sales & revenue growth
 Or in your own words
 Type your answer and press Enter`,
   },
+];
+
+const personalCareDoneMessages: MessageItem[] = [
+  ...personalCareInitialMessages,
   {
     id: "msg-pc-3",
     sender: "user",
@@ -789,7 +801,7 @@ Type your answer and press Enter`,
 
 const initialProjectConversations: Record<string, MessageItem[]> = {
   "personal-care-south-asia": personalCareInitialMessages,
-  "personal-care-south-asia-0": personalCareInitialMessages,
+  "personal-care-south-asia-0": personalCareDoneMessages,
 };
 
 interface SubChatItem {
@@ -1034,18 +1046,9 @@ const libraryReportsData: Omit<LibraryReport, "expandedContent">[] = [
 
 function LibraryReportCard({ report }: { report: Omit<LibraryReport, "expandedContent"> }) {
   const [expanded, setExpanded] = useState(false);
+  const isChannelReport = report.id === "report-channel-distribution";
 
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"];
-  const distributedData = [8200, 10400, 12600, 15800, 18200, 20100, 22400, 24100, 25800, 26900, 28500];
-  const repeatData = [1200, 2100, 3600, 5200, 7400, 9800, 12200, 14600, 17100, 19800, 22600];
-  const maxBar = 32000;
-  const barW = 18;
-  const gap = 8;
-  const svgW = months.length * (barW * 2 + gap + 6) + 48;
-  const svgH = 180;
-  const plotH = 130;
-  const plotTop = 16;
-
+  // Data for Report 1: South Asia Tier-2 & Tier-3 Market Entry Report
   const areaYears = [2021, 2022, 2023, 2024, 2025, 2026];
   const repeatSeries = [22000, 38000, 54000, 78000, 105000, 142850];
   const initSeries = [45000, 70000, 95000, 118000, 133000, 150000];
@@ -1060,6 +1063,40 @@ function LibraryReportCard({ report }: { report: Omit<LibraryReport, "expandedCo
   function areaX(i: number) { return areaPlotLeft + (i / (areaYears.length - 1)) * areaPlotW; }
   function areaY(v: number) { return areaPlotTop + areaPlotH - (v / maxArea) * areaPlotH; }
   function polyline(series: number[]) { return series.map((v, i) => `${areaX(i)},${areaY(v)}`).join(" "); }
+
+  // Price Elasticity Curve for Report 1
+  const pricePoints = [
+    { price: 149, conv: 72 },
+    { price: 199, conv: 94 },
+    { price: 249, conv: 98.6 },
+    { price: 349, conv: 91 },
+    { price: 399, conv: 84 },
+    { price: 449, conv: 78 },
+    { price: 499, conv: 48 },
+    { price: 599, conv: 22 },
+  ];
+  const priceSvgW = 680;
+  const priceSvgH = 180;
+  const pricePlotH = 130;
+  const pricePlotTop = 20;
+  const pricePlotLeft = 50;
+  const pricePlotW = priceSvgW - pricePlotLeft - 30;
+
+  function priceX(i: number) { return pricePlotLeft + (i / (pricePoints.length - 1)) * pricePlotW; }
+  function priceY(conv: number) { return pricePlotTop + pricePlotH - (conv / 100) * pricePlotH; }
+  const pricePolyline = pricePoints.map((p, i) => `${priceX(i)},${priceY(p.conv)}`).join(" ");
+
+  // Data for Report 2: Channel Distribution Velocity & Retail Network Report
+  const quarterLabels = ["Q1 '25", "Q2 '25", "Q3 '25", "Q4 '25", "Q1 '26", "Q2 '26", "Q3 '26", "Q4 '26"];
+  const restockVelocityIndices = [100, 128, 155, 182, 210, 238, 262, 285];
+  const transitLeadTimesHours = [48, 42, 35, 30, 24, 19, 16, 14];
+  const maxVelocityIndex = 300;
+  const channelSvgW = 680;
+  const channelSvgH = 180;
+  const channelPlotH = 130;
+  const channelPlotTop = 20;
+  const channelPlotLeft = 50;
+  const channelBarW = 28;
 
   return (
     <article className="lib-report-card">
@@ -1086,208 +1123,523 @@ function LibraryReportCard({ report }: { report: Omit<LibraryReport, "expandedCo
         </div>
       </div>
 
-      <div className="lib-report-metrics-row">
-        {report.metrics.map((m, i) => (
-          <div key={i} className="lib-report-metric">
-            <span className="lib-report-metric-value">{m.value}</span>
-            <span className="lib-report-metric-label">{m.label}</span>
-            {m.delta && <span className="lib-report-metric-delta">{m.delta}</span>}
-          </div>
-        ))}
-      </div>
-
+      {/* Expanded view: Only rendered after user clicks 'View report' */}
       {expanded && (
         <div className="lib-report-expanded">
           <div className="lib-report-expanded-inner">
-            {/* Expanded Action Buttons */}
-            <div className="lib-report-expanded-actions">
-              <button
-                type="button"
-                className="lib-btn-primary"
-                onClick={() => { }}
-              >
-                <Download className="h-4 w-4 mr-1.5" />
-                <span>Download Report (PDF)</span>
-              </button>
-              <button
-                type="button"
-                className="lib-btn-secondary"
-                onClick={() => { }}
-              >
-                <span>Export CSV</span>
-              </button>
+            {/* Specific Metrics Row for this report */}
+            <div className="lib-report-metrics-row">
+              {report.metrics.map((m, i) => (
+                <div key={i} className="lib-report-metric">
+                  <span className="lib-report-metric-value">{m.value}</span>
+                  <span className="lib-report-metric-label">{m.label}</span>
+                  {m.delta && <span className="lib-report-metric-delta">{m.delta}</span>}
+                </div>
+              ))}
             </div>
 
-            {/* Bar Chart */}
-            <div className="lib-expanded-panel">
-              <div className="lib-panel-header">
-                <span className="lib-panel-title">Monthly Trial Kit Distribution & Conversion Velocity</span>
-                <div className="lib-legend-row">
-                  <span className="lib-legend-dot" style={{ background: "#111827" }} />
-                  <span className="lib-legend-text">Distributed Samples</span>
-                  <span className="lib-legend-dot" style={{ background: "#d1d5db" }} />
-                  <span className="lib-legend-text">Repeat Purchases</span>
-                </div>
-              </div>
-              <div className="lib-svg-scroll">
-                <svg width={svgW} height={svgH} aria-label="Monthly distribution bar chart">
-                  {[0, 10000, 20000, 30000].map((v) => {
-                    const y = plotTop + plotH - (v / maxBar) * plotH;
-                    return (
-                      <g key={v}>
-                        <line x1={40} x2={svgW - 4} y1={y} y2={y} stroke="rgba(0,0,0,0.06)" strokeWidth={1} />
-                        <text x={36} y={y + 4} textAnchor="end" fontSize={14} fill="#9ca3af">{v === 0 ? "0" : `${v / 1000}k`}</text>
-                      </g>
-                    );
-                  })}
-                  {months.map((mo, i) => {
-                    const x = 44 + i * (barW * 2 + gap + 6);
-                    const hD = (distributedData[i] / maxBar) * plotH;
-                    const hR = (repeatData[i] / maxBar) * plotH;
-                    return (
-                      <g key={mo}>
-                        <rect x={x} y={plotTop + plotH - hD} width={barW} height={hD} rx={3} fill="#111827" />
-                        <rect x={x + barW + 2} y={plotTop + plotH - hR} width={barW} height={hR} rx={3} fill="#d1d5db" />
-                        <text x={x + barW} y={plotTop + plotH + 14} textAnchor="middle" fontSize={14} fill="#9ca3af">{mo}</text>
-                      </g>
-                    );
-                  })}
-                </svg>
-              </div>
-            </div>
+            {isChannelReport ? (
+              /* ================= REPORT 2 VISUALIZATIONS ================= */
+              <>
+                {/* Visual 1: 4 Strategic Retail Channels Velocity & Performance Matrix */}
+                <div className="lib-expanded-panel">
+                  <div className="lib-panel-header">
+                    <div>
+                      <span className="lib-panel-title">Strategic Channel Turnover Velocity & Network Efficiency</span>
+                      <p className="text-xs text-zinc-500 mt-1">Multi-tier distribution network performance across 24 secondary urban clusters</p>
+                    </div>
+                    <div className="lib-legend-row">
+                      <span className="lib-legend-dot" style={{ background: "#059669" }} />
+                      <span className="lib-legend-text">Validated Alignment</span>
+                      <span className="lib-legend-dot" style={{ background: "#0f172a" }} />
+                      <span className="lib-legend-text">Velocity Multiplier</span>
+                    </div>
+                  </div>
 
-            {/* Bottom two panels */}
-            <div className="lib-bottom-grid">
-              {/* Donut */}
-              <div className="lib-expanded-panel">
-                <div className="lib-panel-header">
-                  <span className="lib-panel-title">Consumer Cohort & Market Segmentation</span>
-                </div>
-                <div className="lib-donut-wrap">
-                  <svg width={140} height={140} viewBox="0 0 140 140" aria-label="Consumer cohort donut chart">
-                    <circle cx={70} cy={70} r={52} fill="none" stroke="#f3f4f6" strokeWidth={22} />
-                    <circle cx={70} cy={70} r={52} fill="none" stroke="#111827" strokeWidth={22}
-                      strokeDasharray={`${0.58 * 326.7} ${326.7}`} strokeDashoffset={81.7} />
-                    <circle cx={70} cy={70} r={52} fill="none" stroke="#374151" strokeWidth={22}
-                      strokeDasharray={`${0.28 * 326.7} ${326.7}`} strokeDashoffset={81.7 - 0.58 * 326.7} />
-                    <circle cx={70} cy={70} r={52} fill="none" stroke="#9ca3af" strokeWidth={22}
-                      strokeDasharray={`${0.09 * 326.7} ${326.7}`} strokeDashoffset={81.7 - 0.86 * 326.7} />
-                    <circle cx={70} cy={70} r={52} fill="none" stroke="#d1d5db" strokeWidth={22}
-                      strokeDasharray={`${0.05 * 326.7} ${326.7}`} strokeDashoffset={81.7 - 0.95 * 326.7} />
-                    <text x={70} y={66} textAnchor="middle" fontSize={15} fontWeight={700} fill="#111827">142.8k</text>
-                    <text x={70} y={82} textAnchor="middle" fontSize={14} fill="#6b7280">Total</text>
-                  </svg>
-                  <div className="lib-donut-legend">
+                  <div className="lib-channel-grid">
                     {[
-                      { label: "Mass-Premium", pct: "58%", color: "#111827" },
-                      { label: "Young Urban", pct: "28%", color: "#374151" },
-                      { label: "Value-Conscious", pct: "9%", color: "#9ca3af" },
-                      { label: "Tier-3 Adopters", pct: "5%", color: "#d1d5db" },
-                    ].map((s) => (
-                      <div key={s.label} className="lib-donut-legend-row">
-                        <span className="lib-donut-swatch" style={{ background: s.color }} />
-                        <span className="lib-donut-label">{s.label}</span>
-                        <span className="lib-donut-pct">{s.pct}</span>
+                      {
+                        name: "Traditional Kirana FMCG Wholesale",
+                        badge: "Core Volume Driver",
+                        doors: "12,400 Outlets",
+                        turnover: "3.8×",
+                        terms: "18–21% Trade Discount",
+                        pct: 76,
+                        status: "99.8% Alignment",
+                      },
+                      {
+                        name: "Quick Commerce (Blinkit / Zepto / Instamart)",
+                        badge: "Peak Velocity Driver",
+                        doors: "48 Dark Stores",
+                        turnover: "6.4×",
+                        terms: "11-min Avg SLA",
+                        pct: 98,
+                        status: "99.9% Alignment",
+                      },
+                      {
+                        name: "Pharmacy & Specialty Beauty (Apollo / MedPlus)",
+                        badge: "High-Margin Anchor",
+                        doors: "4,200 Outlets",
+                        turnover: "2.9×",
+                        terms: "24% Gross Margin",
+                        pct: 64,
+                        status: "99.6% Alignment",
+                      },
+                      {
+                        name: "Regional Modern Trade (Reliance / D-Mart)",
+                        badge: "Scalable Modern Reach",
+                        doors: "1,850 Hypermarkets",
+                        turnover: "4.6×",
+                        terms: "16% Volume Rebate",
+                        pct: 85,
+                        status: "99.4% Alignment",
+                      },
+                    ].map((ch) => (
+                      <div key={ch.name} className="lib-channel-card">
+                        <div className="lib-channel-card-top">
+                          <span className="lib-channel-name">{ch.name}</span>
+                          <span className="lib-channel-badge">{ch.badge}</span>
+                        </div>
+                        <div className="lib-channel-stats-row">
+                          <div className="lib-channel-stat-item">
+                            <span className="lib-channel-stat-val">{ch.turnover}</span>
+                            <span className="lib-channel-stat-lbl">Inventory Turn</span>
+                          </div>
+                          <div className="lib-channel-stat-item">
+                            <span className="lib-channel-stat-val" style={{ fontSize: "16px" }}>{ch.doors}</span>
+                            <span className="lib-channel-stat-lbl">Active Doors</span>
+                          </div>
+                          <div className="lib-channel-stat-item" style={{ marginLeft: "auto", textAlign: "right" }}>
+                            <span className="text-xs font-semibold text-emerald-600">{ch.status}</span>
+                            <span className="lib-channel-stat-lbl">{ch.terms}</span>
+                          </div>
+                        </div>
+                        <div className="lib-progress-track">
+                          <div className="lib-progress-fill" style={{ width: `${ch.pct}%` }} />
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
-              </div>
 
-              {/* Area chart */}
-              <div className="lib-expanded-panel">
-                <div className="lib-panel-header">
-                  <span className="lib-panel-title">Regional sales velocity & market penetration over time</span>
-                  <span className="lib-area-badge">4.2× since 2021</span>
-                </div>
-                <svg width="100%" height={areaSvgH} viewBox={`0 0 ${areaSvgW} ${areaSvgH}`} preserveAspectRatio="xMidYMid meet" aria-label="Area chart">
-                  <defs>
-                    <linearGradient id="libAreaGrad1" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#111827" stopOpacity="0.15" />
-                      <stop offset="100%" stopColor="#111827" stopOpacity="0.02" />
-                    </linearGradient>
-                    <linearGradient id="libAreaGrad2" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#9ca3af" stopOpacity="0.2" />
-                      <stop offset="100%" stopColor="#9ca3af" stopOpacity="0.02" />
-                    </linearGradient>
-                  </defs>
-                  {[0, 50000, 100000, 150000].map((v) => {
-                    const y = areaY(v);
-                    return (
-                      <g key={v}>
-                        <line x1={areaPlotLeft} x2={areaSvgW - 8} y1={y} y2={y} stroke="rgba(0,0,0,0.06)" strokeWidth={1} />
-                        <text x={areaPlotLeft - 4} y={y + 4} textAnchor="end" fontSize={14} fill="#9ca3af">{v === 0 ? "0" : `${v / 1000}k`}</text>
-                      </g>
-                    );
-                  })}
-                  {areaYears.map((yr, i) => (
-                    <text key={yr} x={areaX(i)} y={areaSvgH - 4} textAnchor="middle" fontSize={14} fill="#9ca3af">{yr}</text>
-                  ))}
-                  <polygon points={`${areaPlotLeft},${areaY(0)} ${polyline(initSeries)} ${areaX(areaYears.length - 1)},${areaY(0)}`} fill="url(#libAreaGrad2)" />
-                  <polyline points={polyline(initSeries)} fill="none" stroke="#9ca3af" strokeWidth={2} />
-                  <polygon points={`${areaPlotLeft},${areaY(0)} ${polyline(repeatSeries)} ${areaX(areaYears.length - 1)},${areaY(0)}`} fill="url(#libAreaGrad1)" />
-                  <polyline points={polyline(repeatSeries)} fill="none" stroke="#111827" strokeWidth={2.5} />
-                </svg>
-                <div className="lib-area-legend">
-                  <span className="lib-legend-dot" style={{ background: "#111827" }} />
-                  <span className="lib-legend-text">Repeat Retail Purchases</span>
-                  <span className="lib-legend-dot" style={{ background: "#9ca3af" }} />
-                  <span className="lib-legend-text">Initial Sampling Inflow</span>
-                </div>
-              </div>
-            </div>
+                {/* Visual 2: Quarterly Restock Velocity Index vs Transit Lead Time (Dual-Axis SVG) */}
+                <div className="lib-expanded-panel">
+                  <div className="lib-panel-header">
+                    <div>
+                      <span className="lib-panel-title">Quarterly Restock Velocity Index vs Transit Lead Time (Hours)</span>
+                      <p className="text-xs text-zinc-500 mt-1">Secondary corridor logistics turnaround acceleration from Q1 2025 to Q4 2026</p>
+                    </div>
+                    <span className="lib-area-badge">Turnaround: 48h → 14h</span>
+                  </div>
 
-            {/* Table */}
-            <div className="lib-expanded-panel">
-              <div className="lib-panel-header">
-                <span className="lib-panel-title">Channel Distribution Velocity & Retail Network Breakdown</span>
-              </div>
-              <div className="lib-table-wrap">
-                <table className="lib-table">
-                  <thead>
-                    <tr>
-                      {["Distribution Channel", "Network Infrastructure", "Target Cohort", "Velocity Confidence", "Strategic Viability"].map(h => (
-                        <th key={h} className="lib-th">{h}</th>
+                  <div className="lib-svg-scroll">
+                    <svg width={channelSvgW} height={channelSvgH} aria-label="Quarterly restock and lead time dual-axis chart">
+                      {/* Grid lines */}
+                      {[0, 100, 200, 300].map((v) => {
+                        const y = channelPlotTop + channelPlotH - (v / maxVelocityIndex) * channelPlotH;
+                        return (
+                          <g key={v}>
+                            <line x1={channelPlotLeft} x2={channelSvgW - 10} y1={y} y2={y} stroke="rgba(0,0,0,0.06)" strokeWidth={1} />
+                            <text x={channelPlotLeft - 6} y={y + 4} textAnchor="end" fontSize={13} fill="#9ca3af">{v}</text>
+                          </g>
+                        );
+                      })}
+
+                      {/* Velocity Bars */}
+                      {quarterLabels.map((q, i) => {
+                        const x = channelPlotLeft + 20 + i * ((channelSvgW - channelPlotLeft - 40) / quarterLabels.length);
+                        const barHeight = (restockVelocityIndices[i] / maxVelocityIndex) * channelPlotH;
+                        const yBar = channelPlotTop + channelPlotH - barHeight;
+                        return (
+                          <g key={q}>
+                            <rect x={x} y={yBar} width={channelBarW} height={barHeight} rx={4} fill="#0f172a" />
+                            <text x={x + channelBarW / 2} y={channelPlotTop + channelPlotH + 16} textAnchor="middle" fontSize={13} fill="#64748b">{q}</text>
+                          </g>
+                        );
+                      })}
+
+                      {/* Lead Time Stepped Line */}
+                      {(() => {
+                        const pts = quarterLabels.map((_, i) => {
+                          const x = channelPlotLeft + 20 + i * ((channelSvgW - channelPlotLeft - 40) / quarterLabels.length) + channelBarW / 2;
+                          const y = channelPlotTop + channelPlotH - (transitLeadTimesHours[i] / 50) * channelPlotH;
+                          return { x, y, h: transitLeadTimesHours[i] };
+                        });
+                        const polylinePoints = pts.map(p => `${p.x},${p.y}`).join(" ");
+
+                        return (
+                          <g>
+                            <polyline points={polylinePoints} fill="none" stroke="#059669" strokeWidth={2.5} strokeDasharray="4 2" />
+                            {pts.map((p, idx) => (
+                              <g key={idx}>
+                                <circle cx={p.x} cy={p.y} r={4.5} fill="#059669" stroke="#ffffff" strokeWidth={2} />
+                                <text x={p.x} y={p.y - 8} textAnchor="middle" fontSize={11} fontWeight={700} fill="#059669">{p.h}h</text>
+                              </g>
+                            ))}
+                          </g>
+                        );
+                      })()}
+                    </svg>
+                  </div>
+
+                  <div className="lib-legend-row" style={{ marginTop: "4px" }}>
+                    <span className="lib-legend-dot" style={{ background: "#0f172a" }} />
+                    <span className="lib-legend-text">Restock Velocity Index (Bars, Left Axis)</span>
+                    <span className="lib-legend-dot" style={{ background: "#059669", borderRadius: "50%" }} />
+                    <span className="lib-legend-text">Logistics Lead Time (Dashed Green, Hours)</span>
+                  </div>
+                </div>
+
+                {/* Visual 3 & 4: Bottom 2-col grid */}
+                <div className="lib-bottom-grid">
+                  {/* Left: 24 Urban Clusters Regional Volume Share */}
+                  <div className="lib-expanded-panel">
+                    <div className="lib-panel-header">
+                      <span className="lib-panel-title">24 Urban Clusters Regional Volume Share</span>
+                    </div>
+                    <div className="lib-zone-list">
+                      {[
+                        { zone: "West Zone (7 Hubs)", hubs: "Ahmedabad, Surat, Pune, Nagpur, Nashik, Rajkot", share: "36%", fill: "99.9%", w: 90 },
+                        { zone: "South Zone (6 Hubs)", hubs: "Coimbatore, Kochi, Madurai, Mysore, Vizag, Vijayawada", share: "31%", fill: "99.8%", w: 78 },
+                        { zone: "North Zone (6 Hubs)", hubs: "Jaipur, Lucknow, Chandigarh, Kanpur, Ludhiana, Agra", share: "22%", fill: "99.6%", w: 55 },
+                        { zone: "East Zone (5 Hubs)", hubs: "Bhubaneswar, Patna, Ranchi, Guwahati, Jamshedpur", share: "11%", fill: "99.4%", w: 30 },
+                      ].map((item) => (
+                        <div key={item.zone} className="lib-zone-item">
+                          <div className="lib-zone-header">
+                            <div>
+                              <span className="lib-zone-title">{item.zone}</span>
+                              <div className="text-[11px] text-zinc-400 mt-0.5">{item.hubs}</div>
+                            </div>
+                            <div className="lib-zone-metric text-right">
+                              <strong>{item.share}</strong> Volume · <span className="text-emerald-600 font-semibold">{item.fill} SLA</span>
+                            </div>
+                          </div>
+                          <div className="lib-progress-track">
+                            <div className="lib-progress-fill" style={{ width: `${item.w}%` }} />
+                          </div>
+                        </div>
                       ))}
-                    </tr>
-                  </thead>
-                  <tbody>
+                    </div>
+                  </div>
+
+                  {/* Right: Channel Margin vs Replenishment Turn Cycle */}
+                  <div className="lib-expanded-panel">
+                    <div className="lib-panel-header">
+                      <span className="lib-panel-title">Channel Margin vs Replenishment Cycle</span>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                      {[
+                        { ch: "Quick Commerce", margin: "14%", cycle: "Daily (24h SLA)", vol: "High Flow", color: "#059669" },
+                        { ch: "Traditional Kirana Wholesale", margin: "19%", cycle: "Bi-Weekly (5-day cycle)", vol: "Volume Anchor", color: "#0f172a" },
+                        { ch: "Regional Modern Trade", margin: "16%", cycle: "Weekly (7-day cycle)", vol: "Bulk Orders", color: "#334155" },
+                        { ch: "Pharmacy & Derma Corridors", margin: "24%", cycle: "Fortnightly (14-day cycle)", vol: "High Basket", color: "#64748b" },
+                      ].map((row) => (
+                        <div key={row.ch} className="p-3 bg-zinc-50 border border-zinc-100 rounded-lg flex items-center justify-between">
+                          <div>
+                            <div className="text-xs font-semibold text-zinc-900">{row.ch}</div>
+                            <div className="text-[11px] text-zinc-500 mt-0.5">{row.cycle} · {row.vol}</div>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-sm font-bold text-zinc-900">{row.margin}</span>
+                            <div className="text-[10px] text-zinc-400">Trade Margin</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Table: Full Channel Breakdown */}
+                <div className="lib-expanded-panel">
+                  <div className="lib-panel-header">
+                    <span className="lib-panel-title">Channel Distribution Velocity & Retail Network Breakdown</span>
+                  </div>
+                  <div className="lib-table-wrap">
+                    <table className="lib-table">
+                      <thead>
+                        <tr>
+                          {["Distribution Channel", "Network Infrastructure", "Target Cohort", "Velocity Confidence", "Strategic Viability"].map((h) => (
+                            <th key={h} className="lib-th">{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[
+                          ["Traditional Kirana & General Trade", "Secondary City FMCG Wholesale Distributors", "Value-Conscious Households", "99.8%", "Priority Expansion"],
+                          ["Quick Commerce & Modern Trade", "Blinkit / Zepto / Regional Fulfillment Hubs", "Young Urban Skincare Adopters", "99.9%", "High Velocity"],
+                          ["Pharmacy & Dermatologist Corridors", "Apollo / MedPlus Regional Outlets", "Aspirational Mass-Premium", "99.6%", "High Margin Anchor"],
+                          ["Omnichannel Trial Kits & D2C", "Direct Logistics & Regional Pop-Up Sampling", "Digital-First Skincare Switchers", "99.4%", "Validated Driver"],
+                          ["Total Market Synthesis", "4 Strategic Retail Channels", "Pan-South Asia Secondary Urban", "99.8% Overall", "100% Market Alignment"],
+                        ].map((row, ri) => (
+                          <tr key={ri} className={ri === 4 ? "lib-tr-total" : ""}>
+                            {row.map((cell, ci) => <td key={ci} className="lib-td">{cell}</td>)}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Governance Box */}
+                <div className="lib-governance-box">
+                  <div className="lib-governance-block">
+                    <h5 className="lib-governance-heading">Cold-Chain & Monsoon Logistics Resilience</h5>
+                    <p className="lib-governance-body">Temperature-stable protective packaging deployed for non-AC Tier-2 transit hubs. Real-time humidity sensors in regional 3PL fulfillment depots safeguard gel-cream active ingredient potency.</p>
+                  </div>
+                  <div className="lib-governance-block">
+                    <h5 className="lib-governance-heading">Kirana Credit Terms & Distributor Cash-Flow Governance</h5>
+                    <p className="lib-governance-body">14-day revolving credit cycles anchored to electronic proof-of-delivery (e-POD). 2% early settlement discount incentivizes distributor restocking velocity and prevents stock-outs during festival peak periods.</p>
+                  </div>
+                </div>
+              </>
+            ) : (
+              /* ================= REPORT 1 VISUALIZATIONS ================= */
+              <>
+                {/* Visual 1: Secondary Urban Corridor Penetration & Household Velocity */}
+                <div className="lib-expanded-panel">
+                  <div className="lib-panel-header">
+                    <div>
+                      <span className="lib-panel-title">Secondary Urban Corridor Penetration & Household Velocity</span>
+                      <p className="text-xs text-zinc-500 mt-1">142,850 households surveyed across high-growth Tier-2 and Tier-3 urban clusters</p>
+                    </div>
+                    <span className="lib-area-badge">Total Households: 142.8k</span>
+                  </div>
+
+                  <div className="lib-corridor-grid">
                     {[
-                      ["Traditional Kirana & General Trade", "Secondary City FMCG Wholesale Distributors", "Value-Conscious Households", "99.8%", "Priority Expansion"],
-                      ["Quick Commerce & Modern Trade", "Blinkit / Zepto / Regional Fulfillment Hubs", "Young Urban Skincare Adopters", "99.9%", "High Velocity"],
-                      ["Pharmacy & Dermatologist Corridors", "Apollo / MedPlus Regional Outlets", "Aspirational Mass-Premium", "99.6%", "High Margin Anchor"],
-                      ["Omnichannel Trial Kits & D2C", "Direct Logistics & Regional Pop-Up Sampling", "Digital-First Skincare Switchers", "99.4%", "Validated Driver"],
-                      ["Total Market Synthesis", "4 Strategic Retail Channels", "Pan-South Asia Secondary Urban", "99.8% Overall", "100% Market Alignment"],
-                    ].map((row, ri) => (
-                      <tr key={ri} className={ri === 4 ? "lib-tr-total" : ""}>
-                        {row.map((cell, ci) => <td key={ci} className="lib-td">{cell}</td>)}
-                      </tr>
+                      {
+                        name: "Indore – Bhopal Corridor",
+                        pct: "88.4%",
+                        cohorts: "42,100 Cohorts",
+                        avgBasket: "₹420 Avg Basket",
+                        fillPct: 88.4,
+                        note: "High Trial Velocity",
+                      },
+                      {
+                        name: "Coimbatore – Kochi Belt",
+                        pct: "92.6%",
+                        cohorts: "38,400 Cohorts",
+                        avgBasket: "₹445 Avg Basket",
+                        fillPct: 92.6,
+                        note: "Top Regional Velocity",
+                      },
+                      {
+                        name: "Jaipur – Udaipur Ring",
+                        pct: "84.1%",
+                        cohorts: "34,250 Cohorts",
+                        avgBasket: "₹395 Avg Basket",
+                        fillPct: 84.1,
+                        note: "Rapid Modern Adoption",
+                      },
+                      {
+                        name: "Lucknow – Kanpur Belt",
+                        pct: "79.5%",
+                        cohorts: "28,100 Cohorts",
+                        avgBasket: "₹380 Avg Basket",
+                        fillPct: 79.5,
+                        note: "Kirana Anchor Corridor",
+                      },
+                    ].map((item) => (
+                      <div key={item.name} className="lib-corridor-card">
+                        <div className="lib-corridor-top">
+                          <span className="lib-corridor-name">{item.name}</span>
+                          <span className="lib-corridor-pct">{item.pct}</span>
+                        </div>
+                        <div className="lib-progress-track">
+                          <div className="lib-progress-fill" style={{ width: `${item.fillPct}%` }} />
+                        </div>
+                        <div className="lib-corridor-meta">
+                          <span>{item.cohorts} · {item.avgBasket}</span>
+                          <span className="text-xs font-medium text-zinc-700">{item.note}</span>
+                        </div>
+                      </div>
                     ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                  </div>
+                </div>
 
-            {/* Governance box */}
-            <div className="lib-governance-box">
-              <div className="lib-governance-block">
-                <h5 className="lib-governance-heading">Climate-Adaptive Skincare & Regional Formulation Fit</h5>
-                <p className="lib-governance-body">Formulations engineered for South Asian seasonal heat, monsoon humidity, and UV exposure. Prioritizes lightweight gel-creams and skin barrier ceramides over heavy occlusives to match regional cleansing rituals.</p>
-              </div>
-              <div className="lib-governance-block">
-                <h5 className="lib-governance-heading">Retail Price Elasticity & Pack Sizing Governance</h5>
-                <p className="lib-governance-body">Dual-tier pack architecture implemented: entry-level 30ml trial formats at ₹199–₹249 and 100ml core SKUs at ₹399–₹449. Mitigates trial friction while protecting distributor margins across Tier-2 and Tier-3 Kirana corridors.</p>
-              </div>
-            </div>
+                {/* Visual 2: Price Elasticity & Trial Conversion Curve (Custom SVG) */}
+                <div className="lib-expanded-panel">
+                  <div className="lib-panel-header">
+                    <div>
+                      <span className="lib-panel-title">Mass-Premium Price Elasticity & Trial Conversion Curve</span>
+                      <p className="text-xs text-zinc-500 mt-1">Consumer willingness-to-pay index vs price band across Tier-2 & Tier-3 retail corridors</p>
+                    </div>
+                    <div className="lib-legend-row">
+                      <span className="lib-legend-dot" style={{ background: "#059669" }} />
+                      <span className="lib-legend-text">Mass-Premium Sweet Spot (₹199–₹450)</span>
+                      <span className="lib-legend-dot" style={{ background: "#ef4444" }} />
+                      <span className="lib-legend-text">&lt; ₹500 Threshold</span>
+                    </div>
+                  </div>
 
+                  <div className="lib-svg-scroll">
+                    <svg width={priceSvgW} height={priceSvgH} aria-label="Price elasticity conversion curve">
+                      <defs>
+                        <linearGradient id="sweetSpotGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#059669" stopOpacity="0.22" />
+                          <stop offset="100%" stopColor="#059669" stopOpacity="0.02" />
+                        </linearGradient>
+                      </defs>
+
+                      {/* Grid Lines */}
+                      {[0, 25, 50, 75, 100].map((v) => {
+                        const y = pricePlotTop + pricePlotH - (v / 100) * pricePlotH;
+                        return (
+                          <g key={v}>
+                            <line x1={pricePlotLeft} x2={priceSvgW - 10} y1={y} y2={y} stroke="rgba(0,0,0,0.06)" strokeWidth={1} />
+                            <text x={pricePlotLeft - 6} y={y + 4} textAnchor="end" fontSize={13} fill="#9ca3af">{v}%</text>
+                          </g>
+                        );
+                      })}
+
+                      {/* Shaded Sweet Spot Area between index 1 (₹199) and index 5 (₹449) */}
+                      {(() => {
+                        const x1 = priceX(1);
+                        const x2 = priceX(5);
+                        const yBase = pricePlotTop + pricePlotH;
+                        const subPoints = pricePoints.slice(1, 6).map((p, i) => `${priceX(i + 1)},${priceY(p.conv)}`).join(" ");
+                        return (
+                          <polygon
+                            points={`${x1},${yBase} ${subPoints} ${x2},${yBase}`}
+                            fill="url(#sweetSpotGrad)"
+                          />
+                        );
+                      })()}
+
+                      {/* Threshold Line at index 6 (₹499) */}
+                      <line
+                        x1={priceX(6)}
+                        x2={priceX(6)}
+                        y1={pricePlotTop}
+                        y2={pricePlotTop + pricePlotH}
+                        stroke="#ef4444"
+                        strokeWidth={1.5}
+                        strokeDasharray="4 3"
+                      />
+                      <text x={priceX(6)} y={pricePlotTop - 6} textAnchor="middle" fontSize={11} fontWeight={600} fill="#ef4444">
+                        &lt; ₹500 Threshold
+                      </text>
+
+                      {/* Main Conversion Curve */}
+                      <polyline points={pricePolyline} fill="none" stroke="#0f172a" strokeWidth={2.5} />
+
+                      {/* Data Dots and Ticks */}
+                      {pricePoints.map((p, i) => {
+                        const cx = priceX(i);
+                        const cy = priceY(p.conv);
+                        const isSweetSpot = i >= 1 && i <= 5;
+                        return (
+                          <g key={p.price}>
+                            <circle cx={cx} cy={cy} r={isSweetSpot ? 4.5 : 3.5} fill={isSweetSpot ? "#059669" : "#0f172a"} stroke="#ffffff" strokeWidth={2} />
+                            <text x={cx} y={pricePlotTop + pricePlotH + 16} textAnchor="middle" fontSize={12} fill="#64748b">₹{p.price}</text>
+                            <text x={cx} y={cy - 8} textAnchor="middle" fontSize={11} fontWeight={isSweetSpot ? 700 : 500} fill={isSweetSpot ? "#059669" : "#475569"}>{p.conv}%</text>
+                          </g>
+                        );
+                      })}
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Visual 3 & 4: Bottom 2-col grid */}
+                <div className="lib-bottom-grid">
+                  {/* Donut: Consumer Cohort Breakdown */}
+                  <div className="lib-expanded-panel">
+                    <div className="lib-panel-header">
+                      <span className="lib-panel-title">Consumer Cohort & Market Segmentation</span>
+                    </div>
+                    <div className="lib-donut-wrap">
+                      <svg width={140} height={140} viewBox="0 0 140 140" aria-label="Consumer cohort donut chart">
+                        <circle cx={70} cy={70} r={52} fill="none" stroke="#f3f4f6" strokeWidth={22} />
+                        <circle cx={70} cy={70} r={52} fill="none" stroke="#111827" strokeWidth={22}
+                          strokeDasharray={`${0.58 * 326.7} ${326.7}`} strokeDashoffset={81.7} />
+                        <circle cx={70} cy={70} r={52} fill="none" stroke="#374151" strokeWidth={22}
+                          strokeDasharray={`${0.28 * 326.7} ${326.7}`} strokeDashoffset={81.7 - 0.58 * 326.7} />
+                        <circle cx={70} cy={70} r={52} fill="none" stroke="#9ca3af" strokeWidth={22}
+                          strokeDasharray={`${0.09 * 326.7} ${326.7}`} strokeDashoffset={81.7 - 0.86 * 326.7} />
+                        <circle cx={70} cy={70} r={52} fill="none" stroke="#d1d5db" strokeWidth={22}
+                          strokeDasharray={`${0.05 * 326.7} ${326.7}`} strokeDashoffset={81.7 - 0.95 * 326.7} />
+                        <text x={70} y={66} textAnchor="middle" fontSize={15} fontWeight={700} fill="#111827">142.8k</text>
+                        <text x={70} y={82} textAnchor="middle" fontSize={13} fill="#6b7280">Cohorts</text>
+                      </svg>
+                      <div className="lib-donut-legend">
+                        {[
+                          { label: "Mass-Premium", pct: "58%", color: "#111827" },
+                          { label: "Young Urban", pct: "28%", color: "#374151" },
+                          { label: "Value-Conscious", pct: "9%", color: "#9ca3af" },
+                          { label: "Tier-3 Adopters", pct: "5%", color: "#d1d5db" },
+                        ].map((s) => (
+                          <div key={s.label} className="lib-donut-legend-row">
+                            <span className="lib-donut-swatch" style={{ background: s.color }} />
+                            <span className="lib-donut-label">{s.label}</span>
+                            <span className="lib-donut-pct">{s.pct}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Area Chart: Multi-Year Sales Velocity & Market Penetration */}
+                  <div className="lib-expanded-panel">
+                    <div className="lib-panel-header">
+                      <span className="lib-panel-title">Regional Sales Velocity & Market Penetration Over Time</span>
+                      <span className="lib-area-badge">4.2× since 2021</span>
+                    </div>
+                    <svg width="100%" height={areaSvgH} viewBox={`0 0 ${areaSvgW} ${areaSvgH}`} preserveAspectRatio="xMidYMid meet" aria-label="Area chart">
+                      <defs>
+                        <linearGradient id="libAreaGrad1" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#111827" stopOpacity="0.15" />
+                          <stop offset="100%" stopColor="#111827" stopOpacity="0.02" />
+                        </linearGradient>
+                        <linearGradient id="libAreaGrad2" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#9ca3af" stopOpacity="0.2" />
+                          <stop offset="100%" stopColor="#9ca3af" stopOpacity="0.02" />
+                        </linearGradient>
+                      </defs>
+                      {[0, 50000, 100000, 150000].map((v) => {
+                        const y = areaY(v);
+                        return (
+                          <g key={v}>
+                            <line x1={areaPlotLeft} x2={areaSvgW - 8} y1={y} y2={y} stroke="rgba(0,0,0,0.06)" strokeWidth={1} />
+                            <text x={areaPlotLeft - 4} y={y + 4} textAnchor="end" fontSize={13} fill="#9ca3af">{v === 0 ? "0" : `${v / 1000}k`}</text>
+                          </g>
+                        );
+                      })}
+                      {areaYears.map((yr, i) => (
+                        <text key={yr} x={areaX(i)} y={areaSvgH - 4} textAnchor="middle" fontSize={13} fill="#9ca3af">{yr}</text>
+                      ))}
+                      <polygon points={`${areaPlotLeft},${areaY(0)} ${polyline(initSeries)} ${areaX(areaYears.length - 1)},${areaY(0)}`} fill="url(#libAreaGrad2)" />
+                      <polyline points={polyline(initSeries)} fill="none" stroke="#9ca3af" strokeWidth={2} />
+                      <polygon points={`${areaPlotLeft},${areaY(0)} ${polyline(repeatSeries)} ${areaX(areaYears.length - 1)},${areaY(0)}`} fill="url(#libAreaGrad1)" />
+                      <polyline points={polyline(repeatSeries)} fill="none" stroke="#111827" strokeWidth={2.5} />
+                    </svg>
+                    <div className="lib-area-legend">
+                      <span className="lib-legend-dot" style={{ background: "#111827" }} />
+                      <span className="lib-legend-text">Repeat Retail Purchases</span>
+                      <span className="lib-legend-dot" style={{ background: "#9ca3af" }} />
+                      <span className="lib-legend-text">Initial Sampling Inflow</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Governance box */}
+                <div className="lib-governance-box">
+                  <div className="lib-governance-block">
+                    <h5 className="lib-governance-heading">Climate-Adaptive Skincare & Regional Formulation Fit</h5>
+                    <p className="lib-governance-body">Formulations engineered for South Asian seasonal heat, monsoon humidity, and UV exposure. Prioritizes lightweight gel-creams and skin barrier ceramides over heavy occlusives to match regional cleansing rituals.</p>
+                  </div>
+                  <div className="lib-governance-block">
+                    <h5 className="lib-governance-heading">Retail Price Elasticity & Pack Sizing Governance</h5>
+                    <p className="lib-governance-body">Dual-tier pack architecture implemented: entry-level 30ml trial formats at ₹199–₹249 and 100ml core SKUs at ₹399–₹449. Mitigates trial friction while protecting distributor margins across Tier-2 and Tier-3 Kirana corridors.</p>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
     </article>
   );
 }
-
-
 
 const reportsByProject = libraryReportsData.reduce<Record<string, typeof libraryReportsData>>((acc, r) => {
   if (!acc[r.projectId]) acc[r.projectId] = [];
@@ -1424,6 +1776,18 @@ function ProjectWorkspace({
   const [searchFilter, setSearchFilter] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [customOutcome, setCustomOutcome] = useState("");
+  const [selectedOutcomes, setSelectedOutcomes] = useState<Record<string, string>>({});
+  const [selectedRecommendedAgentId, setSelectedRecommendedAgentId] = useState<string | null>(null);
+  const [isThinking, setIsThinking] = useState(false);
+  const thinkingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (thinkingTimeoutRef.current) {
+        clearTimeout(thinkingTimeoutRef.current);
+      }
+    };
+  }, []);
   const [isKnowledgeOpen, setIsKnowledgeOpen] = useState(false);
   const [isAgentsDrawerOpen, setIsAgentsDrawerOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -1486,12 +1850,25 @@ function ProjectWorkspace({
   const handleSelectFlowAgent = (msgId: string, agentId: string) => {
     setReportFlows((prev) => {
       const current = prev[msgId] || { ...defaultReportFlowState };
+      const currentSelected = current.selectedAgentIds && current.selectedAgentIds.length > 0
+        ? current.selectedAgentIds
+        : current.selectedAgentId ? [current.selectedAgentId] : [];
+
+      let nextSelected: string[];
+      if (currentSelected.includes(agentId)) {
+        nextSelected = currentSelected.filter((id) => id !== agentId);
+      } else {
+        nextSelected = [...currentSelected, agentId];
+      }
+
       return {
         ...prev,
         [msgId]: {
           ...current,
-          activeAgentId: agentId,
-          isAgent2Active: true,
+          selectedAgentIds: nextSelected,
+          selectedAgentId: nextSelected[0] || null,
+          activeAgentId: nextSelected[0] || null,
+          isAgent2Active: nextSelected.length >= 2,
         },
       };
     });
@@ -1501,15 +1878,81 @@ function ProjectWorkspace({
     setReportFlows((prev) => {
       const current = prev[msgId] || { ...defaultReportFlowState };
       const suggested = projectRelatedAgents.slice(0, 2);
+      const currentSelected = current.selectedAgentIds && current.selectedAgentIds.length > 0
+        ? current.selectedAgentIds
+        : current.selectedAgentId ? [current.selectedAgentId] : [];
+
+      const chosen = currentSelected.length > 0
+        ? currentSelected
+        : [suggested[0]?.id || "proj-agent-emerging-markets", suggested[1]?.id || "proj-agent-customer-dynamics"];
+
       return {
         ...prev,
         [msgId]: {
           ...current,
-          activeAgentId: suggested[0]?.id || "agent-1",
-          isAgent2Active: true,
+          selectedAgentIds: chosen,
+          selectedAgentId: chosen[0],
+          activeAgentId: chosen[0],
+          isAgent2Active: chosen.length >= 2,
+          hasRunAgents: true,
+          isGenerating: true,
         },
       };
     });
+
+    const isVitest = typeof process !== "undefined" && Boolean(process.env?.VITEST);
+    setTimeout(() => {
+      setReportFlows((prev) => {
+        const current = prev[msgId];
+        if (!current) return prev;
+        return {
+          ...prev,
+          [msgId]: {
+            ...current,
+            isGenerating: false,
+          },
+        };
+      });
+      scrollToTarget("#agent-report-section", "start");
+    }, isVitest ? 80 : 2200);
+  };
+
+  const isAgentInvokedForRequest = (agentId: string) => {
+    if (project.id !== "personal-care-south-asia") {
+      return false;
+    }
+
+    // Only after chat AI suggests agents in the conversation do these badges appear
+    const hasAiSuggestedAgentsMsg = messages.some(
+      (m) =>
+        m.sender === "assistant" &&
+        (m.id.startsWith("ai-flow-") ||
+          m.text.includes("assembled two specialized agents") ||
+          m.text.includes("Select an agent to begin configuration"))
+    );
+
+    if (!hasAiSuggestedAgentsMsg) {
+      return false;
+    }
+
+    const activeFlowEntry = Object.values(reportFlows).reverse().find((f) => f.activeAgentId || f.selectedAgentId);
+    if (activeFlowEntry) {
+      const selectedList = activeFlowEntry.selectedAgentIds && activeFlowEntry.selectedAgentIds.length > 0
+        ? activeFlowEntry.selectedAgentIds
+        : activeFlowEntry.selectedAgentId ? [activeFlowEntry.selectedAgentId] : [];
+      if (selectedList.length > 0) {
+        return selectedList.includes(agentId);
+      }
+      if (activeFlowEntry.activeAgentId) {
+        const suggested = projectRelatedAgents.slice(0, 2);
+        return suggested.some((a) => a.id === agentId);
+      }
+    }
+
+    return (
+      agentId === "proj-agent-emerging-markets" ||
+      agentId === "proj-agent-customer-dynamics"
+    );
   };
 
   const handleUpdateFlowField = (
@@ -1533,6 +1976,29 @@ function ProjectWorkspace({
     });
   };
 
+  const scrollToTarget = (selector: string, block: ScrollLogicalPosition = "start") => {
+    if (typeof window === "undefined") return;
+    setTimeout(() => {
+      if (typeof window.scrollTo === "function") {
+        window.scrollTo(0, 0);
+      }
+      const canvas = document.querySelector(".workspace-canvas") as HTMLElement | null;
+      const el = document.querySelector(selector) as HTMLElement | null;
+      if (canvas && el) {
+        const canvasRect = canvas.getBoundingClientRect();
+        const elRect = el.getBoundingClientRect();
+        const targetScrollTop = canvas.scrollTop + (elRect.top - canvasRect.top) - 24;
+        if (typeof canvas.scrollTo === "function") {
+          canvas.scrollTo({ top: Math.max(0, targetScrollTop), behavior: "smooth" });
+        } else {
+          canvas.scrollTop = Math.max(0, targetScrollTop);
+        }
+      } else if (el && typeof el.scrollIntoView === "function") {
+        el.scrollIntoView({ behavior: "smooth", block });
+      }
+    }, 60);
+  };
+
   const handleGenerateReport = (msgId: string) => {
     setReportFlows((prev) => {
       const current = prev[msgId] || { ...defaultReportFlowState };
@@ -1540,19 +2006,44 @@ function ProjectWorkspace({
         ...prev,
         [msgId]: {
           ...current,
-          isReportGenerated: true,
+          isGenerating: true,
+          isReportGenerated: false,
         },
       };
     });
+
+    const isVitest = typeof process !== "undefined" && Boolean(process.env?.VITEST);
+    setTimeout(() => {
+      setReportFlows((prev) => {
+        const current = prev[msgId];
+        if (!current) return prev;
+        return {
+          ...prev,
+          [msgId]: {
+            ...current,
+            isGenerating: false,
+            isReportGenerated: true,
+          },
+        };
+      });
+      scrollToTarget(".report-flow-generated-card, #agent-report-section", "start");
+    }, isVitest ? 80 : 2200);
   };
 
   const handleGenerateWithAgent = (agent: AgentItem) => {
+    setSelectedRecommendedAgentId(agent.id);
     setGeneratingAgentId(agent.id);
+    setActiveReportAgentId(null);
 
+    scrollToTarget(".ai-agent-generating-loader-wrap, .ai-recommended-agents-footer", "start");
+
+    const duration = typeof process !== "undefined" && process.env.NODE_ENV === "test" ? 400 : 3000;
     setTimeout(() => {
       setGeneratingAgentId(null);
       setGeneratedAgents((prev) => ({ ...prev, [agent.id]: true }));
       setActiveReportAgentId(agent.id);
+
+      scrollToTarget("#agent-report-section", "start");
 
       // If in New chat, update title to the agent
       if (selectedChat === "New chat") {
@@ -1565,7 +2056,7 @@ function ProjectWorkspace({
         }));
         setSelectedChat(cleanTitle);
       }
-    }, 400);
+    }, duration);
   };
 
   const renderAgentReport = (agentId: string) => {
@@ -1587,45 +2078,38 @@ function ProjectWorkspace({
             </div>
 
             <div className="openui-header-actions">
-              {hasMultipleGenerated && (
-                <div className="agent-report-tab-switch" role="tablist">
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={activeReportAgentId === "agent-sbi-home-loan"}
-                    className={`agent-report-tab-btn ${activeReportAgentId === "agent-sbi-home-loan" ? "active" : ""}`}
-                    onClick={() => setActiveReportAgentId("agent-sbi-home-loan")}
-                  >
-                    Home Loan Report
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={activeReportAgentId === "agent-sbi-kyc"}
-                    className={`agent-report-tab-btn ${activeReportAgentId === "agent-sbi-kyc" ? "active" : ""}`}
-                    onClick={() => setActiveReportAgentId("agent-sbi-kyc")}
-                  >
-                    South Asia Market Report
-                  </button>
-                </div>
-              )}
               <button
                 type="button"
-                className="agent-report-download-btn"
-                onClick={() => setDownloadedReportId("home-loan")}
-                title="Download complete compliance report in PDF"
+                onClick={() => {
+                  const reportKey = "agent-report-home-loan";
+                  if (savedMsgIds[reportKey]) return;
+                  setSavedMsgIds((prev) => ({ ...prev, [reportKey]: true }));
+                  const newInsight: SavedInsightItem = {
+                    id: `insight-${reportKey}-${Date.now()}`,
+                    category: "Executive Reports",
+                    title: "SBI Home Loan Monthly Performance & Disbursement Report",
+                    insight: "Across all regions in 2026, total home-loan disbursements reached ₹4,820.50 Cr with 18,460 accounts active.",
+                    source: `Report · ${project.title}`,
+                    time: "Just now",
+                    isBookmarked: true,
+                  };
+                  setSavedInsightsList((prev) => [newInsight, ...prev]);
+                }}
+                className={`save-insight-btn ${savedMsgIds["agent-report-home-loan"] ? "saved" : ""}`}
+                title={savedMsgIds["agent-report-home-loan"] ? "Saved to insights" : "Save insight"}
+                aria-label={savedMsgIds["agent-report-home-loan"] ? "Saved to insights" : "Save insight"}
               >
-                <Download className="h-4 w-4" />
-                <span>{downloadedReportId === "home-loan" ? "Downloaded" : "Download Report (PDF)"}</span>
-              </button>
-              <button
-                type="button"
-                className="agent-report-export-btn"
-                onClick={() => setDownloadedReportId("home-loan-csv")}
-                title="Export raw disbursement dataset as CSV"
-              >
-                <FileSpreadsheet className="h-4 w-4" />
-                <span>Export CSV</span>
+                {savedMsgIds["agent-report-home-loan"] ? (
+                  <>
+                    <Check className="h-3.5 w-3.5 text-emerald-600" />
+                    <span>Saved to insights</span>
+                  </>
+                ) : (
+                  <>
+                    <Bookmark className="h-3.5 w-3.5 text-zinc-500" />
+                    <span>Save insight</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -1998,45 +2482,38 @@ function ProjectWorkspace({
           </div>
 
           <div className="openui-header-actions">
-            {hasMultipleGenerated && (
-              <div className="agent-report-tab-switch" role="tablist">
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={activeReportAgentId === "agent-sbi-home-loan"}
-                  className={`agent-report-tab-btn ${activeReportAgentId === "agent-sbi-home-loan" ? "active" : ""}`}
-                  onClick={() => setActiveReportAgentId("agent-sbi-home-loan")}
-                >
-                  Home Loan Report
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={activeReportAgentId === "agent-sbi-kyc"}
-                  className={`agent-report-tab-btn ${activeReportAgentId === "agent-sbi-kyc" ? "active" : ""}`}
-                  onClick={() => setActiveReportAgentId("agent-sbi-kyc")}
-                >
-                  South Asia Market Report
-                </button>
-              </div>
-            )}
             <button
               type="button"
-              className="agent-report-download-btn"
-              onClick={() => setDownloadedReportId("kyc")}
-              title="Download market entry report in PDF"
+              onClick={() => {
+                const reportKey = "agent-report-south-asia";
+                if (savedMsgIds[reportKey]) return;
+                setSavedMsgIds((prev) => ({ ...prev, [reportKey]: true }));
+                const newInsight: SavedInsightItem = {
+                  id: `insight-${reportKey}-${Date.now()}`,
+                  category: "Executive Reports",
+                  title: "Personal Care Brand: South Asia Tier-2 & Tier-3 Market Entry Report",
+                  insight: "Across all secondary urban retail corridors in 2026, 142,850 households surveyed with 98.6% channel velocity confidence.",
+                  source: `Report · ${project.title}`,
+                  time: "Just now",
+                  isBookmarked: true,
+                };
+                setSavedInsightsList((prev) => [newInsight, ...prev]);
+              }}
+              className={`save-insight-btn ${savedMsgIds["agent-report-south-asia"] ? "saved" : ""}`}
+              title={savedMsgIds["agent-report-south-asia"] ? "Saved to insights" : "Save insight"}
+              aria-label={savedMsgIds["agent-report-south-asia"] ? "Saved to insights" : "Save insight"}
             >
-              <Download className="h-4 w-4" />
-              <span>{downloadedReportId === "kyc" ? "Downloaded" : "Download Report (PDF)"}</span>
-            </button>
-            <button
-              type="button"
-              className="agent-report-export-btn"
-              onClick={() => setDownloadedReportId("kyc-csv")}
-              title="Export secondary market entry dataset as CSV"
-            >
-              <FileSpreadsheet className="h-4 w-4" />
-              <span>Export CSV</span>
+              {savedMsgIds["agent-report-south-asia"] ? (
+                <>
+                  <Check className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>Saved to insights</span>
+                </>
+              ) : (
+                <>
+                  <Bookmark className="h-3.5 w-3.5 text-zinc-500" />
+                  <span>Save insight</span>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -2433,6 +2910,17 @@ function ProjectWorkspace({
     }
   }, [project?.id, project?.title]);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (typeof window.scrollTo === "function") window.scrollTo(0, 0);
+      const canvas = document.querySelector(".workspace-canvas") as HTMLElement | null;
+      if (canvas) {
+        if (typeof canvas.scrollTo === "function") canvas.scrollTo({ top: 0 });
+        else canvas.scrollTop = 0;
+      }
+    }
+  }, [selectedChatKey]);
+
   const handleNewChat = () => {
     setIsLibraryOpen(false);
     setActiveSidebarView(null);
@@ -2491,8 +2979,11 @@ function ProjectWorkspace({
       [currentChatKey]: [...(prev[currentChatKey] || []), userMessage],
     }));
     setInputValue("");
+    setIsThinking(true);
+    scrollToTarget(".workspace-conversation > *:last-child, .ai-thinking-row", "start");
 
     setTimeout(() => {
+      setIsThinking(false);
       const isReportQuery =
         text.toLowerCase().includes("report") ||
         (selectedChat === "New chat" &&
@@ -2571,7 +3062,66 @@ function ProjectWorkspace({
         ...prev,
         [currentChatKey]: [...(prev[currentChatKey] || []), aiMessage],
       }));
-    }, 500);
+      scrollToTarget(".workspace-conversation > *:last-child", "start");
+    }, typeof process !== "undefined" && process.env.NODE_ENV === "test" ? 300 : 3000);
+  };
+
+  const handleOutcomeSelect = (msgId: string, opt: string) => {
+    setSelectedOutcomes((prev) => ({
+      ...prev,
+      [msgId]: opt,
+    }));
+
+    // Show the selected item as the user's question below the outcome card
+    const userMsgId = `user-outcome-${msgId}`;
+    const userMessage: MessageItem = {
+      id: userMsgId,
+      sender: "user",
+      text: opt,
+    };
+
+    setConversations((prev) => {
+      const existing = prev[currentChatKey] || [];
+      const filtered = existing.filter(
+        (msg) => !msg.id.startsWith("user-outcome-") && !msg.id.startsWith("ai-ans-") && msg.id !== "msg-pc-3" && msg.id !== "msg-pc-4"
+      );
+      return {
+        ...prev,
+        [currentChatKey]: [...filtered, userMessage],
+      };
+    });
+
+    setIsThinking(true);
+    // Past section automatically goes above and user's selection + loader shows
+    scrollToTarget(".workspace-message.user-message:last-of-type, .ai-thinking-row", "start");
+
+    if (thinkingTimeoutRef.current) {
+      clearTimeout(thinkingTimeoutRef.current);
+    }
+
+    const duration = typeof process !== "undefined" && process.env.NODE_ENV === "test" ? 300 : 3000;
+    thinkingTimeoutRef.current = setTimeout(() => {
+      setIsThinking(false);
+
+      const answerMsgId = `ai-ans-${msgId}`;
+      const answerMessage: MessageItem = {
+        id: answerMsgId,
+        sender: "assistant",
+        text: `I found market intelligence reports from 2025–2026 covering tier-2 & tier-3 city retail, price elasticity, active ingredients, and channel distribution. The most relevant are “Growth Opportunities in Personal Care for Tier-2 and Tier-3 Cities, South Asia” and “Price-Point & Pack-Size Strategy for Mass-Premium Skincare”. Together they discuss how these themes connect, from consumer price sensitivity and local retailer margins to climate-adaptive formulations for regional market penetration.`,
+      };
+
+      setConversations((prev) => {
+        const existing = prev[currentChatKey] || [];
+        const filtered = existing.filter((msg) => !msg.id.startsWith("ai-ans-") && msg.id !== "msg-pc-4");
+        return {
+          ...prev,
+          [currentChatKey]: [...filtered, answerMessage],
+        };
+      });
+
+      // Past section automatically goes above and the new Matching Knowledge Packs section shows
+      scrollToTarget(".ai-knowledge-flow-container", "start");
+    }, duration);
   };
 
   const renderInputDock = () => (
@@ -3222,17 +3772,24 @@ function ProjectWorkspace({
               {messages.length > 0 && (
                 <div className="workspace-conversation">
                   {messages.map((m) => {
+                    const isAgentReportMsg =
+                      m.sender === "assistant" &&
+                      (m.id.startsWith("ai-report-") || m.text.startsWith("__AGENT_REPORT__:"));
+
                     const isOutcomeMessage =
+                      !isAgentReportMsg &&
                       m.sender === "assistant" &&
                       m.text.includes("What primary outcome do you want to achieve");
 
                     const isReportFlowMsg =
+                      !isAgentReportMsg &&
                       m.sender === "assistant" &&
                       (m.id.startsWith("ai-flow-") ||
                         m.text.includes("assembled two specialized agents") ||
                         m.text.includes("Select an agent to begin configuration"));
 
                     const isKnowledgePackMsg =
+                      !isAgentReportMsg &&
                       !isReportFlowMsg &&
                       m.sender === "assistant" &&
                       (m.text.includes("Knowledge Packs") ||
@@ -3244,6 +3801,7 @@ function ProjectWorkspace({
                         m.text.includes("reports covering"));
 
                     const isStrokeBox =
+                      !isAgentReportMsg &&
                       m.sender === "assistant" &&
                       (m.text.includes("Let's define the scope") ||
                         m.text.includes("Target Market & Audience") ||
@@ -3255,7 +3813,15 @@ function ProjectWorkspace({
                         key={m.id}
                         className={`workspace-message ${m.sender === "user" ? "user-message" : "ai-message"}`}
                       >
-                        {isOutcomeMessage ? (
+                        {isAgentReportMsg ? (
+                          <div className="ai-agent-report-container" id="agent-report-section">
+                            {renderAgentReport(
+                              m.text.startsWith("__AGENT_REPORT__:")
+                                ? m.text.replace("__AGENT_REPORT__:", "")
+                                : activeReportAgentId || selectedRecommendedAgentId || "agent-sbi-home-loan"
+                            )}
+                          </div>
+                        ) : isOutcomeMessage ? (
                           (() => {
                             const isDefineObjective =
                               m.text.includes("core objective") ||
@@ -3312,18 +3878,33 @@ function ProjectWorkspace({
                                       What primary outcome do you want to achieve with this project?
                                     </h3>
 
-                                    <div className="ai-outcome-options-grid">
-                                      {outcomeOptions.map((opt) => (
-                                        <button
-                                          key={opt}
-                                          type="button"
-                                          onClick={() => handleSend(opt)}
-                                          className="ai-outcome-option-btn"
-                                        >
-                                          <span className="ai-outcome-option-text">{opt}</span>
-                                          <ArrowUpRight className="ai-outcome-option-arrow" />
-                                        </button>
-                                      ))}
+                                    <div className="ai-outcome-options-grid" role="radiogroup" aria-label="Primary project outcome">
+                                      {outcomeOptions.map((opt) => {
+                                        const isSelected = selectedOutcomes[m.id] === opt;
+
+                                        return (
+                                          <button
+                                            key={opt}
+                                            type="button"
+                                            role="radio"
+                                            aria-checked={isSelected}
+                                            onClick={() => {
+                                              handleOutcomeSelect(m.id, opt);
+                                            }}
+                                            className={`ai-outcome-option-btn ${isSelected ? "ai-outcome-option-btn--selected" : ""}`}
+                                          >
+                                            <div className="ai-outcome-option-content">
+                                              <span
+                                                className={`ai-outcome-radio ${isSelected ? "ai-outcome-radio--selected" : ""}`}
+                                                aria-hidden="true"
+                                              >
+                                                {isSelected && <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />}
+                                              </span>
+                                              <span className="ai-outcome-option-text">{opt}</span>
+                                            </div>
+                                          </button>
+                                        );
+                                      })}
                                     </div>
 
                                     <div className="ai-outcome-divider-row">
@@ -3368,109 +3949,186 @@ function ProjectWorkspace({
                           })()
                         ) : isReportFlowMsg ? (
                           <div className="report-flow-container">
-                            {/* Unified Card Box wrapping intro prompt and the 2 agents */}
-                            <div className="report-flow-box">
-                              <p className="report-flow-box-prompt">
+                            <div className="ai-recommended-agents-wrapper">
+                              <p className="report-flow-box-prompt" style={{ marginBottom: "8px" }}>
                                 To complete this report for <strong>{project.title}</strong>, I've assembled two specialized agents to synthesize the market intelligence. Select an agent to begin configuration:
                               </p>
 
-                              <h3 className="report-flow-box-heading">Suggested Agents</h3>
+                              <div className="ai-recommended-agents-header">
+                                <h3 className="ai-recommended-agents-title">Suggested Agents</h3>
+                              </div>
 
-                              <div className="report-flow-box-agents-grid">
+                              <div className="ai-recommended-agents-grid" role="radiogroup" aria-label="Suggested Agents">
                                 {projectRelatedAgents.slice(0, 2).map((agent) => {
                                   const currentFlow = reportFlows[m.id] || { ...defaultReportFlowState };
-                                  const isRunning = Boolean(currentFlow.activeAgentId);
+                                  const selectedList = currentFlow.selectedAgentIds && currentFlow.selectedAgentIds.length > 0
+                                    ? currentFlow.selectedAgentIds
+                                    : currentFlow.selectedAgentId ? [currentFlow.selectedAgentId] : [];
+                                  const isSelected = selectedList.includes(agent.id);
 
                                   return (
-                                    <div
+                                    <article
                                       key={agent.id}
-                                      className={`report-flow-box-agent-item report-flow-agent-card ${isRunning ? "report-flow-box-agent-item--active report-flow-agent-card--active" : ""}`}
-                                      onClick={() => handleRunBothAgents(m.id)}
+                                      role="checkbox"
+                                      aria-checked={isSelected}
+                                      className={`project-card agent-card ai-agent-recommend-card report-flow-agent-card ${isSelected ? "ai-agent-recommend-card--selected" : ""}`}
+                                      onClick={() => {
+                                        handleSelectFlowAgent(m.id, agent.id);
+                                      }}
                                     >
-                                      <div className="report-flow-box-agent-top">
-                                        <h4 className="report-flow-box-agent-title">
-                                          {agent.title}
-                                        </h4>
+                                      <div className="project-card-main">
+                                        <div className="project-card-header">
+                                          <h3 className="project-card-title">
+                                            <span className="project-title-link">
+                                              {agent.title}
+                                            </span>
+                                          </h3>
+                                        </div>
+
+                                        <p className="project-card-description">{agent.description}</p>
                                       </div>
 
-                                      <p className="report-flow-box-agent-desc">{agent.description}</p>
-
-                                      <div className="report-flow-box-agent-footer">
-                                        <span className="report-flow-box-agent-time">
-                                          <Clock className="h-3.5 w-3.5 text-zinc-400" />
+                                      <div className="agent-card-footer">
+                                        <span className="agent-last-used">
+                                          <Clock className="agent-clock-icon" aria-hidden="true" />
                                           <span>{agent.lastUsed || "Active now"}</span>
                                         </span>
+
+                                        <span
+                                          className={`ai-outcome-radio ${isSelected ? "ai-outcome-radio--selected" : ""}`}
+                                          aria-hidden="true"
+                                        >
+                                          {isSelected && <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />}
+                                        </span>
                                       </div>
-                                    </div>
+                                    </article>
                                   );
                                 })}
                               </div>
 
-                              {/* Single Run agents button for both, right side bottom */}
-                              <div className="report-flow-box-footer">
-                                <button
-                                  type="button"
-                                  className="report-flow-run-agents-btn"
-                                  onClick={() => handleRunBothAgents(m.id)}
-                                >
-                                  <span>Run agents</span>
-                                  <ArrowRight className="h-4 w-4 ml-1.5" />
-                                </button>
-                              </div>
+                              {/* Single Generate report button matching pill button */}
+                              {(() => {
+                                const currentFlow = reportFlows[m.id] || { ...defaultReportFlowState };
+                                const isRunning = Boolean(currentFlow.activeAgentId) || Boolean(currentFlow.hasRunAgents) || Boolean(currentFlow.isGenerating);
+
+                                return (
+                                  <div className="ai-recommended-agents-footer">
+                                    <button
+                                      type="button"
+                                      className={`ai-generate-report-btn project-action-btn--generate-report report-flow-run-agents-btn ${isRunning ? "project-action-btn--completed" : ""}`}
+                                      onClick={() => handleRunBothAgents(m.id)}
+                                      disabled={isRunning}
+                                      aria-label="Generate report"
+                                    >
+                                      <span>Generate report</span>
+                                      <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5 ml-1.5 flex-shrink-0" />
+                                    </button>
+                                  </div>
+                                );
+                              })()}
                             </div>
 
-                            {/* Configuration section when an agent is active */}
+                            {/* Dot-matrix thinking animation while generating */}
                             {(() => {
                               const currentFlow = reportFlows[m.id];
-                              if (!currentFlow || !currentFlow.activeAgentId) return null;
+                              if (!currentFlow?.isGenerating) return null;
+                              return (
+                                <div className="ai-agent-generating-loader-wrap" style={{ marginTop: "16px" }}>
+                                  <div className="ai-thinking-row" role="status" aria-label="Thinking">
+                                    <span className="sr-only">Thinking...</span>
+                                    <span className="ai-thinking-spinner sr-only" aria-hidden="true" />
+                                    <div className="dot-matrix-track" aria-hidden="true">
+                                      {Array.from({ length: 21 }).map((_, col) => (
+                                        <div key={col} className="dot-matrix-col">
+                                          <span
+                                            className="dot-matrix-dot"
+                                            style={{
+                                              animationDelay: `${((col * 0.09 + Math.sin(col * 0.65) * 0.35) % 2) - 2}s`,
+                                            }}
+                                          />
+                                          <span
+                                            className="dot-matrix-dot"
+                                            style={{
+                                              animationDelay: `${(((col * 0.09 + 0.45) + Math.cos(col * 0.65) * 0.35) % 2) - 2}s`,
+                                            }}
+                                          />
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })()}
+
+                            {/* Visual Market Entry Report (shown after Generate report OR Continue to Generate Report) */}
+                            {(() => {
+                              const currentFlow = reportFlows[m.id];
+                              if (!currentFlow || currentFlow.isGenerating) return null;
+                              if (!currentFlow.hasRunAgents && !currentFlow.isReportGenerated) return null;
+
+                              return (
+                                <div className="ai-agent-report-container" id="agent-report-section" style={{ marginTop: "16px" }}>
+                                  {renderAgentReport("proj-agent-emerging-markets")}
+                                </div>
+                              );
+                            })()}
+
+                            {/* Configuration section: shown ONLY when agents are selected for manual configuration before report is generated */}
+                            {(() => {
+                              const currentFlow = reportFlows[m.id];
+                              if (!currentFlow || currentFlow.hasRunAgents || currentFlow.isReportGenerated || currentFlow.isGenerating || !currentFlow.activeAgentId) return null;
 
                               const suggested = projectRelatedAgents.slice(0, 2);
-                              const leadAgent = suggested.find((a) => a.id === currentFlow.activeAgentId) || suggested[0];
-                              const secondAgent = suggested.find((a) => a.id !== leadAgent.id) || suggested[1];
+                              const selectedList = currentFlow.selectedAgentIds && currentFlow.selectedAgentIds.length > 0
+                                ? currentFlow.selectedAgentIds
+                                : [currentFlow.activeAgentId];
+                              const showSecondAgent = currentFlow.isAgent2Active && selectedList.length >= 2;
 
-                              // When report is not yet generated, show field questions & continue button
-                              if (!currentFlow.isReportGenerated) {
-                                return (
-                                  <div className="report-flow-configuration-container">
-                                    {/* Agent 1 Fields */}
-                                    <div className="report-flow-agent-section">
-                                      <div className="report-flow-section-header">
-                                        <h4 className="report-flow-section-title">{leadAgent.title}</h4>
-                                        <span className="report-flow-section-subtitle">Reporting parameters</span>
-                                      </div>
+                              const leadAgent = suggested.find((a) => a.id === selectedList[0]) || suggested[0];
+                              const secondAgent = suggested.find((a) => a.id === selectedList[1]) || suggested.find((a) => a.id !== leadAgent.id) || suggested[1];
 
-                                      {/* Field 1: Period with Calendar Dropdown */}
-                                      <div className="report-flow-field-group">
-                                        <label className="report-flow-field-label">Reporting Period</label>
-                                        <ReportCalendarDropdown
-                                          value={currentFlow.agent1Fields.period}
-                                          onChange={(val) => handleUpdateFlowField(m.id, "agent1Fields", "period", val)}
-                                        />
-                                      </div>
-
-                                      {/* Field 2: Geography */}
-                                      <div className="report-flow-field-group">
-                                        <label className="report-flow-field-label">Geographic Tier Focus</label>
-                                        <div className="report-flow-pills-row" role="radiogroup" aria-label="Geographic Tier Focus">
-                                          {[
-                                            "Tier-2 Priority Growth Cities",
-                                            "Tier-3 Regional Urban Clusters",
-                                            "Comprehensive Secondary Network",
-                                          ].map((opt) => (
-                                            <button
-                                              key={opt}
-                                              type="button"
-                                              className={`report-flow-pill ${currentFlow.agent1Fields.geography === opt ? "report-flow-pill--active" : ""}`}
-                                              onClick={() => handleUpdateFlowField(m.id, "agent1Fields", "geography", opt)}
-                                            >
-                                              {opt}
-                                            </button>
-                                          ))}
-                                        </div>
-                                      </div>
+                              return (
+                                <div className="report-flow-configuration-container" style={{ marginTop: "16px" }}>
+                                  {/* Agent 1 Fields */}
+                                  <div className="report-flow-agent-section">
+                                    <div className="report-flow-section-header">
+                                      <h4 className="report-flow-section-title">{leadAgent.title}</h4>
+                                      <span className="report-flow-section-subtitle">Reporting parameters</span>
                                     </div>
 
-                                    {/* Agent 2 Fields */}
+                                    {/* Field 1: Period with Calendar Dropdown */}
+                                    <div className="report-flow-field-group">
+                                      <label className="report-flow-field-label">Reporting Period</label>
+                                      <ReportCalendarDropdown
+                                        value={currentFlow.agent1Fields.period}
+                                        onChange={(val) => handleUpdateFlowField(m.id, "agent1Fields", "period", val)}
+                                      />
+                                    </div>
+
+                                    {/* Field 2: Geography */}
+                                    <div className="report-flow-field-group">
+                                      <label className="report-flow-field-label">Geographic Tier Focus</label>
+                                      <div className="report-flow-pills-row" role="radiogroup" aria-label="Geographic Tier Focus">
+                                        {[
+                                          "Tier-2 Priority Growth Cities",
+                                          "Tier-3 Regional Urban Clusters",
+                                          "Comprehensive Secondary Network",
+                                        ].map((opt) => (
+                                          <button
+                                            key={opt}
+                                            type="button"
+                                            className={`report-flow-pill ${currentFlow.agent1Fields.geography === opt ? "report-flow-pill--active" : ""}`}
+                                            onClick={() => handleUpdateFlowField(m.id, "agent1Fields", "geography", opt)}
+                                          >
+                                            {opt}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Agent 2 Fields - only show if 2 agents selected */}
+                                  {showSecondAgent && (
                                     <div className="report-flow-agent-section">
                                       <div className="report-flow-section-header">
                                         <h4 className="report-flow-section-title">{secondAgent.title}</h4>
@@ -3526,85 +4184,18 @@ function ProjectWorkspace({
                                         </div>
                                       </div>
                                     </div>
+                                  )}
 
-                                    {/* Continue Button */}
-                                    <div className="report-flow-footer-row">
-                                      <button
-                                        type="button"
-                                        className="report-flow-continue-btn"
-                                        onClick={() => handleGenerateReport(m.id)}
-                                      >
-                                        <span>Continue to Generate Report</span>
-                                        <ArrowRight className="h-4 w-4 ml-2" />
-                                      </button>
-                                    </div>
-                                  </div>
-                                );
-                              }
-
-                              // Generated Executive Report
-                              return (
-                                <div className="report-flow-generated-card">
-                                  <div className="report-generated-header">
-                                    <div className="report-generated-title-wrap">
-                                      <h4 className="report-generated-title">Executive Strategic Report: South Asia Secondary Cities Penetration</h4>
-                                      <p className="report-generated-meta">
-                                        Synthesized by {leadAgent.title} & {secondAgent.title}
-                                      </p>
-                                    </div>
+                                  {/* Continue Button */}
+                                  <div className="report-flow-footer-row">
                                     <button
                                       type="button"
-                                      className="packages-download-all-btn"
-                                      title="Download full executive report"
+                                      className="report-flow-continue-btn"
+                                      onClick={() => handleGenerateReport(m.id)}
                                     >
-                                      Download report (PDF)
+                                      <span>Continue to Generate Report</span>
+                                      <ArrowRight className="h-4 w-4 ml-2" />
                                     </button>
-                                  </div>
-
-                                  <div className="report-generated-params-row">
-                                    <span className="report-param-pill">{currentFlow.agent1Fields.period}</span>
-                                    <span className="report-param-pill">{currentFlow.agent1Fields.geography}</span>
-                                    <span className="report-param-pill">{currentFlow.agent2Fields.cohort}</span>
-                                    <span className="report-param-pill">{currentFlow.agent2Fields.channel}</span>
-                                    {currentFlow.agent2Fields.customNotes && (
-                                      <span className="report-param-pill">Focus: {currentFlow.agent2Fields.customNotes}</span>
-                                    )}
-                                  </div>
-
-                                  <div className="report-generated-body">
-                                    <div className="report-section-block">
-                                      <h5 className="report-section-heading">Executive Summary</h5>
-                                      <p className="report-section-paragraph">
-                                        Based on cross-analysis across {currentFlow.agent1Fields.geography.toLowerCase()} for the {currentFlow.agent1Fields.period.toLowerCase()} timeline, aspirational personal care adoption is outperforming metropolitan benchmarks by 2.4×. Targeted entry requires tailored pack sizes and localized channel margins to win market share for {currentFlow.agent2Fields.cohort.toLowerCase()}.
-                                        {currentFlow.agent2Fields.customNotes && (
-                                          <> Custom priority applied: <strong>{currentFlow.agent2Fields.customNotes}</strong>.</>
-                                        )}
-                                      </p>
-                                    </div>
-
-                                    <div className="report-section-block">
-                                      <h5 className="report-section-heading">Key Analytical Findings</h5>
-                                      <ul className="report-findings-list">
-                                        <li>
-                                          <strong>Price-Point & Pack Strategy:</strong> Optimal conversion occurs at the ₹199–₹249 price band using 15ml–30ml discovery formats, enabling trial without margin compression.
-                                        </li>
-                                        <li>
-                                          <strong>Channel Velocity & Margins:</strong> {currentFlow.agent2Fields.channel} yields 3.8× inventory turnover velocity. Kirana distributor economics require an 18–21% wholesale trade discount structure.
-                                        </li>
-                                        <li>
-                                          <strong>Formulation Dynamics:</strong> Climate-adaptive, lightweight gel formulations engineered for high humidity clusters increase 60-day repeat purchase velocity by 38%.
-                                        </li>
-                                      </ul>
-                                    </div>
-
-                                    <div className="report-section-block">
-                                      <h5 className="report-section-heading">Strategic Next Steps</h5>
-                                      <p className="report-section-paragraph">
-                                        1. Initiate 60-day regional distributor onboarding across the priority city corridor.<br />
-                                        2. Deploy localized discovery trial kits through quick commerce and targeted modern trade shelves.<br />
-                                        3. Scale regional brand advocacy campaigns aligned with seasonal skincare rituals.
-                                      </p>
-                                    </div>
                                   </div>
                                 </div>
                               );
@@ -3719,10 +4310,10 @@ function ProjectWorkspace({
                               </div>
                             </div>
 
-                            {/* Why these reports are relevant Section */}
+                            {/* Matching reports Section */}
                             <div className="ai-matching-reports-wrapper">
                               <div className="ai-matching-reports-header">
-                                <h3 className="ai-matching-reports-title">Why these reports are relevant</h3>
+                                <h3 className="ai-matching-reports-title">Matching reports</h3>
                               </div>
 
                               <div className="ai-matching-reports-grid">
@@ -3777,46 +4368,26 @@ function ProjectWorkspace({
                                 <h3 className="ai-recommended-agents-title">Recommended Agents</h3>
                               </div>
 
-                              <div className="ai-recommended-agents-grid">
+                              <div className="ai-recommended-agents-grid" role="radiogroup" aria-label="Recommended Agents">
                                 {(agents && agents.length > 0 ? agents : initialAgents).slice(0, 2).map((agent) => {
-                                  const isGenerated = !!generatedAgents[agent.id];
-                                  const isGenerating = generatingAgentId === agent.id;
+                                  const isSelected = selectedRecommendedAgentId === agent.id;
+
                                   return (
                                     <article
                                       key={agent.id}
-                                      className="project-card agent-card ai-agent-recommend-card"
-                                      onClick={(e) => {
-                                        if ((e.target as HTMLElement).closest("button")) {
-                                          return;
-                                        }
-                                        if (agent.id === "agent-sbi-kyc" || agent.title.includes("KYC")) {
-                                          if (onOpenKyc) {
-                                            onOpenKyc();
-                                            return;
-                                          }
-                                        }
-                                        handleGenerateWithAgent(agent);
+                                      role="radio"
+                                      aria-checked={isSelected}
+                                      className={`project-card agent-card ai-agent-recommend-card ${isSelected ? "ai-agent-recommend-card--selected" : ""}`}
+                                      onClick={() => {
+                                        setSelectedRecommendedAgentId(agent.id);
                                       }}
                                     >
                                       <div className="project-card-main">
                                         <div className="project-card-header">
                                           <h3 className="project-card-title">
-                                            <button
-                                              type="button"
-                                              className="project-title-link"
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                if (agent.id === "agent-sbi-kyc" || agent.title.includes("KYC")) {
-                                                  if (onOpenKyc) {
-                                                    onOpenKyc();
-                                                    return;
-                                                  }
-                                                }
-                                                handleGenerateWithAgent(agent);
-                                              }}
-                                            >
+                                            <span className="project-title-link">
                                               {agent.title}
-                                            </button>
+                                            </span>
                                           </h3>
                                         </div>
 
@@ -3829,47 +4400,85 @@ function ProjectWorkspace({
                                           <span>Last used {agent.lastUsed || "recently"}</span>
                                         </span>
 
-                                        <button
-                                          type="button"
-                                          className={`project-action-btn project-action-btn--run ${isGenerated ? "project-action-btn--completed" : ""}`}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleGenerateWithAgent(agent);
-                                          }}
-                                          disabled={isGenerating}
-                                          aria-label={
-                                            isGenerated
-                                              ? `Report completed with ${agent.title}`
-                                              : isGenerating
-                                                ? `Generating report with ${agent.title}...`
-                                                : `Run agent with ${agent.title}`
-                                          }
-                                          title={isGenerated ? "Agent completed" : "Run agent"}
+                                        <span
+                                          className={`ai-outcome-radio ${isSelected ? "ai-outcome-radio--selected" : ""}`}
+                                          aria-hidden="true"
                                         >
-                                          {isGenerating ? (
-                                            <span>Running...</span>
-                                          ) : isGenerated ? (
-                                            <span>Completed</span>
-                                          ) : (
-                                            <>
-                                              <span>Run agent</span>
-                                              <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5 ml-1" />
-                                            </>
-                                          )}
-                                        </button>
+                                          {isSelected && <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />}
+                                        </span>
                                       </div>
                                     </article>
                                   );
                                 })}
                               </div>
-                            </div>
 
-                            {/* Below Recommended Agents: Generated Report Section */}
-                            {activeReportAgentId && (
-                              <div className="ai-agent-report-container" id="agent-report-section">
-                                {renderAgentReport(activeReportAgentId)}
-                              </div>
-                            )}
+                              {/* Single Generate report button after selection */}
+                              {(() => {
+                                const recommendedList = (agents && agents.length > 0 ? agents : initialAgents).slice(0, 2);
+                                const selectedAgent =
+                                  recommendedList.find((a) => a.id === selectedRecommendedAgentId) || null;
+                                const isGenerating = !!(selectedAgent && generatingAgentId === selectedAgent.id);
+                                const isGenerated = !!(selectedAgent && generatedAgents[selectedAgent.id]);
+                                const isRunDisabled = Boolean(!selectedAgent || generatingAgentId || isGenerated);
+
+                                return (
+                                  <>
+                                    <div className="ai-recommended-agents-footer">
+                                      <button
+                                        type="button"
+                                        className={`ai-generate-report-btn project-action-btn--generate-report ${isGenerated ? "project-action-btn--completed" : ""}`}
+                                        onClick={() => {
+                                          if (selectedAgent) {
+                                            handleGenerateWithAgent(selectedAgent);
+                                          }
+                                        }}
+                                        disabled={isRunDisabled}
+                                        aria-label={selectedAgent ? `Generate report with ${selectedAgent.title}` : "Generate report"}
+                                        title={!selectedAgent ? "Please select an agent first" : isGenerated ? "Agent already run" : `Generate report with ${selectedAgent.title}`}
+                                      >
+                                        <span>Generate report</span>
+                                        <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5 ml-1.5 flex-shrink-0" />
+                                      </button>
+                                    </div>
+
+                                    {/* Dot-matrix thinking animation while generating */}
+                                    {isGenerating && (
+                                      <div className="ai-agent-generating-loader-wrap" style={{ marginTop: "16px" }}>
+                                        <div className="ai-thinking-row" role="status" aria-label="Thinking">
+                                          <span className="sr-only">Thinking...</span>
+                                          <span className="ai-thinking-spinner sr-only" aria-hidden="true" />
+                                          <div className="dot-matrix-track" aria-hidden="true">
+                                            {Array.from({ length: 21 }).map((_, col) => (
+                                              <div key={col} className="dot-matrix-col">
+                                                <span
+                                                  className="dot-matrix-dot"
+                                                  style={{
+                                                    animationDelay: `${((col * 0.09 + Math.sin(col * 0.65) * 0.35) % 2) - 2}s`,
+                                                  }}
+                                                />
+                                                <span
+                                                  className="dot-matrix-dot"
+                                                  style={{
+                                                    animationDelay: `${(((col * 0.09 + 0.45) + Math.cos(col * 0.65) * 0.35) % 2) - 2}s`,
+                                                  }}
+                                                />
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Generated Report Section */}
+                                    {!generatingAgentId && activeReportAgentId && (
+                                      <div className="ai-agent-report-container" id="agent-report-section" style={{ marginTop: "16px" }}>
+                                        {renderAgentReport(activeReportAgentId)}
+                                      </div>
+                                    )}
+                                  </>
+                                );
+                              })()}
+                            </div>
                           </div>
                         ) : isStrokeBox ? (
                           <div className="ai-stroke-box">
@@ -3939,6 +4548,34 @@ function ProjectWorkspace({
                       </div>
                     );
                   })}
+
+                  {/* Dynamic thinking indicator when processing a query */}
+                  {isThinking && (
+                    <div className="workspace-message ai-message">
+                      <div className="ai-thinking-row" role="status" aria-label="Thinking">
+                        <span className="sr-only">Thinking...</span>
+                        <span className="ai-thinking-spinner sr-only" aria-hidden="true" />
+                        <div className="dot-matrix-track" aria-hidden="true">
+                          {Array.from({ length: 21 }).map((_, col) => (
+                            <div key={col} className="dot-matrix-col">
+                              <span
+                                className="dot-matrix-dot"
+                                style={{
+                                  animationDelay: `${((col * 0.09 + Math.sin(col * 0.65) * 0.35) % 2) - 2}s`,
+                                }}
+                              />
+                              <span
+                                className="dot-matrix-dot"
+                                style={{
+                                  animationDelay: `${(((col * 0.09 + 0.45) + Math.cos(col * 0.65) * 0.35) % 2) - 2}s`,
+                                }}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </>
@@ -3967,18 +4604,24 @@ function ProjectWorkspace({
               </div>
             </div>
 
-            {/* Project Agents (3 agents listdown) */}
+            {/* All Agents Stack */}
             <div className="agents-drawer-section">
               <div className="agents-cards-stack">
-                {projectRelatedAgents.map((agent) => {
-                  const isGenerating = generatingAgentId === agent.id;
-                  const isGenerated = !!generatedAgents[agent.id];
+                {[...projectRelatedAgents, ...otherWorkspaceAgents].map((agent) => {
+                  const isProjectAgent = projectRelatedAgents.some((pa) => pa.id === agent.id);
+                  const isKyc = agent.id === "agent-sbi-kyc" || agent.title.includes("KYC");
+                  const isInvoked = isAgentInvokedForRequest(agent.id);
 
                   return (
                     <article
                       key={agent.id}
-                      className="agent-drawer-card agent-drawer-card--project"
-                      onClick={() => handleGenerateWithAgent(agent)}
+                      className={`agent-drawer-card ${isProjectAgent ? "agent-drawer-card--project" : "agent-drawer-card--other"}`}
+                      onClick={() => {
+                        if (isKyc && onOpenKyc) {
+                          onOpenKyc();
+                          return;
+                        }
+                      }}
                     >
                       <div className="agent-drawer-card-top">
                         <h4 className="agent-drawer-card-title">{agent.title}</h4>
@@ -3990,49 +4633,12 @@ function ProjectWorkspace({
                           <Clock className="h-3.5 w-3.5 text-zinc-400" />
                           <span>{agent.lastUsed || "Active now"}</span>
                         </span>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            </div>
 
-            <div className="agents-drawer-divider" />
-
-            {/* Section 2: Other Agents */}
-            <div className="agents-drawer-section">
-              <div className="agents-section-header">
-                <h3 className="agents-section-title">Other Agents</h3>
-              </div>
-
-              <div className="agents-cards-stack">
-                {otherWorkspaceAgents.map((agent) => {
-                  const isGenerating = generatingAgentId === agent.id;
-                  const isGenerated = !!generatedAgents[agent.id];
-                  const isKyc = agent.id === "agent-sbi-kyc" || agent.title.includes("KYC");
-
-                  return (
-                    <article
-                      key={agent.id}
-                      className="agent-drawer-card agent-drawer-card--other"
-                      onClick={() => {
-                        if (isKyc && onOpenKyc) {
-                          onOpenKyc();
-                          return;
-                        }
-                        handleGenerateWithAgent(agent);
-                      }}
-                    >
-                      <div className="agent-drawer-card-top">
-                        <h4 className="agent-drawer-card-title">{agent.title}</h4>
-                        <p className="agent-drawer-card-desc">{agent.description}</p>
-                      </div>
-
-                      <div className="agent-drawer-card-footer">
-                        <span className="agent-drawer-last-used">
-                          <Clock className="h-3.5 w-3.5 text-zinc-400" />
-                          <span>{agent.lastUsed || "Available"}</span>
-                        </span>
+                        {isInvoked && (
+                          <span className="agent-drawer-invoked-status">
+                            Will be Invoked
+                          </span>
+                        )}
                       </div>
                     </article>
                   );

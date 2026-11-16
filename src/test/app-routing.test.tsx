@@ -685,6 +685,21 @@ describe("App routing", () => {
     expect(strokeBoxes.length).toBeGreaterThan(0);
     const optionBtns = document.querySelectorAll(".ai-outcome-option-btn");
     expect(optionBtns.length).toBe(4);
+
+    // Select an outcome option to give input
+    const expandOption = screen.getAllByText("Expand into a new customer segment or region")[0].closest("button");
+    if (expandOption) fireEvent.click(expandOption);
+
+    // Verify selection feel and selected state
+    const selectedBtn = document.querySelector(".ai-outcome-option-btn--selected");
+    expect(selectedBtn).not.toBeNull();
+    expect(selectedBtn?.textContent).toContain("Expand into a new customer segment or region");
+    expect(document.querySelectorAll(".ai-outcome-radio").length).toBe(4);
+
+    // Verify clicking another outcome switches the selection
+    const launchOption = screen.getByText("Launch a new AI product or service").closest("button");
+    if (launchOption) fireEvent.click(launchOption);
+    expect(launchOption?.classList.contains("ai-outcome-option-btn--selected")).toBe(true);
   });
 
   it("creates a new chat under the selected project when clicking New chat and updates title on message send", async () => {
@@ -825,6 +840,29 @@ describe("App routing", () => {
     const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
     fireEvent.click(projectCardBtn);
 
+    // Give input by selecting outcome option
+    const outcomeOption = screen.getByText("Expand into a new customer segment or region").closest("button");
+    if (outcomeOption) fireEvent.click(outcomeOption);
+
+    // Verify selected item is rendered as a user message bubble below the outcome card
+    const userMessages = document.querySelectorAll(".workspace-message.user-message");
+    expect(userMessages.length).toBeGreaterThanOrEqual(2);
+    expect(userMessages[userMessages.length - 1].textContent).toContain("Expand into a new customer segment or region");
+
+    // Verify Thinking... loader with animation spinner is rendered
+    expect(screen.getByText("Thinking...")).toBeDefined();
+    expect(document.querySelector(".ai-thinking-row")).not.toBeNull();
+    expect(document.querySelector(".ai-thinking-spinner")).not.toBeNull();
+
+    // Fast-forward thinking duration to reveal answers
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 350));
+    });
+
+    // Verify loader is hidden after 3 seconds thinking
+    expect(screen.queryByText("Thinking...")).toBeNull();
+    expect(document.querySelector(".ai-thinking-row")).toBeNull();
+
     // Verify Matching Knowledge Packs section is rendered without count subtitle
     expect(screen.getByText("Matching Knowledge Packs")).toBeDefined();
     expect(screen.queryByText(/packs recommended for this project/i)).toBeNull();
@@ -878,8 +916,8 @@ describe("App routing", () => {
       screen.queryByText(/Understood! Expanding into a new customer segment or region is the primary focus/i)
     ).toBeNull();
 
-    // Verify "Why these reports are relevant" heading and text placed at packages bottom
-    expect(screen.getByText("Why these reports are relevant")).toBeDefined();
+    // Verify "Matching reports" heading and text placed at packages bottom
+    expect(screen.getByText("Matching reports")).toBeDefined();
     expect(
       screen.getByText(/I found market intelligence reports from 2025–2026 covering tier-2 & tier-3 city retail/i)
     ).toBeDefined();
@@ -905,26 +943,55 @@ describe("App routing", () => {
 
     // Verify Recommended Agents section using home page card layout (limited to 2 agents)
     expect(screen.getByText("Recommended Agents")).toBeDefined();
-    expect(document.querySelectorAll(".ai-agent-recommend-card").length).toBe(2);
+    const recommendCards = document.querySelectorAll(".ai-agent-recommend-card");
+    expect(recommendCards.length).toBe(2);
     expect(screen.getAllByText(/Market Sizing & Growth Opportunity Forecasting Agent/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Customer Persona & Demographic Intelligence Agent/i).length).toBeGreaterThan(0);
 
-    // Verify Run agent button interactivity
+    // Verify individual "Run agent" buttons are removed in favor of selection feel
+    expect(screen.queryByRole("button", { name: /^Run agent$/i })).toBeNull();
+    const agentRadios = document.querySelectorAll(".ai-agent-recommend-card .ai-outcome-radio");
+    expect(agentRadios.length).toBe(2);
+
+    // Verify clicking an agent card toggles selection
+    const firstAgentCard = recommendCards[0];
+    const secondAgentCard = recommendCards[1];
+    fireEvent.click(firstAgentCard);
+    expect(firstAgentCard.classList.contains("ai-agent-recommend-card--selected")).toBe(true);
+    fireEvent.click(secondAgentCard);
+    expect(secondAgentCard.classList.contains("ai-agent-recommend-card--selected")).toBe(true);
+
+    // Verify single Generate report button interactivity below cards
     const runBtn = screen.getByRole("button", {
       name: /(Run agent|Generate report).*Market Sizing & Growth Opportunity Forecasting Agent/i,
     });
     expect(runBtn).toBeDefined();
     fireEvent.click(runBtn);
-    expect(screen.getByText("Running...")).toBeDefined();
+
+    // Verify the button disables after click and keeps its clean Generate report label
+    expect(runBtn).toBeDisabled();
+    expect(runBtn.textContent).toContain("Generate report");
+    expect(runBtn.textContent).not.toContain("Generate report with Market Sizing");
+    // Verify no duplicate second bubble is shown
+    const userMsgElements = document.querySelectorAll(".workspace-message.user-message");
+    const lastUserMsg = userMsgElements[userMsgElements.length - 1];
+    expect(lastUserMsg?.textContent).not.toContain("Generate report with");
+
+    // Do not show "Running..." text
+    expect(screen.queryByText("Running...")).toBeNull();
+    expect(document.querySelector(".ai-agent-generating-loader-wrap .ai-thinking-row")).not.toBeNull();
+    expect(screen.getByText("Thinking...")).toBeDefined();
 
     // Wait for agent execution
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 500));
     });
 
-    // Verify button state changes to Completed without check mark symbol
-    expect(screen.getByText("Completed")).toBeDefined();
-    expect(screen.queryByText(/Running ✓/)).toBeNull();
+    // Verify loader is hidden after generation completes
+    expect(document.querySelector(".ai-agent-generating-loader-wrap")).toBeNull();
+
+    // Do not show "Completed" text
+    expect(screen.queryByText("Completed")).toBeNull();
 
     // Verify report section appears below Recommended Agents
     expect(screen.getByText("SBI Home Loan Monthly Performance & Disbursement Report")).toBeDefined();
@@ -933,6 +1000,18 @@ describe("App routing", () => {
     expect(screen.getByText("Disbursement by City Tier & Category")).toBeDefined();
     expect(screen.getByText("Regional Zonal Breakdown & Compliance Review")).toBeDefined();
     expect(screen.getByText("Regulatory Compliance & Scope Isolation")).toBeDefined();
+
+    // Verify Download Report (PDF), Export CSV, and tab buttons are replaced with Save insight
+    expect(screen.queryByText("Download Report (PDF)")).toBeNull();
+    expect(screen.queryByText("Export CSV")).toBeNull();
+    expect(screen.queryByText("Home Loan Report")).toBeNull();
+    expect(screen.queryByText("South Asia Market Report")).toBeNull();
+
+    const reportSaveBtn = document.querySelector(".openui-report-card .save-insight-btn");
+    expect(reportSaveBtn).not.toBeNull();
+    expect(reportSaveBtn?.textContent).toContain("Save insight");
+    if (reportSaveBtn) fireEvent.click(reportSaveBtn);
+    expect(reportSaveBtn?.textContent).toContain("Saved to insights");
   });
 
   it("opens right-side slide panel with 3 project related agents and other agents below on clicking New chat under a project", () => {
@@ -962,8 +1041,8 @@ describe("App routing", () => {
     const projectAgentCards = document.querySelectorAll(".agent-drawer-card--project");
     expect(projectAgentCards.length).toBe(3);
 
-    // Verify Section 2: Other Agents (below) without full capitals tags
-    expect(screen.getByText("Other Agents")).toBeDefined();
+    // Verify "Other Agents" title is removed - all unified under Agents
+    expect(screen.queryByText("Other Agents")).toBeNull();
     expect(screen.queryByText("6 Available")).toBeNull();
     expect(screen.queryByText(/Workspace agents for regulatory compliance/i)).toBeNull();
     expect(document.querySelector(".agent-drawer-card-badge")).toBeNull();
@@ -1025,6 +1104,9 @@ describe("App routing", () => {
     const newChatBtn = screen.getByRole("button", { name: /new chat/i });
     fireEvent.click(newChatBtn);
 
+    // Verify right sidebar is open and before AI suggests agents, "Will be Invoked" badges are not shown
+    expect(screen.queryByText(/Will be Invoked/i)).toBeNull();
+
     // Type and send report inquiry in input dock
     const inputField = screen.getByPlaceholderText(/Reply, attach a file, or tap the mic to talk/i);
     fireEvent.change(inputField, { target: { value: "Can you prepare a market penetration report for tier-2 cities?" } });
@@ -1042,13 +1124,16 @@ describe("App routing", () => {
     expect(screen.getAllByText("Emerging Markets Specialist Agent").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Customer Dynamics & Segmentation Agent").length).toBeGreaterThanOrEqual(1);
 
+    // Verify only after chat AI suggests agents do the "Will be Invoked" badges appear
+    const invokedBadges = screen.getAllByText(/Will be Invoked/i);
+    expect(invokedBadges.length).toBe(2);
+
     // Verify no cheesy AI sparkles/badges exist
     expect(document.querySelector(".report-flow-container .sparkles")).toBeNull();
 
-    // Click the single Run agents button to activate both agents and start working
-    const runAgentsBtn = screen.getByRole("button", { name: /Run agents/i });
-    expect(runAgentsBtn).toBeDefined();
-    fireEvent.click(runAgentsBtn);
+    // Select both agents to begin collaborative configuration
+    fireEvent.click(suggestedAgentCards[0]);
+    fireEvent.click(suggestedAgentCards[1]);
 
     // Verify agents are active and ask 2 fields each (Reporting Period with calendar dropdown, Geographic Tier Focus, Target Consumer Cohort, Channel Velocity)
     expect(screen.getByText("Reporting Period")).toBeDefined();
@@ -1088,17 +1173,22 @@ describe("App routing", () => {
     const continueBtn = screen.getByRole("button", { name: /Continue to Generate Report/i });
     fireEvent.click(continueBtn);
 
-    // Verify generated report is displayed with synthesized insights and custom notes
-    expect(screen.getByText(/Executive Strategic Report: South Asia Secondary Cities Penetration/i)).toBeDefined();
-    expect(screen.getAllByText(/October 2026/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText("Tier-3 Regional Urban Clusters")).toBeDefined();
-    expect(screen.getAllByText(/Traditional Kirana & Wholesale Networks/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText(/Focus on Jaipur & Surat tier-2 corridors/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText(/Synthesized by Emerging Markets Specialist Agent/i)).toBeDefined();
-    expect(screen.getByText("Price-Point & Pack Strategy:")).toBeDefined();
-    expect(screen.getByText("Channel Velocity & Margins:")).toBeDefined();
-    expect(screen.getByText("Formulation Dynamics:")).toBeDefined();
-    expect(screen.getByText("Download report (PDF)")).toBeDefined();
+    // Verify thinking animation is shown when clicking Continue to Generate Report
+    expect(document.querySelector(".report-flow-container .ai-agent-generating-loader-wrap")).not.toBeNull();
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    });
+
+    // Verify generated report is displayed with synthesized insights and full visual report
+    expect(screen.getByText(/Personal Care Brand: South Asia Tier-2 & Tier-3 Market Entry Report/i)).toBeDefined();
+    expect(screen.getAllByText(/142,850/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/Target consumer households/i)).toBeDefined();
+    expect(screen.getAllByText(/98.6%/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/Retail placement velocity/i)).toBeDefined();
+    expect(screen.getByText(/Monthly Trial Kit Distribution & Conversion Velocity/i)).toBeDefined();
+    expect(screen.getByText(/Consumer Cohort & Market Segmentation Breakdown/i)).toBeDefined();
+    expect(screen.getByText(/Channel Distribution Velocity & Retail Network Breakdown/i)).toBeDefined();
   }, 25000);
 
   it("navigates to the Packages page on clicking Packages in header menu with overlapping card and project-wise sections", () => {
@@ -1206,5 +1296,101 @@ describe("App routing", () => {
     // Return to Saved insights view and verify new insight is listed
     fireEvent.click(savedInsightsBtn);
     expect(screen.getAllByText(/Assistant Chat/i).length).toBeGreaterThan(0);
+  }, 25000);
+
+  it("shows only one agent parameters when one agent is selected, and both when two agents are selected", async () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    const newChatBtn = screen.getByRole("button", { name: /new chat/i });
+    fireEvent.click(newChatBtn);
+
+    const inputField = screen.getByPlaceholderText(/Reply, attach a file, or tap the mic to talk/i);
+    fireEvent.change(inputField, { target: { value: "Can you prepare a market penetration report for tier-2 cities?" } });
+    fireEvent.submit(inputField.closest("form")!);
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 600));
+    });
+
+    const suggestedCards = document.querySelectorAll(".report-flow-agent-card");
+    expect(suggestedCards.length).toBe(2);
+
+    // Select only ONE agent: Customer Dynamics & Segmentation Agent
+    fireEvent.click(suggestedCards[1]);
+
+    // Verify only that one agent's parameters appear, NOT two
+    expect(screen.getAllByText("Customer Dynamics & Segmentation Agent").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText("Reporting Period")).toBeDefined();
+    expect(screen.getByText("Geographic Tier Focus")).toBeDefined();
+    expect(screen.queryByText("Collaborative segmentation inputs")).toBeNull();
+    expect(screen.queryByText("Channel Distribution Velocity")).toBeNull();
+
+    // Now select the SECOND agent as well (so two are selected)
+    fireEvent.click(suggestedCards[0]);
+
+    // Verify both agents' parameters appear
+    expect(screen.getByText("Collaborative segmentation inputs")).toBeDefined();
+    expect(screen.getByText("Channel Distribution Velocity")).toBeDefined();
+  }, 25000);
+
+  it("disables Generate report button, shows wave thinking animation, and then displays only the South Asia Market Entry Report", async () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    const newChatBtn = screen.getByRole("button", { name: /new chat/i });
+    fireEvent.click(newChatBtn);
+
+    const inputField = screen.getByPlaceholderText(/Reply, attach a file, or tap the mic to talk/i);
+    fireEvent.change(inputField, { target: { value: "Can you prepare a market penetration report for tier-2 cities?" } });
+    fireEvent.submit(inputField.closest("form")!);
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 600));
+    });
+
+    const runAgentsBtn = screen.getByRole("button", { name: /Generate report/i });
+    expect(runAgentsBtn).toBeDefined();
+
+    // Click Generate report
+    fireEvent.click(runAgentsBtn);
+
+    // Button should be disabled immediately
+    expect(runAgentsBtn.hasAttribute("disabled") || runAgentsBtn.className.includes("project-action-btn--completed")).toBe(true);
+
+    // Dot-matrix wave thinking animation is shown
+    expect(document.querySelector(".report-flow-container .ai-agent-generating-loader-wrap")).not.toBeNull();
+
+    // Configuration parameters form is NOT shown
+    expect(screen.queryByText("Reporting Period")).toBeNull();
+
+    // Wait for animation to finish
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    });
+
+    // Loader is now gone
+    expect(document.querySelector(".report-flow-container .ai-agent-generating-loader-wrap")).toBeNull();
+
+    // Only the Market Entry Report is shown
+    expect(screen.getByText(/Personal Care Brand: South Asia Tier-2 & Tier-3 Market Entry Report/i)).toBeDefined();
+    expect(screen.getAllByText(/142,850/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/Target consumer households/i)).toBeDefined();
+    expect(screen.getAllByText(/98.6%/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/Retail placement velocity/i)).toBeDefined();
+    expect(screen.getByText(/Monthly Trial Kit Distribution & Conversion Velocity/i)).toBeDefined();
+
+    // Form inputs remain hidden
+    expect(screen.queryByText("Reporting Period")).toBeNull();
   }, 25000);
 });
