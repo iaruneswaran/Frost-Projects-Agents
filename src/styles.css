@@ -4895,6 +4895,13 @@
   background: #1f2937;
 }
 
+.report-flow-continue-btn:disabled {
+  background: #7b7b7b !important;
+  color: #ffffff !important;
+  cursor: not-allowed !important;
+  opacity: 1 !important;
+}
+
 .report-flow-generated-card {
   background: #ffffff;
   border: 1px solid rgba(17, 28, 29, 0.08);

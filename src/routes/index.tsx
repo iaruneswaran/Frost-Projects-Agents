@@ -1867,7 +1867,7 @@ function ProjectWorkspace({
           ...current,
           selectedAgentIds: nextSelected,
           selectedAgentId: nextSelected[0] || null,
-          activeAgentId: nextSelected[0] || null,
+          activeAgentId: current.hasRunAgents ? (nextSelected[0] || null) : null,
           isAgent2Active: nextSelected.length >= 2,
         },
       };
@@ -1895,26 +1895,13 @@ function ProjectWorkspace({
           activeAgentId: chosen[0],
           isAgent2Active: chosen.length >= 2,
           hasRunAgents: true,
-          isGenerating: true,
+          isGenerating: false,
+          isReportGenerated: false,
         },
       };
     });
 
-    const isVitest = typeof process !== "undefined" && Boolean(process.env?.VITEST);
-    setTimeout(() => {
-      setReportFlows((prev) => {
-        const current = prev[msgId];
-        if (!current) return prev;
-        return {
-          ...prev,
-          [msgId]: {
-            ...current,
-            isGenerating: false,
-          },
-        };
-      });
-      scrollToTarget("#agent-report-section", "start");
-    }, isVitest ? 80 : 2200);
+    scrollToTarget(".report-flow-configuration-container", "start");
   };
 
   const isAgentInvokedForRequest = (agentId: string) => {
@@ -4006,7 +3993,7 @@ function ProjectWorkspace({
                                 })}
                               </div>
 
-                              {/* Single Generate report button matching pill button */}
+                              {/* Single Continue button matching pill button */}
                               {(() => {
                                 const currentFlow = reportFlows[m.id] || { ...defaultReportFlowState };
                                 const isRunning = Boolean(currentFlow.activeAgentId) || Boolean(currentFlow.hasRunAgents) || Boolean(currentFlow.isGenerating);
@@ -4018,9 +4005,9 @@ function ProjectWorkspace({
                                       className={`ai-generate-report-btn project-action-btn--generate-report report-flow-run-agents-btn ${isRunning ? "project-action-btn--completed" : ""}`}
                                       onClick={() => handleRunBothAgents(m.id)}
                                       disabled={isRunning}
-                                      aria-label="Generate report"
+                                      aria-label="Continue"
                                     >
-                                      <span>Generate report</span>
+                                      <span>Continue</span>
                                       <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5 ml-1.5 flex-shrink-0" />
                                     </button>
                                   </div>
@@ -4028,55 +4015,10 @@ function ProjectWorkspace({
                               })()}
                             </div>
 
-                            {/* Dot-matrix thinking animation while generating */}
+                            {/* Configuration section: shown ONLY when agents are selected or after Continue click; stays visible even during and after report generation */}
                             {(() => {
                               const currentFlow = reportFlows[m.id];
-                              if (!currentFlow?.isGenerating) return null;
-                              return (
-                                <div className="ai-agent-generating-loader-wrap" style={{ marginTop: "16px" }}>
-                                  <div className="ai-thinking-row" role="status" aria-label="Thinking">
-                                    <span className="sr-only">Thinking...</span>
-                                    <span className="ai-thinking-spinner sr-only" aria-hidden="true" />
-                                    <div className="dot-matrix-track" aria-hidden="true">
-                                      {Array.from({ length: 21 }).map((_, col) => (
-                                        <div key={col} className="dot-matrix-col">
-                                          <span
-                                            className="dot-matrix-dot"
-                                            style={{
-                                              animationDelay: `${((col * 0.09 + Math.sin(col * 0.65) * 0.35) % 2) - 2}s`,
-                                            }}
-                                          />
-                                          <span
-                                            className="dot-matrix-dot"
-                                            style={{
-                                              animationDelay: `${(((col * 0.09 + 0.45) + Math.cos(col * 0.65) * 0.35) % 2) - 2}s`,
-                                            }}
-                                          />
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })()}
-
-                            {/* Visual Market Entry Report (shown after Generate report OR Continue to Generate Report) */}
-                            {(() => {
-                              const currentFlow = reportFlows[m.id];
-                              if (!currentFlow || currentFlow.isGenerating) return null;
-                              if (!currentFlow.hasRunAgents && !currentFlow.isReportGenerated) return null;
-
-                              return (
-                                <div className="ai-agent-report-container" id="agent-report-section" style={{ marginTop: "16px" }}>
-                                  {renderAgentReport("proj-agent-emerging-markets")}
-                                </div>
-                              );
-                            })()}
-
-                            {/* Configuration section: shown ONLY when agents are selected for manual configuration before report is generated */}
-                            {(() => {
-                              const currentFlow = reportFlows[m.id];
-                              if (!currentFlow || currentFlow.hasRunAgents || currentFlow.isReportGenerated || currentFlow.isGenerating || !currentFlow.activeAgentId) return null;
+                              if (!currentFlow || !currentFlow.activeAgentId) return null;
 
                               const suggested = projectRelatedAgents.slice(0, 2);
                               const selectedList = currentFlow.selectedAgentIds && currentFlow.selectedAgentIds.length > 0
@@ -4086,6 +4028,7 @@ function ProjectWorkspace({
 
                               const leadAgent = suggested.find((a) => a.id === selectedList[0]) || suggested[0];
                               const secondAgent = suggested.find((a) => a.id === selectedList[1]) || suggested.find((a) => a.id !== leadAgent.id) || suggested[1];
+                              const isGenDisabled = Boolean(currentFlow.isGenerating || currentFlow.isReportGenerated);
 
                               return (
                                 <div className="report-flow-configuration-container" style={{ marginTop: "16px" }}>
@@ -4192,11 +4135,54 @@ function ProjectWorkspace({
                                       type="button"
                                       className="report-flow-continue-btn"
                                       onClick={() => handleGenerateReport(m.id)}
+                                      disabled={isGenDisabled}
+                                      aria-label="Continue to Generate Report"
                                     >
                                       <span>Continue to Generate Report</span>
                                       <ArrowRight className="h-4 w-4 ml-2" />
                                     </button>
                                   </div>
+
+                                  {/* Single Dot-matrix thinking animation while generating */}
+                                  {currentFlow.isGenerating && (
+                                    <div className="ai-agent-generating-loader-wrap" style={{ marginTop: "16px" }}>
+                                      <div className="ai-thinking-row" role="status" aria-label="Thinking">
+                                        <span className="sr-only">Thinking...</span>
+                                        <span className="ai-thinking-spinner sr-only" aria-hidden="true" />
+                                        <div className="dot-matrix-track" aria-hidden="true">
+                                          {Array.from({ length: 21 }).map((_, col) => (
+                                            <div key={col} className="dot-matrix-col">
+                                              <span
+                                                className="dot-matrix-dot"
+                                                style={{
+                                                  animationDelay: `${((col * 0.09 + Math.sin(col * 0.65) * 0.35) % 2) - 2}s`,
+                                                }}
+                                              />
+                                              <span
+                                                className="dot-matrix-dot"
+                                                style={{
+                                                  animationDelay: `${(((col * 0.09 + 0.45) + Math.cos(col * 0.65) * 0.35) % 2) - 2}s`,
+                                                }}
+                                              />
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
+
+                            {/* Visual Market Entry Report (shown after Continue to Generate Report) */}
+                            {(() => {
+                              const currentFlow = reportFlows[m.id];
+                              if (!currentFlow || currentFlow.isGenerating) return null;
+                              if (!currentFlow.isReportGenerated) return null;
+
+                              return (
+                                <div className="ai-agent-report-container" id="agent-report-section" style={{ marginTop: "16px" }}>
+                                  {renderAgentReport("proj-agent-emerging-markets")}
                                 </div>
                               );
                             })()}

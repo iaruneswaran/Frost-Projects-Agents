@@ -1134,6 +1134,8 @@ describe("App routing", () => {
     // Select both agents to begin collaborative configuration
     fireEvent.click(suggestedAgentCards[0]);
     fireEvent.click(suggestedAgentCards[1]);
+    const continueBtn = screen.getByRole("button", { name: /^Continue$/i });
+    fireEvent.click(continueBtn);
 
     // Verify agents are active and ask 2 fields each (Reporting Period with calendar dropdown, Geographic Tier Focus, Target Consumer Cohort, Channel Velocity)
     expect(screen.getByText("Reporting Period")).toBeDefined();
@@ -1170,8 +1172,8 @@ describe("App routing", () => {
     fireEvent.change(writeInput, { target: { value: "Focus on Jaipur & Surat tier-2 corridors" } });
 
     // Click Continue button to generate report
-    const continueBtn = screen.getByRole("button", { name: /Continue to Generate Report/i });
-    fireEvent.click(continueBtn);
+    const continueToGenBtn = screen.getByRole("button", { name: /Continue to Generate Report/i });
+    fireEvent.click(continueToGenBtn);
 
     // Verify thinking animation is shown when clicking Continue to Generate Report
     expect(document.querySelector(".report-flow-container .ai-agent-generating-loader-wrap")).not.toBeNull();
@@ -1321,8 +1323,10 @@ describe("App routing", () => {
     const suggestedCards = document.querySelectorAll(".report-flow-agent-card");
     expect(suggestedCards.length).toBe(2);
 
-    // Select only ONE agent: Customer Dynamics & Segmentation Agent
+    // Select only ONE agent: Customer Dynamics & Segmentation Agent, then click Continue
     fireEvent.click(suggestedCards[1]);
+    const continueBtn = screen.getByRole("button", { name: /^Continue$/i });
+    fireEvent.click(continueBtn);
 
     // Verify only that one agent's parameters appear, NOT two
     expect(screen.getAllByText("Customer Dynamics & Segmentation Agent").length).toBeGreaterThanOrEqual(2);
@@ -1339,7 +1343,7 @@ describe("App routing", () => {
     expect(screen.getByText("Channel Distribution Velocity")).toBeDefined();
   }, 25000);
 
-  it("disables Generate report button, shows wave thinking animation, and then displays only the South Asia Market Entry Report", async () => {
+  it("renames button to Continue, clicking it shows the parameters for the agents, and Continue to Generate Report reveals the report after animation", async () => {
     const Component = Route.options.component;
     if (!Component) throw new Error("Component is not defined on Route");
 
@@ -1359,20 +1363,45 @@ describe("App routing", () => {
       await new Promise((resolve) => setTimeout(resolve, 600));
     });
 
-    const runAgentsBtn = screen.getByRole("button", { name: /Generate report/i });
-    expect(runAgentsBtn).toBeDefined();
+    const continueBtn = screen.getByRole("button", { name: /^Continue$/i });
+    expect(continueBtn).toBeDefined();
 
-    // Click Generate report
-    fireEvent.click(runAgentsBtn);
+    // Click Continue
+    fireEvent.click(continueBtn);
 
     // Button should be disabled immediately
-    expect(runAgentsBtn.hasAttribute("disabled") || runAgentsBtn.className.includes("project-action-btn--completed")).toBe(true);
+    expect(continueBtn.hasAttribute("disabled") || continueBtn.className.includes("project-action-btn--completed")).toBe(true);
 
-    // Dot-matrix wave thinking animation is shown
+    // After click show Emerging Markets Specialist Agent and Customer Dynamics & Segmentation Agent parameters
+    expect(screen.getAllByText("Emerging Markets Specialist Agent").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText("Reporting parameters")).toBeDefined();
+    expect(screen.getByText("Reporting Period")).toBeDefined();
+    expect(screen.getByText("June 2026")).toBeDefined();
+    expect(screen.getByText("Geographic Tier Focus")).toBeDefined();
+    expect(screen.getByText("Tier-2 Priority Growth Cities")).toBeDefined();
+    expect(screen.getByText("Tier-3 Regional Urban Clusters")).toBeDefined();
+    expect(screen.getByText("Comprehensive Secondary Network")).toBeDefined();
+
+    expect(screen.getAllByText("Customer Dynamics & Segmentation Agent").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText("Collaborative segmentation inputs")).toBeDefined();
+    expect(screen.getByText("Target Consumer Cohort")).toBeDefined();
+    expect(screen.getByText("Channel Distribution Velocity")).toBeDefined();
+    expect(screen.getByText("Custom Strategic Focus & Priority Cities")).toBeDefined();
+
+    // Report is not shown yet
+    expect(screen.queryByText(/Personal Care Brand: South Asia Tier-2 & Tier-3 Market Entry Report/i)).toBeNull();
+
+    // Click Continue to Generate Report
+    const genReportBtn = screen.getByRole("button", { name: /Continue to Generate Report/i });
+    fireEvent.click(genReportBtn);
+
+    // The parameters section and button must NOT hide after click
+    expect(screen.getByText("Reporting parameters")).toBeDefined();
+    expect(screen.getByText("Geographic Tier Focus")).toBeDefined();
+    expect(screen.getByRole("button", { name: /Continue to Generate Report/i })).toBeDefined();
+
+    // Dot-matrix wave thinking animation is shown (single loader)
     expect(document.querySelector(".report-flow-container .ai-agent-generating-loader-wrap")).not.toBeNull();
-
-    // Configuration parameters form is NOT shown
-    expect(screen.queryByText("Reporting Period")).toBeNull();
 
     // Wait for animation to finish
     await act(async () => {
@@ -1382,15 +1411,17 @@ describe("App routing", () => {
     // Loader is now gone
     expect(document.querySelector(".report-flow-container .ai-agent-generating-loader-wrap")).toBeNull();
 
-    // Only the Market Entry Report is shown
+    // Parameters section and Continue to Generate Report button still stay visible!
+    expect(screen.getByText("Reporting parameters")).toBeDefined();
+    expect(screen.getByText("Geographic Tier Focus")).toBeDefined();
+    expect(screen.getByRole("button", { name: /Continue to Generate Report/i })).toBeDefined();
+
+    // The Market Entry Report is shown below
     expect(screen.getByText(/Personal Care Brand: South Asia Tier-2 & Tier-3 Market Entry Report/i)).toBeDefined();
     expect(screen.getAllByText(/142,850/).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/Target consumer households/i)).toBeDefined();
     expect(screen.getAllByText(/98.6%/).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/Retail placement velocity/i)).toBeDefined();
     expect(screen.getByText(/Monthly Trial Kit Distribution & Conversion Velocity/i)).toBeDefined();
-
-    // Form inputs remain hidden
-    expect(screen.queryByText("Reporting Period")).toBeNull();
   }, 25000);
 });
