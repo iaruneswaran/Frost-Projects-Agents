@@ -43,10 +43,11 @@ describe("App routing", () => {
     // Click project to enter Workspace UI
     fireEvent.click(projectCardBtn);
 
-    // Verify Project Workspace UI elements (shows done conversation on project click)
+    // Verify Project Workspace UI elements (shows greeting start screen on project click)
     expect(screen.getByText("CEO Workspace")).toBeDefined();
     expect(screen.getAllByText(/Personal care brand enters South Asia’s smaller cities/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/What primary outcome do you want to achieve with this project\?/i)).toBeDefined();
+    expect(screen.getByText("Hey Arun, What is this project about?")).toBeDefined();
+    expect(screen.getByText("What outcome would make this project worthwhile?")).toBeDefined();
 
     // Verify menu items on details page: New chat, Saved insights, Library, Knowledge packs, Data sources
     expect(screen.getByRole("button", { name: "New chat" })).toBeDefined();
@@ -396,8 +397,21 @@ describe("App routing", () => {
     fireEvent.change(input, { target: { value: "" } });
 
     // Returns back to wave icon button
-    expect(screen.getByRole("button", { name: "Start voice mode" })).toBeDefined();
+    const voiceBtn = screen.getByRole("button", { name: "Start voice mode" });
+    expect(voiceBtn).toBeDefined();
     expect(screen.queryByRole("button", { name: "Send message" })).toBeNull();
+
+    // Click voice button: toggles wave animation, does not send "Voice mode started" message
+    fireEvent.click(voiceBtn);
+    expect(document.querySelector(".voice-wave-anim")).not.toBeNull();
+    expect(document.querySelector(".chatgpt-dock-voice-btn--active")).not.toBeNull();
+    expect(screen.queryByText("Voice mode started")).toBeNull();
+
+    // Click again: toggles off wave animation
+    const stopVoiceBtn = screen.getByRole("button", { name: "Stop voice mode" });
+    fireEvent.click(stopVoiceBtn);
+    expect(document.querySelector(".voice-wave-anim")).toBeNull();
+    expect(document.querySelector(".chatgpt-dock-voice-btn--active")).toBeNull();
   });
 
   it("renders back navigation first in the collapsed rail followed by collapse icon without circle", () => {
@@ -519,13 +533,21 @@ describe("App routing", () => {
 
     expect(screen.getByText("What I know so far")).toBeDefined();
     expect(screen.getByText("Waiting on you")).toBeDefined();
-    expect(screen.getByText("not scored yet")).toBeDefined();
+    expect(screen.getByText(/not scored yet/i)).toBeDefined();
     expect(screen.getByText("Core facts known")).toBeDefined();
-    expect(screen.getByText("0 of 6 core facts")).toBeDefined();
+    expect(screen.getByText("4 of 6 core facts")).toBeDefined();
+    expect(screen.getByText("Goal")).toBeDefined();
+    expect(screen.getByText("Build AI clinical decision support tools")).toBeDefined();
+    expect(screen.queryByRole("button", { name: "Edit project score" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Edit core facts" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Edit Goal" })).toBeNull();
+    expect(document.querySelectorAll(".knowledge-item-edit-btn").length).toBe(5);
     expect(screen.getByText("Still to learn")).toBeDefined();
-    expect(screen.getByText("Project Knowledge Base")).toBeDefined();
-    expect(screen.getByText(/Context and active collaborative agents for Customer Dynamics/i)).toBeDefined();
-    expect(screen.getByText("Buyer segments, purchase drivers and channel behaviour behind current demand.")).toBeDefined();
+    expect(screen.getByText("Who it's for")).toBeDefined();
+    expect(screen.getByText("Investment")).toBeDefined();
+    expect(screen.getByText("Expected annual impact")).toBeDefined();
+    expect(screen.getByText("Target date")).toBeDefined();
+    expect(screen.getByText("Delivery owner")).toBeDefined();
 
     // Verify outer one is removed while panel is open to avoid repetition
     expect(screen.queryByRole("button", { name: "What I know" })).toBeNull();
@@ -596,7 +618,7 @@ describe("App routing", () => {
     });
   });
 
-  it("renders unwrapped outer What I know button with 24px above padding and #1d4ed8 blue color on outer button only", () => {
+  it("renders unwrapped outer What I know button with 24px above padding and #1e4b8d blue color on outer button only", () => {
     const Component = Route.options.component;
     if (!Component) throw new Error("Component is not defined on Route");
 
@@ -743,10 +765,14 @@ describe("App routing", () => {
     const topbar = document.querySelector(".chatgpt-topbar");
     expect(topbar).not.toBeNull();
 
-    // Verify project name on the left
+    // Verify project name on the left and edit icon button right side of the heading
     const projectTitleInHeader = document.querySelector(".chatgpt-topbar-project-title");
     expect(projectTitleInHeader).not.toBeNull();
     expect(projectTitleInHeader?.textContent).toBe("Personal care brand enters South Asia’s smaller cities");
+
+    const editHeadingBtn = screen.getByRole("button", { name: "Edit project heading" });
+    expect(editHeadingBtn).toBeDefined();
+    expect(editHeadingBtn.querySelector("svg")).not.toBeNull();
 
     // Verify What I know button on the right
     const whatIKnowBtn = screen.getByRole("button", { name: "What I know" });
@@ -767,11 +793,18 @@ describe("App routing", () => {
     const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
     fireEvent.click(projectCardBtn);
 
+    const chatBtn = screen.getByText("Tier-2 Market Penetration Strategy");
+    fireEvent.click(chatBtn);
+
     const conversationContainer = document.querySelector(".workspace-conversation");
     expect(conversationContainer).not.toBeNull();
 
     const inputDock = document.querySelector(".chatgpt-input-dock");
     expect(inputDock).not.toBeNull();
+
+    const bottomDock = document.querySelector(".workspace-dock-wrapper.bottom-dock-wrapper");
+    expect(bottomDock).not.toBeNull();
+    expect(bottomDock?.contains(inputDock!)).toBe(true);
   });
 
   it("renders the in-card typing field with home page pill styling and handles submission", async () => {
@@ -782,6 +815,9 @@ describe("App routing", () => {
 
     const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
     fireEvent.click(projectCardBtn);
+
+    const chatBtn = screen.getByText("Tier-2 Market Penetration Strategy");
+    fireEvent.click(chatBtn);
 
     // Verify 4 outcome option cards in 2-column grid with ArrowUpRight
     const optionCards = document.querySelectorAll(".ai-outcome-option-btn");
@@ -813,6 +849,9 @@ describe("App routing", () => {
     const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
     fireEvent.click(projectCardBtn);
 
+    const chatBtn = screen.getByText("Tier-2 Market Penetration Strategy");
+    fireEvent.click(chatBtn);
+
     // Verify Project Intake card exists above the outcome stroke box
     const intakeCard = document.querySelector(".ai-intake-card");
     expect(intakeCard).not.toBeNull();
@@ -840,8 +879,11 @@ describe("App routing", () => {
     const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
     fireEvent.click(projectCardBtn);
 
+    const chatBtn = screen.getByText("Tier-2 Market Penetration Strategy");
+    fireEvent.click(chatBtn);
+
     // Give input by selecting outcome option
-    const outcomeOption = screen.getByText("Expand into a new customer segment or region").closest("button");
+    const outcomeOption = screen.getAllByText("Expand into a new customer segment or region")[0].closest("button");
     if (outcomeOption) fireEvent.click(outcomeOption);
 
     // Verify selected item is rendered as a user message bubble below the outcome card
@@ -927,8 +969,14 @@ describe("App routing", () => {
     expect(document.querySelectorAll(".ai-matching-report-card").length).toBe(2);
     expect(screen.getByText(/Robert D. Boss · 2026/i)).toBeDefined();
     expect(screen.getByText(/Anika Rao · 2025/i)).toBeDefined();
-    expect(screen.getByText(/tier-2 retail/i)).toBeDefined();
-    expect(screen.getByText(/pricing strategy/i)).toBeDefined();
+    // Verify badges (tier-2 retail, pricing strategy, etc.) are removed from matching reports
+    expect(screen.queryByText("tier-2 retail")).toBeNull();
+    expect(screen.queryByText("pricing strategy")).toBeNull();
+    expect(screen.queryByText("consumer growth")).toBeNull();
+    expect(screen.queryByText("unit economics")).toBeNull();
+    expect(screen.queryByText("pack sizes")).toBeNull();
+    expect(screen.queryByText("price elasticity")).toBeNull();
+    expect(document.querySelector(".ai-matching-report-tags")).toBeNull();
 
     // Verify report GET button toggle
     const getReportBtn = screen.getByRole("button", {
@@ -1424,4 +1472,199 @@ describe("App routing", () => {
     expect(screen.getByText(/Retail placement velocity/i)).toBeDefined();
     expect(screen.getByText(/Monthly Trial Kit Distribution & Conversion Velocity/i)).toBeDefined();
   }, 25000);
+
+  it("starts conversation with greeting screen and shows loader before revealing project brief confirmed on asking project query", async () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    // Initial conversation starts with greeting screen only (not project brief)
+    expect(screen.getByText("Hey Arun, What is this project about?")).toBeDefined();
+    expect(screen.getByText("What outcome would make this project worthwhile?")).toBeDefined();
+    expect(screen.queryByText("Project brief confirmed, Arun")).toBeNull();
+    expect(screen.queryByText("What primary outcome do you want to achieve with this project?")).toBeNull();
+
+    // Ask: Personal care brand enters South Asia’s smaller cities
+    const input = screen.getByPlaceholderText("Reply, attach a file, or tap the mic to talk");
+    fireEvent.change(input, { target: { value: "Personal care brand enters South Asia’s smaller cities" } });
+    const sendBtn = screen.getByRole("button", { name: "Send message" });
+    fireEvent.click(sendBtn);
+
+    // User message is rendered
+    expect(screen.getAllByText("Personal care brand enters South Asia’s smaller cities").length).toBeGreaterThan(0);
+
+    // Loader is shown
+    expect(screen.getByText("Thinking...")).toBeDefined();
+    expect(document.querySelector(".ai-thinking-row")).not.toBeNull();
+    expect(document.querySelector(".ai-gradient-ring")).not.toBeNull();
+
+    // Fast-forward loader duration
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 350));
+    });
+
+    // Loader is gone
+    expect(screen.queryByText("Thinking...")).toBeNull();
+
+    // Project brief confirmed and primary outcome options are now shown
+    expect(screen.getByText("Project brief confirmed, Arun")).toBeDefined();
+    expect(screen.getByText(/We've received your project brief for "Personal care brand enters South Asia’s smaller cities"/i)).toBeDefined();
+    expect(screen.getByText("What primary outcome do you want to achieve with this project?")).toBeDefined();
+    expect(screen.getByText("Launch a new AI product or service")).toBeDefined();
+    expect(screen.getByText("Automate internal operations & reduce costs")).toBeDefined();
+    expect(screen.getByText("Expand into a new customer segment or region")).toBeDefined();
+    expect(screen.getByText("Accelerate enterprise sales & revenue growth")).toBeDefined();
+  });
+
+  it("allows selecting an agent from the drawer, pins it above the typing field, allows typing free query, and returns detailed agent paragraph response", async () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    // Click project
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    // Click New chat to open agents drawer
+    const newChatBtn = screen.getByRole("button", { name: /New chat/i });
+    fireEvent.click(newChatBtn);
+
+    // Verify agents drawer is open and contains Emerging Markets Specialist Agent
+    expect(screen.getByRole("heading", { name: "Agents" })).toBeDefined();
+    const emergingAgentCard = screen.getByText("Emerging Markets Specialist Agent");
+    expect(emergingAgentCard).toBeDefined();
+
+    // Select Emerging Markets Specialist Agent card with radio selector
+    const selectCard = screen.getByRole("button", { name: "Select Emerging Markets Specialist Agent" });
+    fireEvent.click(selectCard);
+
+    // Verify card is marked selected with circular radio and pinned agent bar appears above typing field
+    expect(selectCard.classList.contains("agent-drawer-card--selected")).toBe(true);
+    expect(selectCard.querySelector(".ai-outcome-radio--selected")).not.toBeNull();
+    expect(document.querySelector(".chat-pinned-agent-bar")).not.toBeNull();
+    expect(screen.getAllByText("Emerging Markets Specialist Agent").length).toBeGreaterThan(1);
+
+    // Free typing field allows typing any custom query
+    const inputField = screen.getByPlaceholderText(/Reply, attach a file, or tap the mic to talk/i);
+    fireEvent.change(inputField, { target: { value: "What should be our priority retail corridors and price points?" } });
+
+    // Send the message
+    const sendBtn = screen.getByTitle("Send message");
+    fireEvent.click(sendBtn);
+
+    // Fast-forward response
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 350));
+    });
+
+    // Verify detailed paragraph answer from Emerging Markets Specialist Agent
+    expect(screen.getByText(/Strategic Intelligence Briefing: Emerging Markets/i)).toBeDefined();
+    expect(screen.getByText(/Prepared by Emerging Markets Specialist Agent for Personal care brand enters South Asia’s smaller cities/i)).toBeDefined();
+    expect(screen.getAllByText(/What should be our priority retail corridors and price points\?/i).length).toBe(2);
+
+    // Verify Related actions section is rendered with search icons below the answer
+    expect(screen.getByText("Related actions")).toBeDefined();
+    const relatedBtn = screen.getByText("What are the distributor trade margin structures across secondary cities?");
+    expect(relatedBtn).toBeDefined();
+
+    // Clicking a related action question sends it to continue the conversation
+    fireEvent.click(relatedBtn);
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 350));
+    });
+
+    expect(screen.getAllByText(/What are the distributor trade margin structures across secondary cities\?/i).length).toBeGreaterThanOrEqual(1);
+
+    // Verify Agent header is not mentioned on the conversation
+    expect(document.querySelectorAll(".ai-agent-message-header").length).toBe(0);
+  });
+
+  it("interactively guides user through 3 diagnostic questions with 4 options each when asking Customer Dynamics query without selecting agent card", async () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    // Click project
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    // Open a New chat under the project
+    const newChatBtn = screen.getByRole("button", { name: "New chat" });
+    fireEvent.click(newChatBtn);
+
+    // Type and send "Customer Dynamics & Segmentation Agent" without selecting the right-side agent card
+    const input = screen.getByPlaceholderText(/Reply, attach a file, or tap the mic to talk/i);
+    fireEvent.change(input, { target: { value: "Customer Dynamics & Segmentation Agent" } });
+    const form = input.closest("form");
+    if (form) fireEvent.submit(form);
+
+    // Fast-forward thinking
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 350));
+    });
+
+    // Verify right-side agent card is NOT selected
+    const custDynamicsCard = screen.getByRole("button", { name: "Select Customer Dynamics & Segmentation Agent" });
+    expect(custDynamicsCard.classList.contains("agent-drawer-card--selected")).toBe(false);
+
+    // Verify Question 1 is shown directly with 4 options (no step badges or intro text)
+    expect(screen.queryByText(/Step 1 of 3/i)).toBeNull();
+    expect(screen.queryByText(/To evaluate demographic buying patterns/i)).toBeNull();
+    expect(screen.getByText("Which consumer demographic cohort should we prioritize for initial regional adoption?")).toBeDefined();
+    const opt1 = screen.getByText("Aspirational Gen-Z & Young Professionals (Ages 18–28, SEC A/B)");
+    expect(opt1).toBeDefined();
+    expect(screen.getByText("Working Women & Household Decision Makers (Ages 28–42, SEC A/B)")).toBeDefined();
+
+    // Select option 1 directly (advances without Continue button)
+    expect(screen.queryByRole("button", { name: "Continue" })).toBeNull();
+    fireEvent.click(opt1);
+
+    // Fast-forward
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 350));
+    });
+
+    // Verify Question 2 is shown with 4 options (no step badge)
+    expect(screen.queryByText(/Step 2 of 3/i)).toBeNull();
+    expect(screen.getByText("What is your target introductory price corridor for regional trial packs?")).toBeDefined();
+    const opt2 = screen.getByText("Mass-premium sweet spot at ₹249 – ₹349 (Optimal margin & volume balance)");
+    expect(opt2).toBeDefined();
+
+    // Select option 2 directly (advances without Continue button)
+    expect(screen.queryByRole("button", { name: "Continue" })).toBeNull();
+    fireEvent.click(opt2);
+
+    // Fast-forward
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 350));
+    });
+
+    // Verify Question 3 is shown with 4 options (no step badge)
+    expect(screen.queryByText(/Step 3 of 3/i)).toBeNull();
+    expect(screen.getByText("Which primary skincare ritual or benefit territory should lead regional marketing?")).toBeDefined();
+    const opt3 = screen.getByText("Skin Barrier Repair & Deep Hydration (Cica, Ceramides & Hyaluronic acid)");
+    expect(opt3).toBeDefined();
+
+    // Select option 3 directly (advances without Continue button)
+    expect(screen.queryByRole("button", { name: "Continue" })).toBeNull();
+    fireEvent.click(opt3);
+
+    // Fast-forward
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 350));
+    });
+
+    // Verify final synthesized strategic intelligence report is generated
+    expect(screen.getByText(/Customer Dynamics & Segmentation Intelligence Briefing/i)).toBeDefined();
+    expect(screen.getAllByText(/Aspirational Gen-Z & Young Professionals/i).length).toBeGreaterThanOrEqual(1);
+
+    // Verify no agent header badge is rendered without agent selection
+    expect(document.querySelectorAll(".ai-agent-message-header").length).toBe(0);
+  });
 });

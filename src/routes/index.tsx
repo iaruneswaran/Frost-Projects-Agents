@@ -90,10 +90,22 @@ interface ProjectItem {
   url: string;
 }
 
+export interface InteractiveQuestionData {
+  step: number;
+  totalSteps: number;
+  title: string;
+  question: string;
+  options: string[];
+  answeredOption?: string;
+}
+
 interface MessageItem {
   id: string;
   sender: "user" | "assistant";
   text: string;
+  agentTitle?: string;
+  relatedQuestions?: string[];
+  interactiveQuestion?: InteractiveQuestionData;
 }
 
 export interface ReportFlowState {
@@ -480,6 +492,38 @@ export function AdobeAcrobatPdfIcon({ className = "kyc-doc-acrobat-icon" }: { cl
   );
 }
 
+export function GradientRingSpinner({ className = "ai-gradient-ring" }: { className?: string }) {
+  return (
+    <div className={className} aria-hidden="true" role="presentation">
+      <svg
+        viewBox="0 0 50 50"
+        className="ai-gradient-ring-svg"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <defs>
+          <linearGradient id="ai-ring-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#c4b5fd" />
+            <stop offset="35%" stopColor="#818cf8" />
+            <stop offset="70%" stopColor="#3b82f6" />
+            <stop offset="100%" stopColor="#1e4b8d" />
+          </linearGradient>
+        </defs>
+        <circle
+          cx="25"
+          cy="25"
+          r="19"
+          fill="none"
+          stroke="url(#ai-ring-gradient)"
+          strokeWidth="4.5"
+        />
+      </svg>
+    </div>
+  );
+}
+
+export const PixelMandalaSpinner = GradientRingSpinner;
+
 export interface KnowledgePackFile {
   title: string;
   date: string;
@@ -570,7 +614,7 @@ export const defaultMatchingReports: MatchingReport[] = [
     year: "2026",
     summary: "Strategic evaluation of consumer spending shifts, purchasing power, and regional brand adoption across 24 secondary urban clusters.",
     quote: "“Identifies aspirational skincare adoption expanding at 18.4% CAGR in non-metro corridors, with consumers migrating rapidly toward premium formulations.”",
-    tags: ["tier-2 retail", "consumer growth", "market penetration", "regional strategy"],
+    tags: [],
   },
   {
     id: "rep-price-point",
@@ -579,7 +623,7 @@ export const defaultMatchingReports: MatchingReport[] = [
     year: "2025",
     summary: "Price elasticity analysis, sachet trial economics, and mass-premium threshold benchmarks across emerging city retail channels.",
     quote: "“Finds ₹299–₹449 discovery packs and trial kits generate 2.8x higher repeat adoption than standard full-size SKUs in smaller cities.”",
-    tags: ["pricing strategy", "unit economics", "pack sizes", "price elasticity"],
+    tags: [],
   },
   {
     id: "rep-dist-channel",
@@ -704,7 +748,7 @@ const initialAgents: AgentItem[] = [
   },
   {
     id: "agent-apollo-discharge",
-    title: "Apollo Hospital  Discharge Summary",
+    title: "Apollo Hospital Discharge Summary",
     description:
       "Prepares weekly inpatient discharge summaries for authorized hospital reviewers. Inpatient episodes only.",
     lastUsed: "Yesterday",
@@ -800,7 +844,7 @@ const personalCareDoneMessages: MessageItem[] = [
 ];
 
 const initialProjectConversations: Record<string, MessageItem[]> = {
-  "personal-care-south-asia": personalCareInitialMessages,
+  "personal-care-south-asia": [],
   "personal-care-south-asia-0": personalCareDoneMessages,
 };
 
@@ -858,6 +902,185 @@ const getProjectRelatedAgents = (proj: ProjectItem): AgentItem[] => {
     description: `Coordinates ${tag.toLowerCase()} workflows, synthesized market datasets, and execution milestones for ${proj.title}.`,
     lastUsed: idx === 0 ? "Active now" : `${(idx + 1) * 20}m ago`,
   }));
+};
+
+const generateAgentResponse = (agent: AgentItem, query: string, proj: ProjectItem): string => {
+  const cleanQuery = query.trim().replace(/[#*]/g, "") || `Strategic priority analysis for ${proj.title}`;
+  const title = agent.title;
+
+  let raw = "";
+  if (title.includes("Emerging Markets")) {
+    raw = `Strategic Intelligence Briefing: Emerging Markets
+Prepared by Emerging Markets Specialist Agent for ${proj.title}
+
+Our comprehensive analysis of non-metro retail corridors in South Asia reveals that Tier-2 and Tier-3 urban clusters represent the single largest growth horizon for ${proj.title}. While metro markets face hyper-competitive discounting and surging customer acquisition costs, secondary cities like Jaipur, Lucknow, Indore, Chandigarh, and Surat demonstrate an unprecedented 3.4x faster velocity in mass-premium skincare adoption. Regional consumers are actively migrating from unbranded or commodity formulations to derm-active formulations with clear efficacy claims.
+
+In evaluating "${cleanQuery}", retail distribution dynamics demand an agile omnichannel strategy. While modern trade supermarket corridors capture high-street visibility, over 70% of non-metro beauty volume flows through regional high-frequency kirana networks and rapidly expanding quick-commerce dark stores. Structuring distributor trade margins at 12–14% and local retail margins at 18–22% guarantees prime counter placement and active counter-recommendation against legacy multinational incumbents.
+
+Furthermore, aspirational brand adoption in secondary cities is tightly linked to trial packaging and localized pricing corridors. High-conversion market entry hinges on deploying ₹199–₹299 introductory trial packs (30ml/50g) highlighting proven active ingredients like Niacinamide, Hyaluronic Acid, and Cica. This removes trial friction, drives rapid initial volume, and establishes a loyal customer base that seamlessly transitions into complete daily skincare routines within 60 to 90 days.`;
+  } else if (title.includes("Customer Dynamics")) {
+    raw = `Demographic Buying Patterns & Ritual Adoption Report
+Prepared by Customer Dynamics & Segmentation Agent for ${proj.title}
+
+A granular examination of demographic buying cohorts across secondary urban centers indicates an emergent, highly aspirational buyer segment. SEC A and B households in Tier-2 hubs (such as Indore, Coimbatore, and Vadodara) exhibit rising disposable incomes and high digital connectivity. Rather than copying metro beauty trends, these regional consumers prioritize demonstrable skin barrier health and climate-adaptive formulations suited to local environmental conditions.
+
+Regarding "${cleanQuery}", price sensitivity analysis identifies a decisive conversion threshold at ₹399. Below this threshold, particularly within the ₹229–₹279 band, conversion rates increase by 3.2x compared to full-sized ₹500+ SKUs. Younger consumers (aged 18–34) actively seek non-comedogenic hydration and broad-spectrum daily sun protection, routinely vetting active ingredient percentages through vernacular creator reviews before purchasing.
+
+Skincare ritual adoption across secondary clusters favors intuitive, simplified 3-step daily regimens—Cleanse, Treat, and Protect—over complex multi-step routines. Positioning your European skincare heritage around effortless daily protection, combined with climate-specific claims (anti-pollution, humidity-resistant barrier defense), builds immediate trust and sustains high repurchase retention across priority regional clusters.`;
+  } else if (title.includes("Geographic Expansion")) {
+    raw = `Localized Channel Economics & Distribution Model
+Prepared by Geographic Expansion Strategy Agent for ${proj.title}
+
+Expanding into South Asia's secondary cities requires a phased cluster-based deployment rather than a fragmented multi-state rollout. By grouping high-potential cities into regional logistics clusters—the Western Cluster (Ahmedabad, Surat, Vadodara), the Northern Corridor (Jaipur, Lucknow, Chandigarh), and the Southern Hubs (Coimbatore, Kochi, Visakhapatnam)—your operational supply chain achieves maximum freight efficiency while reinforcing regional marketing resonance.
+
+In addressing "${cleanQuery}", channel economics must be calibrated for mutual profitability across the value chain. Traditional carrying and forwarding (C&F) agents operate on 10–12% margins with 21-day credit terms, while regional retail stockists require 18–22% margins to prioritize shelf space against entrenched FMCG conglomerates. Offering specialized merchandising display stands, complimentary trial sachets, and clear inventory exchange policies will accelerate retail onboarding.
+
+Physical retail penetration must be synchronized with high-velocity quick-commerce availability. Quick-commerce dark stores in Tier-2 hubs are experiencing over 40% month-on-month throughput growth, capturing instant-need and impulse personal care purchases. Establishing regional distribution hubs within a 4-hour replenishment radius guarantees 98%+ stock availability, preventing stock-outs from interrupting consumer momentum.`;
+  } else if (title.includes("Customer Persona")) {
+    raw = `Customer Persona & Demographic Intelligence Briefing
+Prepared by Customer Persona & Demographic Intelligence Agent for ${proj.title}
+
+Our demographic research identifies two core buyer personas spearheading personal care adoption in secondary urban corridors: "The Aspirational Professional" (women aged 22–32 in banking, education, and tech seeking clinical skincare results) and "The Pragmatic Homemaker" (women aged 30–45 seeking reliable, gentle barrier care for the household). Both cohorts exhibit strong brand loyalty once product reliability and gentle skin tolerance are proven.
+
+Evaluating "${cleanQuery}", purchasing behavior reveals an average initial transaction value of ₹420, frequently combining a targeted treatment serum with an essential daily sunscreen or cleanser. Discovery is heavily driven by vernacular regional beauty creators and micro-influencer communities, whose peer reviews carry 4.5x more credibility than traditional celebrity endorsements.
+
+To convert these demographic cohorts into sustained brand advocates for "${proj.title}", your packaging and communication should highlight concrete clinical validations: dermatologically tested stamps, percentage concentrations of active botanicals, and hypoallergenic certifications. Adding QR codes linking to localized vernacular usage tutorials creates a friction-free onboarding experience.`;
+  } else if (title.includes("Market Sizing")) {
+    raw = `Regional TAM & Growth Opportunity Forecast
+Prepared by Market Sizing & Growth Opportunity Forecasting Agent for ${proj.title}
+
+The total addressable market (TAM) for mass-premium personal care across South Asia's Tier-2 and Tier-3 urban centers is estimated at $3.82 billion, expanding at a robust 16.4% CAGR through 2028. This significantly outpaces metro market growth (8.1% CAGR), driven by rising disposable incomes, rapid retail modernization, and consumer awareness of specialized dermatological skincare.
+
+In terms of "${cleanQuery}", our segment forecasts project that daily photoprotection (SPF 50+), brightening facial serums, and lightweight barrier moisturizers will account for 62% of incremental revenue expansion. Securing a modest 2.5% market share across the top 24 non-metro urban clusters translates to an annualized net revenue opportunity of $95.5 million within 24 months of full commercial activation.
+
+To maximize capital efficiency, we recommend a 3-phase rollout: Phase 1 activates the top 6 commercial clusters with dense quick-commerce coverage; Phase 2 expands into 18 secondary wholesale distribution hubs; Phase 3 scales into tier-3 general trade retail networks. This phased approach maintains positive cash flow and healthy unit economics from month 6 onward.`;
+  } else if (title.includes("Competitive Pricing")) {
+    raw = `Competitive Pricing Dynamics & Channel Velocity Report
+Prepared by Competitive Pricing & Channel Intelligence Agent for ${proj.title}
+
+A competitive pricing audit across secondary urban hubs reveals that mass FMCG brands dominate the sub-₹150 price band, while luxury international labels remain confined to metro department stores at ₹800+. The strategic white space for ${proj.title} is the mass-premium sweet spot between ₹199 and ₹349—where consumers actively seek premium European efficacy without feeling price resistance.
+
+Regarding "${cleanQuery}", trade promotional structures must be engineered to disrupt established regional players. Offering distributors an attractive 12% baseline margin plus a 3% quarterly volume rebate, coupled with 20% retailer trade margins, secures prominent shelf positioning and enthusiastic shopkeeper recommendations over incumbent brands.
+
+Channel velocity benchmarks confirm that introductory cross-category bundles (such as "Buy Serum at ₹299, get Hydrating Cleanser trial for ₹99") yield 42% higher basket sizes and reduce purchase hesitancy by over 60%. Enforcing strict minimum advertised price (MAP) policies across digital platforms and physical outlets prevents regional price disparities and maintains distributor trust.`;
+  } else if (title.includes("Apollo Hospital")) {
+    raw = `Clinical Discharge Workflow & Care Transition Summary
+Prepared by Apollo Hospital Discharge Summary Agent
+
+Our clinical review of inpatient discharge workflows demonstrates that standardized electronic discharge documentation and timely medication reconciliation reduce 30-day readmission rates by 18.4%. Case summaries for authorized clinical reviewers prioritize primary diagnoses, surgical interventions, and post-discharge recovery monitoring protocols.
+
+Addressing "${cleanQuery}", clinical transition tracking monitors post-acute recovery milestones, lab biomarker trends, and physician follow-up schedules. Standardizing inpatient discharge dossiers guarantees comprehensive regulatory compliance with hospital accreditation guidelines and medical review boards.`;
+  } else if (title.includes("SBI Land Loan")) {
+    raw = `Quarterly Land Loan Compliance & Portfolio Analysis
+Prepared by SBI Land Loan Quarterly Report Agent
+
+The quarterly portfolio compliance audit for agricultural and commercial land-loan accounts confirms stable asset quality metrics, with gross non-performing assets (GNPA) maintained at 1.42% across regional banking circles. Loan-to-value (LTV) ratios average 64%, safely within statutory lending limits against verified collateral valuations.
+
+In terms of "${cleanQuery}", compliance protocols verify land title clearance, non-encumbrance certifications, and cadastral survey records across zonal branches. Standardized documentation workflows ensure full regulatory alignment for upcoming periodic internal and statutory audits.`;
+  } else if (title.includes("AIIMS ICU")) {
+    raw = `Critical Care Ward Utilization & Capacity Analytics
+Prepared by AIIMS ICU Occupancy Report Agent
+
+Daily critical care unit analytics reflect an operational bed occupancy rate of 91.2%, with ventilator support utilization standing at 74.5%. Triage assessment protocols continue to prioritize emergency trauma admissions and post-operative intensive monitoring requirements.
+
+Regarding "${cleanQuery}", clinical resource allocation models project evening bed turnover and discharge velocity to ensure standby capacity for emergency triage transfers. Medical staffing rosters and life-support consumable inventories remain fully synchronized with critical care standards.`;
+  } else {
+    raw = `Strategic Intelligence Briefing
+Prepared by ${agent.title} for ${proj.title}
+
+In evaluating "${cleanQuery}", our strategic intelligence workflows indicate significant operational and market opportunities for ${proj.title}. The convergence of consumer demand, channel economics, and regional execution models supports rapid, sustainable scale.
+
+Key priorities include establishing localized distributor networks, tailoring product offerings to regional purchasing power, and deploying targeted trial initiatives to drive customer adoption. Continued monitoring of channel velocity and consumer retention will ensure robust performance against defined milestones.`;
+  }
+
+  // Ensure no # or * characters are present in the response
+  return raw.replace(/[#*]/g, "").trim();
+};
+
+export const getRelatedQuestions = (m: MessageItem, proj: ProjectItem): string[] => {
+  if (m.relatedQuestions && m.relatedQuestions.length > 0) {
+    return m.relatedQuestions;
+  }
+  const title = (m.agentTitle || "").toLowerCase();
+  const text = m.text.toLowerCase();
+
+  if (title.includes("emerging") || text.includes("emerging markets") || text.includes("non-metro")) {
+    return [
+      "What are the distributor trade margin structures across secondary cities?",
+      "Which 5 Tier-2 cities have the highest trial pack conversion velocity?",
+      "How do quick-commerce dark stores compare with regional kirana networks?",
+    ];
+  }
+
+  if (title.includes("customer dynamics") || title.includes("segmentation") || text.includes("demographic buying")) {
+    return [
+      "What price threshold triggers the highest repeat skincare purchase?",
+      "How do 18–34 demographic cohorts discover mass-premium formulations?",
+      "What regional climate-adaptive claims drive immediate consumer trust?",
+    ];
+  }
+
+  if (title.includes("geographic expansion") || text.includes("channel economics") || text.includes("logistics cluster")) {
+    return [
+      "What are the freight cost efficiencies across the Northern Corridor?",
+      "How should we phase distributor onboarding across the 24 urban clusters?",
+      "What credit terms do regional stockists expect for new brand placement?",
+    ];
+  }
+
+  if (title.includes("customer persona") || text.includes("buyer personas") || text.includes("aspirational professional")) {
+    return [
+      "What messaging resonates most with pragmatic homemaker cohorts?",
+      "How can we integrate regional vernacular tutorials into product packaging?",
+      "What dermatological certifications generate the strongest purchase intent?",
+    ];
+  }
+
+  if (title.includes("market sizing") || text.includes("tam") || text.includes("growth opportunity")) {
+    return [
+      "What is the projected 3-year category TAM expansion for non-metro hubs?",
+      "Which product categories deliver the highest gross margin velocity?",
+      "What capital allocation is required to reach 2.5% regional market share?",
+    ];
+  }
+
+  if (title.includes("competitive pricing") || text.includes("pricing dynamics") || text.includes("mass-premium sweet spot")) {
+    return [
+      "What promotional bundle discounts drive the highest basket size?",
+      "How do we prevent regional price disparities across wholesale channels?",
+      "What is the optimal price elasticity corridor for trial sachets?",
+    ];
+  }
+
+  if (title.includes("apollo") || text.includes("clinical discharge")) {
+    return [
+      "What are the primary factors reducing 30-day inpatient readmissions?",
+      "How is electronic discharge medication reconciliation audited?",
+      "What clinical documentation standards apply to weekly patient episodes?",
+    ];
+  }
+
+  if (title.includes("sbi") || text.includes("land loan")) {
+    return [
+      "What is the zonal breakdown of agricultural vs commercial loan performance?",
+      "How are non-encumbrance certifications verified across zonal circles?",
+      "What risk mitigation policies apply to loan-to-value ratios above 65%?",
+    ];
+  }
+
+  if (title.includes("aiims") || text.includes("critical care ward") || text.includes("icu")) {
+    return [
+      "What is the peak utilization schedule for emergency ventilator beds?",
+      "How are triage turnover rates managed during high-admission shifts?",
+      "What consumable supply thresholds trigger automatic restock orders?",
+    ];
+  }
+
+  return [
+    `What are the priority retail corridors for ${proj.title}?`,
+    "What distributor trade margins accelerate initial shelf placement?",
+    "How do consumer trial packs reduce market entry acquisition costs?",
+  ];
 };
 
 interface ProjectPackageGroup {
@@ -1765,6 +1988,7 @@ function ProjectWorkspace({
   const [projectChats, setProjectChats] = useState<Record<string, SubChatItem[]>>(buildInitialProjectChats);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const isNewProject = project.id.startsWith("new-project");
+  const isBrandNew = isNewProject || project.id.startsWith("untitled-");
 
   const [selectedChat, setSelectedChat] = useState<string>(
     isNewProject ? "New chat" : project.title
@@ -1775,9 +1999,33 @@ function ProjectWorkspace({
   const [expandedProjectId, setExpandedProjectId] = useState<string | null>(project.id || null);
   const [searchFilter, setSearchFilter] = useState("");
   const [inputValue, setInputValue] = useState("");
+  const [isVoiceActive, setIsVoiceActive] = useState(false);
+  const [currentProjectTitle, setCurrentProjectTitle] = useState(
+    isNewProject && (project.title === "New project" || !project.title)
+      ? "Untitled project"
+      : project.title || "Untitled project"
+  );
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState(
+    isNewProject && (project.title === "New project" || !project.title)
+      ? "Untitled project"
+      : project.title || "Untitled project"
+  );
   const [customOutcome, setCustomOutcome] = useState("");
   const [selectedOutcomes, setSelectedOutcomes] = useState<Record<string, string>>({});
   const [selectedRecommendedAgentId, setSelectedRecommendedAgentId] = useState<string | null>(null);
+  const [pinnedAgent, setPinnedAgent] = useState<AgentItem | null>(null);
+  const [selectedAgentOptions, setSelectedAgentOptions] = useState<Record<string, string>>({});
+  const [interactiveFlowAnswers, setInteractiveFlowAnswers] = useState<Record<string, Record<string, string>>>({});
+
+  const handleSelectAgentForChat = (agent: AgentItem) => {
+    const isDeselecting = pinnedAgent?.id === agent.id;
+    if (isDeselecting) {
+      setPinnedAgent(null);
+      return;
+    }
+    setPinnedAgent(agent);
+  };
   const [isThinking, setIsThinking] = useState(false);
   const thinkingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -2940,7 +3188,133 @@ function ProjectWorkspace({
     setIsKnowledgeOpen(false);
   };
 
-  const handleSend = (presetText?: string) => {
+  const handleAdvanceInteractiveQuestion = (msg: MessageItem, chosenOpt?: string) => {
+    const selectedOpt = chosenOpt || selectedAgentOptions[msg.id];
+    if (!selectedOpt || !msg.interactiveQuestion) return;
+
+    const currentStep = msg.interactiveQuestion.step;
+    const currentChat = currentChatKey;
+    const existingAnswers = interactiveFlowAnswers[currentChat] || {};
+    const updatedAnswers = {
+      ...existingAnswers,
+      [`q${currentStep}`]: selectedOpt,
+    };
+    setInteractiveFlowAnswers((prev) => ({
+      ...prev,
+      [currentChat]: updatedAnswers,
+    }));
+
+    // Mark current question as answered
+    setConversations((prev) => ({
+      ...prev,
+      [currentChat]: (prev[currentChat] || []).map((m) =>
+        m.id === msg.id && m.interactiveQuestion
+          ? {
+              ...m,
+              interactiveQuestion: {
+                ...m.interactiveQuestion,
+                answeredOption: selectedOpt,
+              },
+            }
+          : m
+      ),
+    }));
+
+    // Add user message with selected choice
+    const userMsg: MessageItem = {
+      id: `user-interactive-${Date.now()}`,
+      sender: "user",
+      text: selectedOpt,
+    };
+
+    setConversations((prev) => ({
+      ...prev,
+      [currentChat]: [...(prev[currentChat] || []), userMsg],
+    }));
+
+    setIsThinking(true);
+    scrollToTarget(".workspace-conversation > *:last-child, .ai-thinking-row", "start");
+
+    setTimeout(() => {
+      setIsThinking(false);
+
+      if (currentStep === 1) {
+        const q2Msg: MessageItem = {
+          id: `ai-cust-dyn-q2-${Date.now()}`,
+          sender: "assistant",
+          text: "",
+          agentTitle: msg.agentTitle,
+          interactiveQuestion: {
+            step: 2,
+            totalSteps: 3,
+            title: "",
+            question: "What is your target introductory price corridor for regional trial packs?",
+            options: [
+              "Entry trial packs at ₹149 – ₹199 (Max trial velocity & sachet volume)",
+              "Mass-premium sweet spot at ₹249 – ₹349 (Optimal margin & volume balance)",
+              "Premium clinical threshold at ₹399 – ₹499 (Derm-grade efficacy focus)",
+              "Full regimen discovery bundles at ₹599 – ₹799 (Multi-step routine trial)",
+            ],
+          },
+        };
+        setConversations((prev) => ({
+          ...prev,
+          [currentChat]: [...(prev[currentChat] || []), q2Msg],
+        }));
+      } else if (currentStep === 2) {
+        const q3Msg: MessageItem = {
+          id: `ai-cust-dyn-q3-${Date.now()}`,
+          sender: "assistant",
+          text: "",
+          agentTitle: msg.agentTitle,
+          interactiveQuestion: {
+            step: 3,
+            totalSteps: 3,
+            title: "",
+            question: "Which primary skincare ritual or benefit territory should lead regional marketing?",
+            options: [
+              "Daily Sun Defense & Broad-Spectrum UV Protection (SPF 50+ lightweight gel)",
+              "Skin Barrier Repair & Deep Hydration (Cica, Ceramides & Hyaluronic acid)",
+              "Active Brightening & Pigmentation Defense (Niacinamide & Vitamin C)",
+              "Climate-Adaptive Oil Control & Pollution Defense (Purifying botanicals)",
+            ],
+          },
+        };
+        setConversations((prev) => ({
+          ...prev,
+          [currentChat]: [...(prev[currentChat] || []), q3Msg],
+        }));
+      } else {
+        const opt1 = updatedAnswers.q1 || "Aspirational Gen-Z & Young Professionals";
+        const opt2 = updatedAnswers.q2 || "Mass-premium sweet spot at ₹249 – ₹349";
+        const opt3 = selectedOpt;
+
+        const reportText = `Customer Dynamics & Segmentation Intelligence Briefing
+Prepared by Customer Dynamics & Segmentation Agent for ${project.title}
+
+Based on your calibrated strategic parameters—prioritizing ${opt1.split(" (")[0]}, targeting ${opt2.split(" (")[0]}, and leading with ${opt3.split(" (")[0]}—our regional consumer intelligence models reveal clear commercial momentum across secondary urban clusters.
+
+In non-metro hubs like Jaipur, Lucknow, Indore, and Coimbatore, ${opt1.split(" (")[0]} represents the fastest-growing consumer segment for mass-premium personal care. Rising disposable incomes and high smartphone penetration have accelerated awareness of active dermatological formulations. Consumers in these markets evaluate product efficacy through regional peer communities and vernacular creator reviews rather than traditional celebrity advertisements.
+
+Calibrating introductory price points to ${opt2.split(" (")[0]} directly unlocks trial adoption while preserving 18–22% retail margins and 12–14% distributor margins. This price corridor eliminates purchase hesitancy, encouraging shoppers to add trial sachets and travel-sized packs to their routine baskets.
+
+Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear distinction against legacy FMCG competitors. Communicating climate-adaptive protection and demonstrable skin barrier defense builds long-term consumer trust, driving sustained 60-day repurchase retention across priority regional retail corridors.`;
+
+        const finalMsg: MessageItem = {
+          id: `ai-cust-dyn-final-${Date.now()}`,
+          sender: "assistant",
+          text: reportText.replace(/[#*]/g, "").trim(),
+          agentTitle: msg.agentTitle,
+        };
+        setConversations((prev) => ({
+          ...prev,
+          [currentChat]: [...(prev[currentChat] || []), finalMsg],
+        }));
+      }
+    }, typeof process !== "undefined" && process.env.NODE_ENV === "test" ? 300 : 800);
+  };
+
+  const handleSend = (presetText?: string, targetAgent?: AgentItem) => {
     const text = (presetText || inputValue).trim();
     if (!text) return;
 
@@ -2971,23 +3345,116 @@ function ProjectWorkspace({
 
     setTimeout(() => {
       setIsThinking(false);
+
+      const effectiveAgent = targetAgent || pinnedAgent;
+      const normalizedText = text.toLowerCase().replace(/['’]/g, "").trim();
+
+      const isCustomerDynamicsQuery =
+        normalizedText.includes("customer dynamics") ||
+        normalizedText.includes("segmentation agent") ||
+        Boolean(effectiveAgent && effectiveAgent.title.toLowerCase().includes("customer dynamics"));
+
+      if (isCustomerDynamicsQuery) {
+        const chatMsgs = conversations[currentChatKey] || [];
+        const hasExistingCustDynMsg = chatMsgs.some(
+          (m) =>
+            m.interactiveQuestion ||
+            (m.agentTitle?.includes("Customer Dynamics") &&
+              m.text.includes("Customer Dynamics & Segmentation Intelligence Briefing")) ||
+            m.text.includes("Customer Dynamics & Segmentation Intelligence Briefing")
+        );
+
+        if (!hasExistingCustDynMsg) {
+          const q1Msg: MessageItem = {
+            id: `ai-cust-dyn-q1-${Date.now()}`,
+            sender: "assistant",
+            text: "",
+            agentTitle: effectiveAgent?.title,
+            interactiveQuestion: {
+              step: 1,
+              totalSteps: 3,
+              title: "",
+              question: "Which consumer demographic cohort should we prioritize for initial regional adoption?",
+              options: [
+                "Aspirational Gen-Z & Young Professionals (Ages 18–28, SEC A/B)",
+                "Working Women & Household Decision Makers (Ages 28–42, SEC A/B)",
+                "Price-Conscious First-Time Adopters (Tier-2 & Tier-3 Students/Homemakers)",
+                "Mass-Affluent Regional Consumers Seeking Derm-Active Formulations",
+              ],
+            },
+          };
+          setConversations((prev) => ({
+            ...prev,
+            [currentChatKey]: [...(prev[currentChatKey] || []), q1Msg],
+          }));
+          return;
+        }
+
+        const custAgent =
+          effectiveAgent ||
+          initialAgents.find((a) => a.title.includes("Customer Dynamics")) ||
+          projectRelatedAgents.find((a) => a.title.includes("Customer Dynamics"));
+
+        if (custAgent) {
+          const agentReply = generateAgentResponse(custAgent, text, project);
+          const aiMessage: MessageItem = {
+            id: `ai-agent-${Date.now()}`,
+            sender: "assistant",
+            text: agentReply,
+            agentTitle: effectiveAgent?.title,
+          };
+          setConversations((prev) => ({
+            ...prev,
+            [currentChatKey]: [...(prev[currentChatKey] || []), aiMessage],
+          }));
+          return;
+        }
+      }
+
+      if (effectiveAgent) {
+        const agentReply = generateAgentResponse(effectiveAgent, text, project);
+        const aiMessage: MessageItem = {
+          id: `ai-agent-${Date.now()}`,
+          sender: "assistant",
+          text: agentReply,
+          agentTitle: effectiveAgent.title,
+        };
+        setConversations((prev) => ({
+          ...prev,
+          [currentChatKey]: [...(prev[currentChatKey] || []), aiMessage],
+        }));
+        return;
+      }
+
+      const normalizedProjectTitle = project.title.toLowerCase().replace(/['’]/g, "").trim();
+
+      const isPersonalCareBrief =
+        normalizedText.includes("personal care brand") ||
+        normalizedText.includes("smaller cities") ||
+        normalizedText === normalizedProjectTitle;
+
       const isReportQuery =
-        text.toLowerCase().includes("report") ||
-        (selectedChat === "New chat" &&
-          !text.toLowerCase().includes("define the idea") &&
-          !text.toLowerCase().includes("attach a plan") &&
-          !text.toLowerCase().includes("diwali") &&
-          !text.includes("Expand into") &&
-          !text.includes("Launch a new AI product") &&
-          !text.includes("Automate") &&
-          !text.includes("Accelerate enterprise"));
+        !isPersonalCareBrief &&
+        (text.toLowerCase().includes("report") ||
+          (selectedChat === "New chat" &&
+            !text.toLowerCase().includes("define the idea") &&
+            !text.toLowerCase().includes("attach a plan") &&
+            !text.toLowerCase().includes("diwali") &&
+            !text.toLowerCase().includes("personal care") &&
+            !text.toLowerCase().includes("smaller cities") &&
+            !text.toLowerCase().includes("customer dynamics") &&
+            !text.toLowerCase().includes("segmentation agent") &&
+            !text.includes("Expand into") &&
+            !text.includes("Launch a new AI product") &&
+            !text.includes("Automate") &&
+            !text.includes("Accelerate enterprise")));
 
       if (isReportQuery) {
         const flowId = `ai-flow-${Date.now()}`;
         const aiMessage: MessageItem = {
           id: flowId,
           sender: "assistant",
-          text: `To complete this report for **${project.title}**, I've assembled two specialized agents to synthesize the market intelligence. Select an agent to begin configuration:`,
+          text: `To complete this report for ${project.title}, I've assembled two specialized agents to synthesize the market intelligence. Select an agent to begin configuration:`,
         };
 
         setReportFlows((prev) => ({
@@ -3005,7 +3472,9 @@ function ProjectWorkspace({
       }
 
       let reply = `Understood. For "${project.title}", I have initialized the core context. I found market intelligence reports from 2025–2026 covering regional retail, price elasticity, active ingredients, and channel distribution. Together they detail how consumer price sensitivity, local retailer margins, and climate-adaptive formulations connect to drive sustainable regional market penetration:`;
-      if (
+      if (isPersonalCareBrief) {
+        reply = `Project brief confirmed, Arun\nWe've received your project brief for "${project.title}". Autonomous collaborative agents are ready to coordinate market dynamics, unit economics, and execution milestones. To configure the optimal agent workflow, let's establish your direction:\n\nWhat primary outcome do you want to achieve with this project?\n\nLaunch a new AI product or service\n\nAutomate internal operations & reduce costs\n\nExpand into a new customer segment or region\n\nAccelerate enterprise sales & revenue growth\n\nOr in your own words\nType your answer and press Enter`;
+      } else if (
         text.includes("Expand into a new customer segment or region") ||
         text.includes("Expand into a new target market") ||
         text.includes("Expand into")
@@ -3112,71 +3581,100 @@ function ProjectWorkspace({
   };
 
   const renderInputDock = () => (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        handleSend();
-      }}
-      className="chatgpt-input-dock"
-    >
-      <button
-        type="button"
-        onClick={() => handleSend("Attach a plan")}
-        className="chatgpt-dock-add-btn"
-        title="Add file or actions"
-        aria-label="Add file or actions"
+    <div className="chat-input-dock-container">
+      {pinnedAgent && (
+        <div className="chat-pinned-agent-bar">
+          <div className="chat-pinned-agent-wrap">
+            <span className="chat-pinned-agent-label">Agent:</span>
+            <span className="chat-pinned-agent-name">{pinnedAgent.title}</span>
+            <button
+              type="button"
+              onClick={() => setPinnedAgent(null)}
+              className="chat-pinned-agent-close"
+              title="Unpin agent"
+              aria-label="Remove pinned agent"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSend();
+        }}
+        className="chatgpt-input-dock"
       >
-        <Plus className="h-5 w-5" />
-      </button>
-
-      <input
-        type="text"
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        placeholder="Reply, attach a file, or tap the mic to talk"
-        className="chatgpt-dock-input"
-      />
-
-      <div className="chatgpt-dock-right-actions">
-        <input
-          type="file"
-          ref={dockFileInputRef}
-          onChange={handleDockFileUpload}
-          className="hidden"
-          aria-label="Upload file"
-        />
         <button
           type="button"
-          onClick={() => dockFileInputRef.current?.click()}
-          className="chatgpt-dock-attach-btn"
-          title="Attach file"
-          aria-label="Attach file"
+          onClick={() => handleSend("Attach a plan")}
+          className="chatgpt-dock-add-btn"
+          title="Add file or actions"
+          aria-label="Add file or actions"
         >
-          <Paperclip className="h-4 w-4" />
+          <Plus className="h-5 w-5" />
         </button>
 
-        {inputValue.trim() ? (
-          <button
-            type="submit"
-            className="chatgpt-dock-send-btn"
-            title="Send message"
-            aria-label="Send message"
-          >
-            <ArrowUp className="h-4 w-4" />
-          </button>
-        ) : (
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder="Reply, attach a file, or tap the mic to talk"
+          className="chatgpt-dock-input"
+        />
+
+        <div className="chatgpt-dock-right-actions">
+          <input
+            type="file"
+            ref={dockFileInputRef}
+            onChange={handleDockFileUpload}
+            className="hidden"
+            aria-label="Upload file"
+          />
           <button
             type="button"
-            onClick={() => handleSend("Voice mode started")}
-            className="chatgpt-dock-voice-btn"
-            title="Start voice mode"
-            aria-label="Start voice mode"
+            onClick={() => dockFileInputRef.current?.click()}
+            className="chatgpt-dock-attach-btn"
+            title="Attach file"
+            aria-label="Attach file"
           >
-            <AudioLines className="h-4 w-4" />
+            <Paperclip className="h-4 w-4" />
           </button>
-        )}
-      </div>
-    </form>
+
+          {inputValue.trim() ? (
+            <button
+              type="submit"
+              className="chatgpt-dock-send-btn"
+              title="Send message"
+              aria-label="Send message"
+            >
+              <ArrowUp className="h-4 w-4" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsVoiceActive((prev) => !prev)}
+              className={`chatgpt-dock-voice-btn ${isVoiceActive ? "chatgpt-dock-voice-btn--active" : ""}`}
+              title={isVoiceActive ? "Stop voice mode" : "Start voice mode"}
+              aria-label={isVoiceActive ? "Stop voice mode" : "Start voice mode"}
+            >
+              {isVoiceActive ? (
+                <span className="voice-wave-anim" aria-hidden="true">
+                  <span className="voice-wave-bar bar-1" />
+                  <span className="voice-wave-bar bar-2" />
+                  <span className="voice-wave-bar bar-3" />
+                  <span className="voice-wave-bar bar-4" />
+                  <span className="voice-wave-bar bar-5" />
+                </span>
+              ) : (
+                <AudioLines className="h-4 w-4" />
+              )}
+            </button>
+          )}
+        </div>
+      </form>
+    </div>
   );
 
   return (
@@ -3529,19 +4027,67 @@ function ProjectWorkspace({
         {/* Topbar */}
         <header className="chatgpt-topbar">
           <div className="chatgpt-topbar-left">
-            <span className="chatgpt-topbar-project-title">
-              {activeSidebarView === "saved-insights"
-                ? "Saved insights"
-                : activeSidebarView === "data-sources"
-                  ? "Data sources"
-                  : activeSidebarView === "library"
-                    ? "Library"
-                    : activeSidebarView === "knowledge-packs"
-                      ? "Knowledge packs"
-                      : isNewProject && (project.title === "New project" || !project.title)
-                        ? "Untitled project"
-                        : (project.title || "Untitled project")}
-            </span>
+            {isEditingTitle && !activeSidebarView ? (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (editedTitle.trim()) {
+                    setCurrentProjectTitle(editedTitle.trim());
+                  }
+                  setIsEditingTitle(false);
+                }}
+                className="chatgpt-topbar-title-edit-form"
+              >
+                <input
+                  type="text"
+                  value={editedTitle}
+                  onChange={(e) => setEditedTitle(e.target.value)}
+                  onBlur={() => {
+                    if (editedTitle.trim()) {
+                      setCurrentProjectTitle(editedTitle.trim());
+                    }
+                    setIsEditingTitle(false);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      setEditedTitle(currentProjectTitle);
+                      setIsEditingTitle(false);
+                    }
+                  }}
+                  autoFocus
+                  className="chatgpt-topbar-title-input"
+                  aria-label="Edit project heading input"
+                />
+              </form>
+            ) : (
+              <div className="chatgpt-topbar-title-wrap">
+                <span className="chatgpt-topbar-project-title">
+                  {activeSidebarView === "saved-insights"
+                    ? "Saved insights"
+                    : activeSidebarView === "data-sources"
+                      ? "Data sources"
+                      : activeSidebarView === "library"
+                        ? "Library"
+                        : activeSidebarView === "knowledge-packs"
+                          ? "Knowledge packs"
+                          : currentProjectTitle}
+                </span>
+                {!activeSidebarView && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditedTitle(currentProjectTitle);
+                      setIsEditingTitle(true);
+                    }}
+                    className="chatgpt-topbar-edit-btn"
+                    title="Edit project heading"
+                    aria-label="Edit project heading"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="chatgpt-topbar-right">
@@ -3571,7 +4117,6 @@ function ProjectWorkspace({
                   <div className="saved-insights-header-bar">
                     <div>
                       <h2 className="workspace-library-title">Saved insights</h2>
-                      <p className="workspace-library-subline">Key findings, strategic recommendations, and synthesized takeaways for this project</p>
                     </div>
                     <div className="saved-insights-search-box">
                       <Search className="h-4 w-4 text-zinc-400 shrink-0" />
@@ -3628,7 +4173,6 @@ function ProjectWorkspace({
               <div className="workspace-library-header">
                 <div className="workspace-library-title-row">
                   <h2 className="workspace-library-title">Data sources</h2>
-                  <p className="workspace-library-subline">Connected data feeds, benchmark databases, and market intelligence pipelines</p>
                 </div>
               </div>
 
@@ -3640,10 +4184,6 @@ function ProjectWorkspace({
                         <Database className="h-4 w-4 text-zinc-600 shrink-0" />
                         <h3 className="data-source-title">{source.name}</h3>
                       </div>
-                      <span className="data-source-status">
-                        <span className="data-source-status-dot" />
-                        {source.status}
-                      </span>
                     </div>
                     <p className="data-source-desc">{source.description}</p>
                     <div className="data-source-divider" />
@@ -3664,7 +4204,6 @@ function ProjectWorkspace({
               <div className="workspace-library-header">
                 <div className="workspace-library-title-row">
                   <h2 className="workspace-library-title">Library</h2>
-                  <p className="workspace-library-subline">Executive reports and strategic intelligence generated for this project</p>
                 </div>
               </div>
 
@@ -3681,7 +4220,6 @@ function ProjectWorkspace({
               <div className="workspace-library-header">
                 <div className="workspace-library-title-row">
                   <h2 className="workspace-library-title">Knowledge packs</h2>
-                  <p className="workspace-library-subline">Curated research packages, benchmark datasets, and regulatory dossiers</p>
                 </div>
               </div>
 
@@ -3758,7 +4296,7 @@ function ProjectWorkspace({
               {/* Messages Thread if Any */}
               {messages.length > 0 && (
                 <div className="workspace-conversation">
-                  {messages.map((m) => {
+                  {messages.map((m, mIdx) => {
                     const isAgentReportMsg =
                       m.sender === "assistant" &&
                       (m.id.startsWith("ai-report-") || m.text.startsWith("__AGENT_REPORT__:"));
@@ -3832,31 +4370,20 @@ function ProjectWorkspace({
                             return (
                               <div className="ai-intake-and-outcome-container">
                                 {/* Project brief message section above the box */}
-                                <div className="ai-intake-card">
-                                  {isDefineObjective ? (
-                                    <p
-                                      className="ai-intake-text"
-                                      style={{
-                                        fontSize: "15px",
-                                        fontWeight: 500,
-                                        color: "var(--aircond-ink, #111c1d)",
-                                        margin: 0,
-                                        lineHeight: 1.6,
-                                      }}
-                                    >
-                                      Let's define the core objective of this project to start building the business case.
+                                {isDefineObjective ? (
+                                  <p className="ai-unwrapped-objective-text">
+                                    Let's define the core objective of this project to start building the business case.
+                                  </p>
+                                ) : (
+                                  <div className="ai-intake-card">
+                                    <h4 className="ai-intake-title">
+                                      Project brief confirmed, Arun
+                                    </h4>
+                                    <p className="ai-intake-text">
+                                      We've received your project brief for "{project.title}". Autonomous collaborative agents are ready to coordinate market dynamics, unit economics, and execution milestones. To configure the optimal agent workflow, let's establish your direction:
                                     </p>
-                                  ) : (
-                                    <>
-                                      <h4 className="ai-intake-title">
-                                        Project brief confirmed, Arun
-                                      </h4>
-                                      <p className="ai-intake-text">
-                                        We've received your project brief for "{project.title}". Autonomous collaborative agents are ready to coordinate market dynamics, unit economics, and execution milestones. To configure the optimal agent workflow, let's establish your direction:
-                                      </p>
-                                    </>
-                                  )}
-                                </div>
+                                  </div>
+                                )}
 
                                 {/* Outcome Choice Box */}
                                 <div className="ai-stroke-box">
@@ -4143,30 +4670,14 @@ function ProjectWorkspace({
                                     </button>
                                   </div>
 
-                                  {/* Single Dot-matrix thinking animation while generating */}
+                                  {/* Single Gradient Ring thinking animation while generating */}
                                   {currentFlow.isGenerating && (
                                     <div className="ai-agent-generating-loader-wrap" style={{ marginTop: "16px" }}>
                                       <div className="ai-thinking-row" role="status" aria-label="Thinking">
-                                        <span className="sr-only">Thinking...</span>
-                                        <span className="ai-thinking-spinner sr-only" aria-hidden="true" />
-                                        <div className="dot-matrix-track" aria-hidden="true">
-                                          {Array.from({ length: 21 }).map((_, col) => (
-                                            <div key={col} className="dot-matrix-col">
-                                              <span
-                                                className="dot-matrix-dot"
-                                                style={{
-                                                  animationDelay: `${((col * 0.09 + Math.sin(col * 0.65) * 0.35) % 2) - 2}s`,
-                                                }}
-                                              />
-                                              <span
-                                                className="dot-matrix-dot"
-                                                style={{
-                                                  animationDelay: `${(((col * 0.09 + 0.45) + Math.cos(col * 0.65) * 0.35) % 2) - 2}s`,
-                                                }}
-                                              />
-                                            </div>
-                                          ))}
+                                        <div className="ai-thinking-spinner" aria-hidden="true">
+                                          <GradientRingSpinner />
                                         </div>
+                                        <span className="ai-thinking-text">Thinking...</span>
                                       </div>
                                     </div>
                                   )}
@@ -4334,14 +4845,6 @@ function ProjectWorkspace({
                                       </div>
 
                                       <p className="ai-matching-report-summary">{report.summary}</p>
-
-                                      <div className="ai-matching-report-tags">
-                                        {report.tags.map((tag) => (
-                                          <span key={tag} className="ai-matching-report-tag">
-                                            {tag}
-                                          </span>
-                                        ))}
-                                      </div>
                                     </div>
                                   );
                                 })}
@@ -4427,30 +4930,14 @@ function ProjectWorkspace({
                                       </button>
                                     </div>
 
-                                    {/* Dot-matrix thinking animation while generating */}
+                                    {/* Gradient Ring thinking animation while generating */}
                                     {isGenerating && (
                                       <div className="ai-agent-generating-loader-wrap" style={{ marginTop: "16px" }}>
                                         <div className="ai-thinking-row" role="status" aria-label="Thinking">
-                                          <span className="sr-only">Thinking...</span>
-                                          <span className="ai-thinking-spinner sr-only" aria-hidden="true" />
-                                          <div className="dot-matrix-track" aria-hidden="true">
-                                            {Array.from({ length: 21 }).map((_, col) => (
-                                              <div key={col} className="dot-matrix-col">
-                                                <span
-                                                  className="dot-matrix-dot"
-                                                  style={{
-                                                    animationDelay: `${((col * 0.09 + Math.sin(col * 0.65) * 0.35) % 2) - 2}s`,
-                                                  }}
-                                                />
-                                                <span
-                                                  className="dot-matrix-dot"
-                                                  style={{
-                                                    animationDelay: `${(((col * 0.09 + 0.45) + Math.cos(col * 0.65) * 0.35) % 2) - 2}s`,
-                                                  }}
-                                                />
-                                              </div>
-                                            ))}
+                                          <div className="ai-thinking-spinner" aria-hidden="true">
+                                            <GradientRingSpinner />
                                           </div>
+                                          <span className="ai-thinking-text">Thinking...</span>
                                         </div>
                                       </div>
                                     )}
@@ -4503,29 +4990,108 @@ function ProjectWorkspace({
                             className="workspace-message-body whitespace-pre-line"
                             style={m.text.includes("I found market intelligence reports from 2025") ? { color: "#64748b" } : undefined}
                           >
-                            <div>{m.text}</div>
-                            {m.sender === "assistant" && (
-                              <div className="message-actions-row">
-                                <button
-                                  type="button"
-                                  onClick={() => handleSaveInsight(m)}
-                                  className={`save-insight-btn ${savedMsgIds[m.id] ? "saved" : ""}`}
-                                  title={savedMsgIds[m.id] ? "Saved to insights" : "Save insight"}
-                                  aria-label={savedMsgIds[m.id] ? "Saved to insights" : "Save insight"}
+                            {m.text ? <div>{m.text}</div> : null}
+                            {m.interactiveQuestion && (
+                              <div className="agent-question-box" role="region" aria-label={m.interactiveQuestion.question}>
+                                <div className="agent-question-header">
+                                  <h3 className="agent-question-title">{m.interactiveQuestion.question}</h3>
+                                </div>
+
+                                <div
+                                  className="ai-outcome-options-grid"
+                                  role="radiogroup"
+                                  aria-label={m.interactiveQuestion.question}
                                 >
-                                  {savedMsgIds[m.id] ? (
-                                    <>
-                                      <Check className="h-3.5 w-3.5 text-emerald-600" />
-                                      <span>Saved to insights</span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Bookmark className="h-3.5 w-3.5 text-zinc-500" />
-                                      <span>Save insight</span>
-                                    </>
-                                  )}
-                                </button>
+                                  {m.interactiveQuestion.options.map((opt) => {
+                                    const isSelected =
+                                      (m.interactiveQuestion?.answeredOption || selectedAgentOptions[m.id]) === opt;
+                                    const isLocked = Boolean(m.interactiveQuestion?.answeredOption);
+
+                                    return (
+                                      <button
+                                        key={opt}
+                                        type="button"
+                                        role="radio"
+                                        aria-checked={isSelected}
+                                        disabled={isLocked}
+                                        onClick={() => {
+                                          if (isLocked) return;
+                                          setSelectedAgentOptions((prev) => ({ ...prev, [m.id]: opt }));
+                                          handleAdvanceInteractiveQuestion(m, opt);
+                                        }}
+                                        className={`ai-outcome-option-btn ${isSelected ? "ai-outcome-option-btn--selected" : ""}`}
+                                      >
+                                        <div className="ai-outcome-option-content">
+                                          <span
+                                            className={`ai-outcome-radio ${isSelected ? "ai-outcome-radio--selected" : ""}`}
+                                            aria-hidden="true"
+                                          >
+                                            {isSelected && <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />}
+                                          </span>
+                                          <span className="ai-outcome-option-text">{opt}</span>
+                                        </div>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
                               </div>
+                            )}
+                            {m.sender === "assistant" && !m.interactiveQuestion && (
+                              <>
+                                <div className="message-actions-row">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSaveInsight(m)}
+                                    className={`save-insight-btn ${savedMsgIds[m.id] ? "saved" : ""}`}
+                                    title={savedMsgIds[m.id] ? "Saved to insights" : "Save insight"}
+                                    aria-label={savedMsgIds[m.id] ? "Saved to insights" : "Save insight"}
+                                  >
+                                    {savedMsgIds[m.id] ? (
+                                      <>
+                                        <Check className="h-3.5 w-3.5 text-emerald-600" />
+                                        <span>Saved to insights</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Bookmark className="h-3.5 w-3.5 text-zinc-500" />
+                                        <span>Save insight</span>
+                                      </>
+                                    )}
+                                  </button>
+                                </div>
+                                {(() => {
+                                  const questions = getRelatedQuestions(m, project);
+                                  const msgAgent =
+                                    pinnedAgent ||
+                                    (m.agentTitle
+                                      ? [...projectRelatedAgents, ...otherWorkspaceAgents].find(
+                                          (a) => a.title === m.agentTitle
+                                        )
+                                      : undefined);
+                                  if (!questions || questions.length === 0) return null;
+                                  return (
+                                    <div className="message-related-actions" aria-label="Related actions">
+                                      <div className="message-related-actions-header">
+                                        <span className="message-related-actions-title">Related actions</span>
+                                      </div>
+                                      <div className="message-related-actions-list">
+                                        {questions.map((question, qIdx) => (
+                                          <button
+                                            key={qIdx}
+                                            type="button"
+                                            onClick={() => handleSend(question, msgAgent)}
+                                            className="message-related-action-btn"
+                                            title={`Ask: ${question}`}
+                                          >
+                                            <Search className="message-related-action-icon" aria-hidden="true" />
+                                            <span>{question}</span>
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  );
+                                })()}
+                              </>
                             )}
                           </div>
                         )}
@@ -4539,26 +5105,10 @@ function ProjectWorkspace({
                   {isThinking && (
                     <div className="workspace-message ai-message">
                       <div className="ai-thinking-row" role="status" aria-label="Thinking">
-                        <span className="sr-only">Thinking...</span>
-                        <span className="ai-thinking-spinner sr-only" aria-hidden="true" />
-                        <div className="dot-matrix-track" aria-hidden="true">
-                          {Array.from({ length: 21 }).map((_, col) => (
-                            <div key={col} className="dot-matrix-col">
-                              <span
-                                className="dot-matrix-dot"
-                                style={{
-                                  animationDelay: `${((col * 0.09 + Math.sin(col * 0.65) * 0.35) % 2) - 2}s`,
-                                }}
-                              />
-                              <span
-                                className="dot-matrix-dot"
-                                style={{
-                                  animationDelay: `${(((col * 0.09 + 0.45) + Math.cos(col * 0.65) * 0.35) % 2) - 2}s`,
-                                }}
-                              />
-                            </div>
-                          ))}
+                        <div className="ai-thinking-spinner" aria-hidden="true">
+                          <GradientRingSpinner />
                         </div>
+                        <span className="ai-thinking-text">Thinking...</span>
                       </div>
                     </div>
                   )}
@@ -4597,17 +5147,18 @@ function ProjectWorkspace({
                   const isProjectAgent = projectRelatedAgents.some((pa) => pa.id === agent.id);
                   const isKyc = agent.id === "agent-sbi-kyc" || agent.title.includes("KYC");
                   const isInvoked = isAgentInvokedForRequest(agent.id);
+                  const isSelected = pinnedAgent?.id === agent.id;
 
                   return (
                     <article
                       key={agent.id}
-                      className={`agent-drawer-card ${isProjectAgent ? "agent-drawer-card--project" : "agent-drawer-card--other"}`}
+                      className={`agent-drawer-card ${isProjectAgent ? "agent-drawer-card--project" : "agent-drawer-card--other"} ${isSelected ? "agent-drawer-card--selected" : ""}`}
                       onClick={() => {
-                        if (isKyc && onOpenKyc) {
-                          onOpenKyc();
-                          return;
-                        }
+                        handleSelectAgentForChat(agent);
                       }}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`${isSelected ? "Unselect" : "Select"} ${agent.title}`}
                     >
                       <div className="agent-drawer-card-top">
                         <h4 className="agent-drawer-card-title">{agent.title}</h4>
@@ -4615,16 +5166,20 @@ function ProjectWorkspace({
                       </div>
 
                       <div className="agent-drawer-card-footer">
-                        <span className="agent-drawer-last-used">
-                          <Clock className="h-3.5 w-3.5 text-zinc-400" />
-                          <span>{agent.lastUsed || "Active now"}</span>
-                        </span>
+                        <div className="agent-drawer-card-actions">
+                          {isInvoked && (
+                            <span className="agent-drawer-invoked-status">
+                              Will be Invoked
+                            </span>
+                          )}
 
-                        {isInvoked && (
-                          <span className="agent-drawer-invoked-status">
-                            Will be Invoked
+                          <span
+                            className={`ai-outcome-radio ${isSelected ? "ai-outcome-radio--selected" : ""}`}
+                            aria-hidden="true"
+                          >
+                            {isSelected && <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />}
                           </span>
-                        )}
+                        </div>
                       </div>
                     </article>
                   );
@@ -4644,10 +5199,7 @@ function ProjectWorkspace({
           <div className="workspace-knowledge-inner">
             {/* Header */}
             <div className="knowledge-panel-header">
-              <div className="knowledge-panel-title-wrap">
-                <BookOpen className="h-4 w-4 text-zinc-800 shrink-0" />
-                <h2 className="knowledge-panel-title">What I know so far</h2>
-              </div>
+              <h2 className="knowledge-panel-title">What I know so far</h2>
               <button
                 type="button"
                 onClick={() => setIsKnowledgeOpen(false)}
@@ -4661,56 +5213,128 @@ function ProjectWorkspace({
 
             <div className="knowledge-panel-status">Waiting on you</div>
 
-            {/* Project score (No dash line) */}
+            {/* Project score */}
             <div className="knowledge-panel-section">
               <div className="knowledge-section-title">Project score</div>
               <div className="knowledge-score-value">not scored yet</div>
               <p className="knowledge-score-hint">
-                Still need: goal, who it's for, investment, expected annual impact, target date, delivery owner.
+                Still need: target date, delivery owner.
               </p>
+              <div className="knowledge-divider" />
             </div>
 
             {/* Core facts known */}
             <div className="knowledge-panel-section">
               <div className="knowledge-section-title">Core facts known</div>
               <div className="knowledge-facts-progress">
-                <div className="knowledge-facts-bar" style={{ width: "0%" }} />
+                <div className="knowledge-facts-bar" style={{ width: "66.66%" }} />
               </div>
-              <div className="knowledge-facts-sub">0 of 6 core facts</div>
+              <div className="knowledge-facts-sub">4 of 6 core facts</div>
+
+              <div className="knowledge-goal-block">
+                <div className="knowledge-field-label">Goal</div>
+                <div className="knowledge-goal-title">Build AI clinical decision support tools</div>
+                <div className="knowledge-field-source">You</div>
+              </div>
+              <div className="knowledge-divider" />
             </div>
 
             {/* Still to learn */}
-            <div className="knowledge-still-to-learn">
-              <span className="knowledge-still-left">
-                <span className="knowledge-plus">+</span>
-                <span>Still to learn</span>
-              </span>
-              <span className="knowledge-still-count">6</span>
-            </div>
+            <div className="knowledge-panel-section knowledge-still-section">
+              <div className="knowledge-still-to-learn">
+                <span className="knowledge-still-left">
+                  <span>Still to learn</span>
+                </span>
+                <span className="knowledge-still-count">2</span>
+              </div>
 
-            {/* Project Knowledge Base / Context */}
-            <div className="knowledge-panel-section">
-              <div className="knowledge-section-title">Project Knowledge Base</div>
-              <p className="knowledge-context-desc">
-                Context and active collaborative agents for {project.title}.
-              </p>
-            </div>
-
-            {/* Executive Summary */}
-            <div className="knowledge-panel-section">
-              <div className="knowledge-section-title">Executive Summary</div>
-              <p className="knowledge-summary-text">{project.description}</p>
-            </div>
-
-            {/* Assigned Autonomous Agents */}
-            <div className="knowledge-panel-section">
-              <div className="knowledge-section-title">Assigned Autonomous Agents</div>
-              <div className="knowledge-agents-list">
-                {project.agents.map((agent) => (
-                  <span key={agent} className="knowledge-agent-pill">
-                    {agent}
-                  </span>
-                ))}
+              <div className="knowledge-still-list">
+                <div className="knowledge-still-row">
+                  <div className="knowledge-field-header">
+                    <span className="knowledge-field-label">Who it's for</span>
+                    <button
+                      type="button"
+                      onClick={(e) => e.preventDefault()}
+                      className="knowledge-item-edit-btn"
+                      title="Edit Who it's for"
+                      aria-label="Edit Who it's for"
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </button>
+                  </div>
+                  <div className="knowledge-field-value">
+                    Inpatient clinical reviewers, chief medical officers & regional healthcare providers
+                  </div>
+                  <div className="knowledge-divider" />
+                </div>
+                <div className="knowledge-still-row">
+                  <div className="knowledge-field-header">
+                    <span className="knowledge-field-label">Investment</span>
+                    <button
+                      type="button"
+                      onClick={(e) => e.preventDefault()}
+                      className="knowledge-item-edit-btn"
+                      title="Edit Investment"
+                      aria-label="Edit Investment"
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </button>
+                  </div>
+                  <div className="knowledge-field-value">
+                    ₹4.2 Cr phased deployment & clinical trial infrastructure
+                  </div>
+                  <div className="knowledge-divider" />
+                </div>
+                <div className="knowledge-still-row">
+                  <div className="knowledge-field-header">
+                    <span className="knowledge-field-label">Expected annual impact</span>
+                    <button
+                      type="button"
+                      onClick={(e) => e.preventDefault()}
+                      className="knowledge-item-edit-btn"
+                      title="Edit Expected annual impact"
+                      aria-label="Edit Expected annual impact"
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </button>
+                  </div>
+                  <div className="knowledge-field-value">
+                    38% reduction in diagnostic turnaround & ₹14.2 Cr annual savings
+                  </div>
+                  <div className="knowledge-divider" />
+                </div>
+                <div className="knowledge-still-row">
+                  <div className="knowledge-field-header">
+                    <span className="knowledge-field-label">Target date</span>
+                    <button
+                      type="button"
+                      onClick={(e) => e.preventDefault()}
+                      className="knowledge-item-edit-btn"
+                      title="Edit Target date"
+                      aria-label="Edit Target date"
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </button>
+                  </div>
+                  <div className="knowledge-field-value">Q4 2026</div>
+                  <div className="knowledge-divider" />
+                </div>
+                <div className="knowledge-still-row">
+                  <div className="knowledge-field-header">
+                    <span className="knowledge-field-label">Delivery owner</span>
+                    <button
+                      type="button"
+                      onClick={(e) => e.preventDefault()}
+                      className="knowledge-item-edit-btn"
+                      title="Edit Delivery owner"
+                      aria-label="Edit Delivery owner"
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </button>
+                  </div>
+                  <div className="knowledge-field-value">Not yet</div>
+                  <div className="knowledge-divider" />
+                </div>
               </div>
             </div>
           </div>
