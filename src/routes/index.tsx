@@ -99,6 +99,15 @@ export interface InteractiveQuestionData {
   answeredOption?: string;
 }
 
+export interface AttachedFileItem {
+  id: string;
+  name: string;
+  size: string;
+  type: "pdf" | "image" | "file";
+  previewUrl?: string;
+  file?: File;
+}
+
 interface MessageItem {
   id: string;
   sender: "user" | "assistant";
@@ -106,6 +115,7 @@ interface MessageItem {
   agentTitle?: string;
   relatedQuestions?: string[];
   interactiveQuestion?: InteractiveQuestionData;
+  attachments?: AttachedFileItem[];
 }
 
 export interface ReportFlowState {
@@ -2071,6 +2081,7 @@ function ProjectWorkspace({
     setSavedInsightsList((prev) => [newInsight, ...prev]);
   };
   const dockFileInputRef = useRef<HTMLInputElement>(null);
+  const [attachedFiles, setAttachedFiles] = useState<AttachedFileItem[]>([]);
 
   const projectRelatedAgents = useMemo(() => getProjectRelatedAgents(project), [project]);
   const otherWorkspaceAgents = useMemo(
@@ -2298,9 +2309,743 @@ function ProjectWorkspace({
     const isHomeLoan = agentId === "agent-sbi-home-loan" || agentId.includes("home-loan") || agentId.includes("Home Loan");
     const hasMultipleGenerated = !!(generatedAgents["agent-sbi-home-loan"] && generatedAgents["agent-sbi-kyc"]);
 
+    const reportAgent =
+      (agents && agents.length > 0 ? agents : initialAgents).find(
+        (a) =>
+          a.id === agentId ||
+          a.id === activeReportAgentId ||
+          a.id === selectedRecommendedAgentId ||
+          (isHomeLoan ? a.title.includes("Home Loan") : a.title.includes("Emerging Markets"))
+      ) ||
+      projectRelatedAgents.find((a) => a.id === agentId || (isHomeLoan ? a.title.includes("Home Loan") : a.title.includes("Emerging Markets"))) ||
+      initialAgents[0];
+
+    const getReportQuestions = () => {
+      if (isHomeLoan) {
+        return [
+          "What is the zonal breakdown of agricultural vs commercial loan performance?",
+          "How are non-encumbrance certifications verified across zonal circles?",
+          "What risk mitigation policies apply to loan-to-value ratios above 65%?",
+        ];
+      }
+      if (agentId.includes("customer-persona") || agentId.includes("Customer Persona")) {
+        return [
+          "What messaging resonates most with pragmatic homemaker cohorts?",
+          "How can we integrate regional vernacular tutorials into product packaging?",
+          "What dermatological certifications generate the strongest purchase intent?",
+        ];
+      }
+      if (agentId.includes("market-sizing") || agentId.includes("Market Sizing")) {
+        return [
+          "What is the projected 3-year category TAM expansion for non-metro hubs?",
+          "Which product categories deliver the highest gross margin velocity?",
+          "What capital allocation is required to reach 2.5% regional market share?",
+        ];
+      }
+      return [
+        "Which 5 Tier-2 cities have the highest trial pack conversion velocity?",
+        "What are the distributor trade margin structures across secondary cities?",
+        "How do quick-commerce dark stores compare with regional kirana networks?",
+      ];
+    };
+
+    const suggestedQuestions = getReportQuestions();
+
+    const isCityVelocity = agentId === "city-velocity" || agentId.includes("city-velocity");
+    const isMarginStructures = agentId === "margin-structures" || agentId.includes("margin-structures");
+    const isQuickCommerce = agentId === "quick-commerce-comparison" || agentId.includes("quick-commerce");
+
+    if (isCityVelocity) {
+      const cityQuestions = [
+        "What are the distributor trade margin structures across secondary cities?",
+        "How do quick-commerce dark stores compare with regional kirana networks?",
+        "What price threshold triggers the highest repeat skincare purchase?",
+      ];
+
+      return (
+        <div className="agent-report-wrapper">
+          <section className="agent-report-card openui-report-card" aria-label="Top 5 Tier-2 Cities Trial Pack Conversion Velocity Report">
+            {/* Header */}
+            <div className="openui-header">
+              <div className="openui-header-info">
+                <h3 className="openui-title">
+                  Top 5 Tier-2 Cities: Trial Pack Conversion Velocity & Regional Adoption
+                </h3>
+                <p className="openui-subtitle">
+                  Granular city-level velocity audit across 24 secondary urban clusters in South Asia (Q1–Q3 2026).
+                </p>
+              </div>
+
+              <div className="openui-header-actions">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const reportKey = "agent-report-city-velocity";
+                    if (savedMsgIds[reportKey]) return;
+                    setSavedMsgIds((prev) => ({ ...prev, [reportKey]: true }));
+                    const newInsight: SavedInsightItem = {
+                      id: `insight-${reportKey}-${Date.now()}`,
+                      category: "Executive Reports",
+                      title: "Top 5 Tier-2 Cities: Trial Pack Conversion Velocity & Regional Adoption",
+                      insight: "Top 5 secondary clusters (Jaipur, Lucknow, Indore, Chandigarh, Surat) average 30.1% 60-day repeat conversion with ₹1.64 Cr monthly introductory pack GMV.",
+                      source: `Report · ${project.title}`,
+                      time: "Just now",
+                      isBookmarked: true,
+                    };
+                    setSavedInsightsList((prev) => [newInsight, ...prev]);
+                  }}
+                  className={`save-insight-btn ${savedMsgIds["agent-report-city-velocity"] ? "saved" : ""}`}
+                  title={savedMsgIds["agent-report-city-velocity"] ? "Saved to insights" : "Save insight"}
+                  aria-label={savedMsgIds["agent-report-city-velocity"] ? "Saved to insights" : "Save insight"}
+                >
+                  {savedMsgIds["agent-report-city-velocity"] ? (
+                    <>
+                      <Check className="h-3.5 w-3.5 text-emerald-600" />
+                      <span>Saved to insights</span>
+                    </>
+                  ) : (
+                    <>
+                      <Bookmark className="h-3.5 w-3.5 text-zinc-500" />
+                      <span>Save insight</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* 3 Large Stat Metrics Row */}
+            <div className="openui-metrics-row">
+              <div className="openui-metric-box">
+                <div className="openui-metric-number">30.1%</div>
+                <div className="openui-metric-subline">
+                  <span className="openui-metric-name">Average 60-day repeat conversion</span>
+                  <span className="openui-metric-delta positive">+12.4% MoM</span>
+                </div>
+              </div>
+
+              <div className="openui-metric-box">
+                <div className="openui-metric-number">₹1.64 Cr</div>
+                <div className="openui-metric-subline">
+                  <span className="openui-metric-name">Monthly trial pack GMV</span>
+                  <span className="openui-metric-delta positive">+18.6% MoM</span>
+                </div>
+              </div>
+
+              <div className="openui-metric-box">
+                <div className="openui-metric-number">₹640</div>
+                <div className="openui-metric-subline">
+                  <span className="openui-metric-name">Post-trial regimen basket size</span>
+                  <span className="openui-metric-delta positive">3.2× vs Entry Trial</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Ranked City Cards (Clean Enterprise Layout: Title/Corridor + Stat Columns + Sparklines) */}
+            <div className="openui-ranked-list">
+              {[
+                {
+                  name: "Jaipur",
+                  corridor: "Rajasthan Regional Hub",
+                  monthlyVol: "₹42,80,000",
+                  packsDisbursed: "32,400 packs",
+                  repeatRate: "34.8%",
+                  velocityDelta: "+14.2% MoM",
+                  sparklineD: "M 4 42 Q 32 38, 56 34 T 90 22 T 115 16 T 132 10",
+                  sparklineFill: "M 4 42 Q 32 38, 56 34 T 90 22 T 115 16 T 132 10 L 132 48 L 4 48 Z",
+                },
+                {
+                  name: "Lucknow",
+                  corridor: "Northern Growth Belt",
+                  monthlyVol: "₹36,50,000",
+                  packsDisbursed: "27,600 packs",
+                  repeatRate: "31.2%",
+                  velocityDelta: "+11.8% MoM",
+                  sparklineD: "M 4 43 Q 32 39, 56 33 T 90 25 T 115 18 T 132 13",
+                  sparklineFill: "M 4 43 Q 32 39, 56 33 T 90 25 T 115 18 T 132 13 L 132 48 L 4 48 Z",
+                },
+                {
+                  name: "Indore",
+                  corridor: "Central Commercial Corridor",
+                  monthlyVol: "₹31,40,000",
+                  packsDisbursed: "23,800 packs",
+                  repeatRate: "29.6%",
+                  velocityDelta: "+10.4% MoM",
+                  sparklineD: "M 4 44 Q 32 40, 56 35 T 90 27 T 115 21 T 132 15",
+                  sparklineFill: "M 4 44 Q 32 40, 56 35 T 90 27 T 115 21 T 132 15 L 132 48 L 4 48 Z",
+                },
+                {
+                  name: "Chandigarh",
+                  corridor: "Tri-City Affluent Cluster",
+                  monthlyVol: "₹28,20,000",
+                  packsDisbursed: "19,200 packs",
+                  repeatRate: "28.1%",
+                  velocityDelta: "+9.2% MoM",
+                  sparklineD: "M 4 43 Q 32 39, 56 34 T 90 29 T 115 23 T 132 17",
+                  sparklineFill: "M 4 43 Q 32 39, 56 34 T 90 29 T 115 23 T 132 17 L 132 48 L 4 48 Z",
+                },
+                {
+                  name: "Surat",
+                  corridor: "Western Industrial Corridor",
+                  monthlyVol: "₹25,10,000",
+                  packsDisbursed: "18,400 packs",
+                  repeatRate: "26.4%",
+                  velocityDelta: "+8.6% MoM",
+                  sparklineD: "M 4 45 Q 32 42, 56 37 T 90 31 T 115 25 T 132 19",
+                  sparklineFill: "M 4 45 Q 32 42, 56 37 T 90 31 T 115 25 T 132 19 L 132 48 L 4 48 Z",
+                },
+              ].map((c) => (
+                <div key={c.name} className="openui-ranked-row">
+                  <div className="openui-ranked-main">
+                    <div className="openui-ranked-content">
+                      <div className="openui-ranked-title-wrap">
+                        <h4 className="openui-ranked-title">{c.name}</h4>
+                        <span className="openui-ranked-corridor-tag">{c.corridor}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="openui-ranked-stats-grid">
+                    <div className="openui-ranked-stat-col">
+                      <span className="openui-ranked-stat-label">Monthly Volume</span>
+                      <span className="openui-ranked-stat-val">{c.monthlyVol}</span>
+                    </div>
+
+                    <div className="openui-ranked-stat-col">
+                      <span className="openui-ranked-stat-label">Disbursed Packs</span>
+                      <span className="openui-ranked-stat-val">{c.packsDisbursed}</span>
+                    </div>
+
+                    <div className="openui-ranked-stat-col">
+                      <span className="openui-ranked-stat-label">60-Day Repeat</span>
+                      <span className="openui-ranked-stat-val">{c.repeatRate}</span>
+                    </div>
+
+                    <div className="openui-ranked-stat-col">
+                      <span className="openui-ranked-stat-label">Velocity Growth</span>
+                      <span className="openui-ranked-stat-delta">{c.velocityDelta}</span>
+                    </div>
+
+                    <div className="openui-ranked-sparkline">
+                      <svg viewBox="0 0 140 50" className="openui-sparkline-svg" aria-label={`${c.name} Velocity Trend Sparkline`}>
+                        <defs>
+                          <linearGradient id={`sparkline-grad-${c.name}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="#2563eb" stopOpacity="0.28" />
+                            <stop offset="100%" stopColor="#2563eb" stopOpacity="0.0" />
+                          </linearGradient>
+                        </defs>
+                        <path d={c.sparklineFill} fill={`url(#sparkline-grad-${c.name})`} />
+                        <path d={c.sparklineD} fill="none" stroke="#2563eb" strokeWidth="2.5" strokeLinecap="round" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Related actions below report */}
+          <div className="message-related-actions agent-report-related-actions" aria-label="Related actions">
+            <div className="message-related-actions-header">
+              <span className="message-related-actions-title">Related actions</span>
+            </div>
+            <div className="message-related-actions-list">
+              {cityQuestions.map((question, qIdx) => (
+                <button
+                  key={qIdx}
+                  type="button"
+                  onClick={() => handleSend(question, reportAgent)}
+                  className="message-related-action-btn"
+                  title={`Ask: ${question}`}
+                >
+                  <Search className="message-related-action-icon" aria-hidden="true" />
+                  <span>{question}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (isMarginStructures) {
+      const marginQuestions = [
+        "Which 5 Tier-2 cities have the highest trial pack conversion velocity?",
+        "How do quick-commerce dark stores compare with regional kirana networks?",
+        "How should we phase distributor onboarding across the 24 urban clusters?",
+      ];
+
+      return (
+        <div className="agent-report-wrapper">
+          <section className="agent-report-card openui-report-card" aria-label="Secondary Cities Distributor Trade Margin Architecture Report">
+            {/* Header */}
+            <div className="openui-header">
+              <div className="openui-header-info">
+                <h3 className="openui-title">
+                  Secondary Cities Distributor Trade Margin Architecture & Channel Economics
+                </h3>
+                <p className="openui-subtitle">
+                  Calibrated trade discount, credit cycle, and incentive structure across Pan-South Asia regional distribution tiers.
+                </p>
+              </div>
+
+              <div className="openui-header-actions">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const reportKey = "agent-report-margin-structures";
+                    if (savedMsgIds[reportKey]) return;
+                    setSavedMsgIds((prev) => ({ ...prev, [reportKey]: true }));
+                    const newInsight: SavedInsightItem = {
+                      id: `insight-${reportKey}-${Date.now()}`,
+                      category: "Executive Reports",
+                      title: "Secondary Cities Distributor Trade Margin Architecture",
+                      insight: "Trade margin architecture establishes 12.8% distributor base, 20.4% retailer counter placement, and 21-day credit terms across Pan-South Asia secondary networks.",
+                      source: `Report · ${project.title}`,
+                      time: "Just now",
+                      isBookmarked: true,
+                    };
+                    setSavedInsightsList((prev) => [newInsight, ...prev]);
+                  }}
+                  className={`save-insight-btn ${savedMsgIds["agent-report-margin-structures"] ? "saved" : ""}`}
+                  title={savedMsgIds["agent-report-margin-structures"] ? "Saved to insights" : "Save insight"}
+                  aria-label={savedMsgIds["agent-report-margin-structures"] ? "Saved to insights" : "Save insight"}
+                >
+                  {savedMsgIds["agent-report-margin-structures"] ? (
+                    <>
+                      <Check className="h-3.5 w-3.5 text-emerald-600" />
+                      <span>Saved to insights</span>
+                    </>
+                  ) : (
+                    <>
+                      <Bookmark className="h-3.5 w-3.5 text-zinc-500" />
+                      <span>Save insight</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* 3 Large Stat Metrics Row */}
+            <div className="openui-metrics-row">
+              <div className="openui-metric-box">
+                <div className="openui-metric-number">12.8%</div>
+                <div className="openui-metric-subline">
+                  <span className="openui-metric-name">Weighted distributor base margin</span>
+                  <span className="openui-metric-delta positive">Target 12%–14%</span>
+                </div>
+              </div>
+
+              <div className="openui-metric-box">
+                <div className="openui-metric-number">20.4%</div>
+                <div className="openui-metric-subline">
+                  <span className="openui-metric-name">Retailer counter placement margin</span>
+                  <span className="openui-metric-delta positive">Target 18%–22%</span>
+                </div>
+              </div>
+
+              <div className="openui-metric-box">
+                <div className="openui-metric-number">21 Days</div>
+                <div className="openui-metric-subline">
+                  <span className="openui-metric-name">C&F working capital credit cycle</span>
+                  <span className="openui-metric-delta positive">vs 30d benchmark</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Unwrapped Multi-Tier Channel Economics Table with Left-Side Highlight */}
+            <div className="openui-table-section">
+              <div className="openui-table-section-header">
+                <h4 className="openui-panel-title">Multi-Tier Channel Economics & Distributor Incentive Grid</h4>
+              </div>
+
+              <div className="openui-table-responsive openui-unwrapped-table-wrap">
+                <table className="openui-table openui-highlight-table" role="table" aria-label="Distributor Margin Grid">
+                  <thead className="agent-table-head">
+                    <tr>
+                      <th scope="col" className="openui-highlight-col">Distribution Channel & Entity</th>
+                      <th scope="col">Network Infrastructure</th>
+                      <th scope="col">Base Margin</th>
+                      <th scope="col">Incentive Rebate</th>
+                      <th scope="col">Credit Cycle</th>
+                      <th scope="col">Min Order Value</th>
+                      <th scope="col">SLA / Velocity</th>
+                      <th scope="col">Strategic Viability</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Group 1 Header */}
+                    <tr>
+                      <td colSpan={8} className="openui-table-group-header">
+                        Traditional General Trade & Wholesale Corridors (Tier-2 & Tier-3 Regional Networks)
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="agent-table-cell-bold openui-highlight-col">Carrying & Forwarding (C&F) Agents</td>
+                      <td>Super C&F State Hubs (Jaipur, Lucknow, Ahmedabad)</td>
+                      <td className="agent-table-cell-bold">10.5%</td>
+                      <td>+1.5% On-Time Dispatch</td>
+                      <td>21 Days Net</td>
+                      <td>₹15,00,000</td>
+                      <td>99.6% 24h Dispatch</td>
+                      <td className="agent-status-tag verified">Priority Anchor</td>
+                    </tr>
+                    <tr>
+                      <td className="agent-table-cell-bold openui-highlight-col">Regional FMCG Super-Stockists</td>
+                      <td>City Redistribution Hubs (24 Urban Clusters)</td>
+                      <td className="agent-table-cell-bold">12.5%</td>
+                      <td>+2.0% Quarterly Rebate</td>
+                      <td>14 Days Post-Delivery</td>
+                      <td>₹5,00,000</td>
+                      <td>99.2% Secondary Fill</td>
+                      <td className="agent-status-tag verified">High Margin Anchor</td>
+                    </tr>
+                    <tr>
+                      <td className="agent-table-cell-bold openui-highlight-col">High-Frequency Kirana Retailers</td>
+                      <td>Neighborhood General Stores (50,000+ outlets)</td>
+                      <td className="agent-table-cell-bold">19.5%</td>
+                      <td>+2.5% COD Discount</td>
+                      <td>7 Days / Weekly Cash</td>
+                      <td>₹25,000</td>
+                      <td>98.8% Restock Fill</td>
+                      <td className="agent-status-tag verified">Active Counter Placement</td>
+                    </tr>
+
+                    {/* Group 2 Header */}
+                    <tr>
+                      <td colSpan={8} className="openui-table-group-header">
+                        Modern Trade, Quick-Commerce & Healthcare Networks
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="agent-table-cell-bold openui-highlight-col">Quick-Commerce Dark Stores</td>
+                      <td>Micro-Fulfillment Dark Store Hubs (120+ pods)</td>
+                      <td className="agent-table-cell-bold">16.5%</td>
+                      <td>+1.5% Co-Funded Placement</td>
+                      <td>15 Days Electronic Settle</td>
+                      <td>₹2,00,000 / pod</td>
+                      <td>99.9% (4h Replenishment)</td>
+                      <td className="agent-status-tag verified">High Velocity Driver</td>
+                    </tr>
+                    <tr>
+                      <td className="agent-table-cell-bold openui-highlight-col">Pharmacy & Dermatologist Corridors</td>
+                      <td>Regional Clinical Drugstores (12,000+ points)</td>
+                      <td className="agent-table-cell-bold">22.0%</td>
+                      <td>+3.0% Sampling Display</td>
+                      <td>30 Days Institutional</td>
+                      <td>₹1,00,000</td>
+                      <td>99.4% Fulfillment</td>
+                      <td className="agent-status-tag verified">Clinical Trust Anchor</td>
+                    </tr>
+                    <tr>
+                      <td className="agent-table-cell-bold openui-highlight-col">Omnichannel D2C & Regional Hubs</td>
+                      <td>Regional Surface Logistics & Sampling Pop-ups</td>
+                      <td className="agent-table-cell-bold">8.5% (Cost)</td>
+                      <td>91.5% Net Retained</td>
+                      <td>T+2 Gateway Settle</td>
+                      <td>₹499 (Free Delivery)</td>
+                      <td>99.5% Delivery SLA</td>
+                      <td className="agent-status-tag verified">Validated Margin Driver</td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td className="agent-table-cell-bold openui-highlight-col">Total Network Synthesis</td>
+                      <td className="agent-table-cell-bold">Pan-South Asia Integrated Network</td>
+                      <td className="agent-table-cell-bold">13.8% Blended</td>
+                      <td className="agent-table-cell-bold">Active Schemes</td>
+                      <td className="agent-table-cell-bold">18.2 Days Avg</td>
+                      <td className="agent-table-cell-bold">Multi-Tier MOV</td>
+                      <td className="agent-table-cell-bold">99.4% Overall</td>
+                      <td className="agent-table-cell-bold agent-status-tag verified">100% Margin Compliance</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          {/* Related actions below report */}
+          <div className="message-related-actions agent-report-related-actions" aria-label="Related actions">
+            <div className="message-related-actions-header">
+              <span className="message-related-actions-title">Related actions</span>
+            </div>
+            <div className="message-related-actions-list">
+              {marginQuestions.map((question, qIdx) => (
+                <button
+                  key={qIdx}
+                  type="button"
+                  onClick={() => handleSend(question, reportAgent)}
+                  className="message-related-action-btn"
+                  title={`Ask: ${question}`}
+                >
+                  <Search className="message-related-action-icon" aria-hidden="true" />
+                  <span>{question}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (isQuickCommerce) {
+      const qCommerceQuestions = [
+        "Which 5 Tier-2 cities have the highest trial pack conversion velocity?",
+        "What are the distributor trade margin structures across secondary cities?",
+        "What regional climate-adaptive claims drive immediate consumer trust?",
+      ];
+
+      return (
+        <div className="agent-report-wrapper">
+          <section className="agent-report-card openui-report-card" aria-label="Quick-Commerce Dark Stores vs Regional Kirana Networks Report">
+            {/* Header */}
+            <div className="openui-header">
+              <div className="openui-header-info">
+                <h3 className="openui-title">
+                  Channel Economics: Quick-Commerce Dark Stores vs. Regional Kirana Networks
+                </h3>
+                <p className="openui-subtitle">
+                  Comparative throughput, customer acquisition dynamics, and unit economics across secondary South Asian cities.
+                </p>
+              </div>
+
+              <div className="openui-header-actions">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const reportKey = "agent-report-quick-commerce";
+                    if (savedMsgIds[reportKey]) return;
+                    setSavedMsgIds((prev) => ({ ...prev, [reportKey]: true }));
+                    const newInsight: SavedInsightItem = {
+                      id: `insight-${reportKey}-${Date.now()}`,
+                      category: "Executive Reports",
+                      title: "Quick-Commerce Dark Stores vs. Regional Kirana Networks",
+                      insight: "Comparative channel audit reveals Quick-Commerce drives rapid high-ticket serum trials (₹520 basket) while Kirana networks provide long-term daily replenishment anchor (₹210 basket).",
+                      source: `Report · ${project.title}`,
+                      time: "Just now",
+                      isBookmarked: true,
+                    };
+                    setSavedInsightsList((prev) => [newInsight, ...prev]);
+                  }}
+                  className={`save-insight-btn ${savedMsgIds["agent-report-quick-commerce"] ? "saved" : ""}`}
+                  title={savedMsgIds["agent-report-quick-commerce"] ? "Saved to insights" : "Save insight"}
+                  aria-label={savedMsgIds["agent-report-quick-commerce"] ? "Saved to insights" : "Save insight"}
+                >
+                  {savedMsgIds["agent-report-quick-commerce"] ? (
+                    <>
+                      <Check className="h-3.5 w-3.5 text-emerald-600" />
+                      <span>Saved to insights</span>
+                    </>
+                  ) : (
+                    <>
+                      <Bookmark className="h-3.5 w-3.5 text-zinc-500" />
+                      <span>Save insight</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Side-by-Side Channel Overview Cards */}
+            <div className="openui-compare-cards-row">
+              {/* Quick-Commerce Card */}
+              <div className="openui-compare-card">
+                <div className="openui-compare-card-header">
+                  <h4 className="openui-compare-card-title">Quick-Commerce Dark Stores (Blinkit / Zepto / Instamart)</h4>
+                  <span className="openui-ranked-corridor-tag">Digital Accelerator</span>
+                </div>
+                <div className="openui-compare-kpi-grid">
+                  <div className="openui-compare-kpi">
+                    <span className="openui-compare-kpi-val">10–25 Min</span>
+                    <span className="openui-compare-kpi-label">Fulfillment Latency</span>
+                  </div>
+                  <div className="openui-compare-kpi">
+                    <span className="openui-compare-kpi-val">₹520</span>
+                    <span className="openui-compare-kpi-label">Average Basket Size</span>
+                  </div>
+                  <div className="openui-compare-kpi">
+                    <span className="openui-compare-kpi-val">18–28 Yrs</span>
+                    <span className="openui-compare-kpi-label">Primary Demographic</span>
+                  </div>
+                  <div className="openui-compare-kpi">
+                    <span className="openui-compare-kpi-val">16.5%</span>
+                    <span className="openui-compare-kpi-label">Gross Channel Margin</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Kirana Network Card */}
+              <div className="openui-compare-card">
+                <div className="openui-compare-card-header">
+                  <h4 className="openui-compare-card-title">Regional Kirana & General Trade Networks</h4>
+                  <span className="openui-ranked-corridor-tag" style={{ background: "#ecfdf5", color: "#059669" }}>
+                    Volume Anchor
+                  </span>
+                </div>
+                <div className="openui-compare-kpi-grid">
+                  <div className="openui-compare-kpi">
+                    <span className="openui-compare-kpi-val">Instant (0 Min)</span>
+                    <span className="openui-compare-kpi-label">Walk-in Proximity</span>
+                  </div>
+                  <div className="openui-compare-kpi">
+                    <span className="openui-compare-kpi-val">₹210</span>
+                    <span className="openui-compare-kpi-label">Average Basket Size</span>
+                  </div>
+                  <div className="openui-compare-kpi">
+                    <span className="openui-compare-kpi-val">28–45 Yrs</span>
+                    <span className="openui-compare-kpi-label">Household Decision Makers</span>
+                  </div>
+                  <div className="openui-compare-kpi">
+                    <span className="openui-compare-kpi-val">19.5%</span>
+                    <span className="openui-compare-kpi-label">Retail Placement Margin</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Multi-Factor Scorecard Table */}
+            <div className="agent-report-table-card openui-table-card">
+              <div className="openui-panel-header">
+                <h4 className="openui-panel-title">Strategic Multi-Factor Channel Evaluation Scorecard</h4>
+              </div>
+
+              <div className="openui-table-responsive">
+                <table className="openui-table" role="table" aria-label="Quick-Commerce vs Kirana Scorecard">
+                  <thead className="agent-table-head">
+                    <tr>
+                      <th scope="col">Operational Dimension</th>
+                      <th scope="col">Quick-Commerce Dark Stores</th>
+                      <th scope="col">Regional Kirana Networks</th>
+                      <th scope="col">Strategic Advantage & Allocation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="agent-table-cell-bold">Purchase Motivation</td>
+                      <td>Impulse discovery, emergency replenishment, trending serum trial</td>
+                      <td>Routine weekly groceries, trusted counter recommendation</td>
+                      <td className="agent-status-tag verified">Quick-Commerce for Trial; Kirana for Routine</td>
+                    </tr>
+                    <tr>
+                      <td className="agent-table-cell-bold">Consumer Touch & Feel</td>
+                      <td>Digital images, ingredient percentage breakdowns, peer video reviews</td>
+                      <td>Physical in-hand product inspection, retailer personal endorsement</td>
+                      <td className="agent-status-tag verified">Kirana drives higher initial brand trust</td>
+                    </tr>
+                    <tr>
+                      <td className="agent-table-cell-bold">Order Re-Frequency</td>
+                      <td>3.8 purchases / month (High digital engagement)</td>
+                      <td>2.1 purchases / month (Bulk household replenishment)</td>
+                      <td className="agent-status-tag verified">Quick-Commerce has 1.8x higher repeat frequency</td>
+                    </tr>
+                    <tr>
+                      <td className="agent-table-cell-bold">Settlement & Cash Terms</td>
+                      <td>15 Days electronic bank settlement</td>
+                      <td>Weekly cash collection or 7-day credit cycle</td>
+                      <td className="agent-status-tag verified">Quick-Commerce provides cleaner accounting</td>
+                    </tr>
+                    <tr>
+                      <td className="agent-table-cell-bold">Geographic Reach</td>
+                      <td>Concentrated in dense SEC A/B neighborhoods (24 top clusters)</td>
+                      <td>Deep penetration across all Tier-2, Tier-3 and Tier-4 wards</td>
+                      <td className="agent-status-tag verified">Kirana provides 6.2x wider physical reach</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Visual Trajectory Chart */}
+            <div className="openui-chart-panel">
+              <div className="openui-panel-header">
+                <h4 className="openui-panel-title">Quarterly GMV Throughput Expansion (₹ in Crores)</h4>
+                <div className="openui-legend">
+                  <div className="openui-legend-item">
+                    <span className="openui-legend-swatch" style={{ background: "#2563eb" }} />
+                    <span>Regional Kirana Network</span>
+                  </div>
+                  <div className="openui-legend-item">
+                    <span className="openui-legend-swatch" style={{ background: "#93c5fd" }} />
+                    <span>Quick-Commerce Dark Stores</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="openui-svg-container">
+                <svg viewBox="0 0 800 240" className="openui-bar-svg" aria-label="Quarterly Channel GMV Bar Chart">
+                  <line x1="50" y1="20" x2="780" y2="20" stroke="#f1f5f9" strokeWidth="1" />
+                  <line x1="50" y1="70" x2="780" y2="70" stroke="#f1f5f9" strokeWidth="1" />
+                  <line x1="50" y1="120" x2="780" y2="120" stroke="#f1f5f9" strokeWidth="1" />
+                  <line x1="50" y1="170" x2="780" y2="170" stroke="#f1f5f9" strokeWidth="1" />
+                  <line x1="50" y1="210" x2="780" y2="210" stroke="#e2e8f0" strokeWidth="1.5" />
+
+                  <text x="35" y="25" textAnchor="end" className="openui-axis-text">₹2.0 Cr</text>
+                  <text x="35" y="75" textAnchor="end" className="openui-axis-text">₹1.5 Cr</text>
+                  <text x="35" y="125" textAnchor="end" className="openui-axis-text">₹1.0 Cr</text>
+                  <text x="35" y="175" textAnchor="end" className="openui-axis-text">₹0.5 Cr</text>
+
+                  {/* Q1 2025 */}
+                  <rect x="90" y="150" width="36" height="60" rx="4" fill="#2563eb" />
+                  <rect x="132" y="185" width="36" height="25" rx="4" fill="#93c5fd" />
+                  <text x="129" y="230" textAnchor="middle" className="openui-axis-month">Q1 2025</text>
+
+                  {/* Q2 2025 */}
+                  <rect x="200" y="130" width="36" height="80" rx="4" fill="#2563eb" />
+                  <rect x="242" y="170" width="36" height="40" rx="4" fill="#93c5fd" />
+                  <text x="239" y="230" textAnchor="middle" className="openui-axis-month">Q2 2025</text>
+
+                  {/* Q3 2025 */}
+                  <rect x="310" y="110" width="36" height="100" rx="4" fill="#2563eb" />
+                  <rect x="352" y="150" width="36" height="60" rx="4" fill="#93c5fd" />
+                  <text x="349" y="230" textAnchor="middle" className="openui-axis-month">Q3 2025</text>
+
+                  {/* Q4 2025 */}
+                  <rect x="420" y="90" width="36" height="120" rx="4" fill="#2563eb" />
+                  <rect x="462" y="125" width="36" height="85" rx="4" fill="#93c5fd" />
+                  <text x="459" y="230" textAnchor="middle" className="openui-axis-month">Q4 2025</text>
+
+                  {/* Q1 2026 */}
+                  <rect x="530" y="70" width="36" height="140" rx="4" fill="#2563eb" />
+                  <rect x="572" y="100" width="36" height="110" rx="4" fill="#93c5fd" />
+                  <text x="569" y="230" textAnchor="middle" className="openui-axis-month">Q1 2026</text>
+
+                  {/* Q2 2026 (Peak) */}
+                  <rect x="640" y="50" width="36" height="160" rx="4" fill="#2563eb" />
+                  <rect x="682" y="75" width="36" height="135" rx="4" fill="#93c5fd" />
+                  <text x="679" y="230" textAnchor="middle" className="openui-axis-month font-semibold">Q2 2026</text>
+                </svg>
+              </div>
+            </div>
+          </section>
+
+          {/* Related actions below report */}
+          <div className="message-related-actions agent-report-related-actions" aria-label="Related actions">
+            <div className="message-related-actions-header">
+              <span className="message-related-actions-title">Related actions</span>
+            </div>
+            <div className="message-related-actions-list">
+              {qCommerceQuestions.map((question, qIdx) => (
+                <button
+                  key={qIdx}
+                  type="button"
+                  onClick={() => handleSend(question, reportAgent)}
+                  className="message-related-action-btn"
+                  title={`Ask: ${question}`}
+                >
+                  <Search className="message-related-action-icon" aria-hidden="true" />
+                  <span>{question}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     if (isHomeLoan) {
       return (
-        <section className="agent-report-card openui-report-card" aria-label="SBI Home Loan Monthly Report">
+        <div className="agent-report-wrapper">
+          <section className="agent-report-card openui-report-card" aria-label="SBI Home Loan Monthly Report">
           {/* Header */}
           <div className="openui-header">
             <div className="openui-header-info">
@@ -2699,11 +3444,34 @@ function ProjectWorkspace({
             </div>
           </div>
         </section>
-      );
-    }
 
-    // Otherwise Market Intelligence Report for Personal Care Brand
-    return (
+        {/* Related actions below report */}
+        <div className="message-related-actions agent-report-related-actions" aria-label="Related actions">
+          <div className="message-related-actions-header">
+            <span className="message-related-actions-title">Related actions</span>
+          </div>
+          <div className="message-related-actions-list">
+            {suggestedQuestions.map((question, qIdx) => (
+              <button
+                key={qIdx}
+                type="button"
+                onClick={() => handleSend(question, reportAgent)}
+                className="message-related-action-btn"
+                title={`Ask: ${question}`}
+              >
+                <Search className="message-related-action-icon" aria-hidden="true" />
+                <span>{question}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Otherwise Market Intelligence Report for Personal Care Brand
+  return (
+    <div className="agent-report-wrapper">
       <section className="agent-report-card openui-report-card" aria-label="Personal Care South Asia Market Entry Report">
         {/* Header */}
         <div className="openui-header">
@@ -3092,27 +3860,30 @@ function ProjectWorkspace({
             </table>
           </div>
         </div>
-
-        {/* Regulatory Governance Box */}
-        <div className="agent-report-audit-card openui-audit-card">
-          <h4 className="openui-audit-heading">Regional Market Entry & Product Formulation Governance</h4>
-          <div className="agent-audit-grid">
-            <div className="agent-audit-item">
-              <span className="agent-audit-label">Climate-Adaptive Skincare & Regional Formulation Fit</span>
-              <p className="agent-audit-desc">
-                Formulations engineered specifically for South Asian seasonal heat, monsoon humidity, and UV exposure. Prioritizes lightweight gel-creams and skin barrier ceramides over heavy occlusives to match regional cleansing rituals.
-              </p>
-            </div>
-            <div className="agent-audit-item">
-              <span className="agent-audit-label">Retail Price Elasticity & Pack Sizing Governance</span>
-              <p className="agent-audit-desc">
-                Dual-tier pack architecture implemented: entry-level 30ml trial formats at ₹199–₹249 and 100ml core SKUs at ₹399–₹449. Mitigates trial friction while protecting distributor margins across Tier-2 and Tier-3 Kirana corridors.
-              </p>
-            </div>
-          </div>
-        </div>
       </section>
-    );
+
+      {/* Related actions below report */}
+      <div className="message-related-actions agent-report-related-actions" aria-label="Related actions">
+        <div className="message-related-actions-header">
+          <span className="message-related-actions-title">Related actions</span>
+        </div>
+        <div className="message-related-actions-list">
+          {suggestedQuestions.map((question, qIdx) => (
+            <button
+              key={qIdx}
+              type="button"
+              onClick={() => handleSend(question, reportAgent)}
+              className="message-related-action-btn"
+              title={`Ask: ${question}`}
+            >
+              <Search className="message-related-action-icon" aria-hidden="true" />
+              <span>{question}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
   };
 
   const currentChatKey = selectedChatKey === "new-chat" ? `new-chat-${project.id}` : selectedChatKey;
@@ -3124,9 +3895,47 @@ function ProjectWorkspace({
   const handleDockFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    const fileNames = Array.from(files).map((f) => f.name).join(", ");
-    handleSend(`Attached file: ${fileNames}`);
+
+    const newAttachments: AttachedFileItem[] = Array.from(files).map((f) => {
+      const isPdf = f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf");
+      const isImg = f.type.startsWith("image/") || /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(f.name);
+
+      let previewUrl: string | undefined = undefined;
+      if (isImg && typeof URL !== "undefined" && typeof URL.createObjectURL === "function") {
+        try {
+          previewUrl = URL.createObjectURL(f);
+        } catch {}
+      }
+
+      const sizeStr =
+        f.size < 1024 * 1024
+          ? `${Math.round(f.size / 1024)} KB`
+          : `${(f.size / (1024 * 1024)).toFixed(1)} MB`;
+
+      return {
+        id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        name: f.name,
+        size: sizeStr,
+        type: isPdf ? "pdf" : isImg ? "image" : "file",
+        previewUrl,
+        file: f,
+      };
+    });
+
+    setAttachedFiles((prev) => [...prev, ...newAttachments]);
     if (dockFileInputRef.current) dockFileInputRef.current.value = "";
+  };
+
+  const handleRemoveAttachment = (id: string) => {
+    setAttachedFiles((prev) => {
+      const item = prev.find((f) => f.id === id);
+      if (item?.previewUrl && typeof URL !== "undefined" && typeof URL.revokeObjectURL === "function") {
+        try {
+          URL.revokeObjectURL(item.previewUrl);
+        } catch {}
+      }
+      return prev.filter((f) => f.id !== id);
+    });
   };
 
   const sidebarProjects = projects;
@@ -3235,7 +4044,12 @@ function ProjectWorkspace({
     setIsThinking(true);
     scrollToTarget(".workspace-conversation > *:last-child, .ai-thinking-row", "start");
 
-    setTimeout(() => {
+    if (thinkingTimeoutRef.current) {
+      clearTimeout(thinkingTimeoutRef.current);
+    }
+
+    const duration = typeof process !== "undefined" && process.env.NODE_ENV === "test" ? 300 : 3000;
+    thinkingTimeoutRef.current = setTimeout(() => {
       setIsThinking(false);
 
       if (currentStep === 1) {
@@ -3261,6 +4075,7 @@ function ProjectWorkspace({
           ...prev,
           [currentChat]: [...(prev[currentChat] || []), q2Msg],
         }));
+        scrollToTarget(".workspace-conversation > *:last-child", "start");
       } else if (currentStep === 2) {
         const q3Msg: MessageItem = {
           id: `ai-cust-dyn-q3-${Date.now()}`,
@@ -3284,6 +4099,7 @@ function ProjectWorkspace({
           ...prev,
           [currentChat]: [...(prev[currentChat] || []), q3Msg],
         }));
+        scrollToTarget(".workspace-conversation > *:last-child", "start");
       } else {
         const opt1 = updatedAnswers.q1 || "Aspirational Gen-Z & Young Professionals";
         const opt2 = updatedAnswers.q2 || "Mass-premium sweet spot at ₹249 – ₹349";
@@ -3310,13 +4126,25 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
           ...prev,
           [currentChat]: [...(prev[currentChat] || []), finalMsg],
         }));
+        scrollToTarget(".workspace-conversation > *:last-child", "start");
       }
-    }, typeof process !== "undefined" && process.env.NODE_ENV === "test" ? 300 : 800);
+    }, duration);
   };
 
   const handleSend = (presetText?: string, targetAgent?: AgentItem) => {
-    const text = (presetText || inputValue).trim();
+    const rawText = (presetText || inputValue).trim();
+    if (!rawText && attachedFiles.length === 0) return;
+
+    const currentAttached = [...attachedFiles];
+    const text =
+      rawText ||
+      (currentAttached.length > 0
+        ? `Attached file: ${currentAttached.map((f) => f.name).join(", ")}`
+        : "");
     if (!text) return;
+
+    setAttachedFiles([]);
+    setInputValue("");
 
     // If chat title is still "New chat", update it to the first message text
     if (selectedChat === "New chat") {
@@ -3334,12 +4162,12 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
       id: `user-${Date.now()}`,
       sender: "user",
       text,
+      attachments: currentAttached.length > 0 ? currentAttached : undefined,
     };
     setConversations((prev) => ({
       ...prev,
       [currentChatKey]: [...(prev[currentChatKey] || []), userMessage],
     }));
-    setInputValue("");
     setIsThinking(true);
     scrollToTarget(".workspace-conversation > *:last-child, .ai-thinking-row", "start");
 
@@ -3409,6 +4237,42 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
           }));
           return;
         }
+      }
+
+      const isCityVelocityQuery =
+        normalizedText.includes("conversion velocity") ||
+        normalizedText.includes("5 tier-2 cities") ||
+        normalizedText.includes("highest trial pack") ||
+        (normalizedText.includes("tier-2 cities") && normalizedText.includes("trial pack"));
+
+      const isMarginStructureQuery =
+        normalizedText.includes("distributor trade margin") ||
+        normalizedText.includes("trade margin structures") ||
+        (normalizedText.includes("margin") && normalizedText.includes("secondary cities"));
+
+      const isQuickCommerceQuery =
+        (normalizedText.includes("quick-commerce") || normalizedText.includes("quick commerce")) &&
+        (normalizedText.includes("kirana") || normalizedText.includes("dark stores"));
+
+      if (isCityVelocityQuery || isMarginStructureQuery || isQuickCommerceQuery) {
+        const reportType = isCityVelocityQuery
+          ? "city-velocity"
+          : isMarginStructureQuery
+          ? "margin-structures"
+          : "quick-commerce-comparison";
+
+        const aiMessage: MessageItem = {
+          id: `ai-report-${reportType}-${Date.now()}`,
+          sender: "assistant",
+          text: `__AGENT_REPORT__:${reportType}`,
+          agentTitle: effectiveAgent?.title || "Emerging Markets Specialist Agent",
+        };
+        setConversations((prev) => ({
+          ...prev,
+          [currentChatKey]: [...(prev[currentChatKey] || []), aiMessage],
+        }));
+        scrollToTarget(".workspace-conversation > *:last-child", "start");
+        return;
       }
 
       if (effectiveAgent) {
@@ -3604,74 +4468,113 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
           e.preventDefault();
           handleSend();
         }}
-        className="chatgpt-input-dock"
+        className={`chatgpt-input-dock ${attachedFiles.length > 0 ? "chatgpt-input-dock--expanded" : ""}`}
       >
-        <button
-          type="button"
-          onClick={() => handleSend("Attach a plan")}
-          className="chatgpt-dock-add-btn"
-          title="Add file or actions"
-          aria-label="Add file or actions"
-        >
-          <Plus className="h-5 w-5" />
-        </button>
+        {attachedFiles.length > 0 && (
+          <div className="chatgpt-dock-attachments-row" aria-label="Attached files">
+            {attachedFiles.map((att) => (
+              <div key={att.id} className="chatgpt-dock-attachment-chip">
+                <div className="chatgpt-dock-attachment-icon-wrap">
+                  {att.type === "pdf" ? (
+                    <AdobeAcrobatPdfIcon className="h-6 w-6 text-red-500 flex-shrink-0" />
+                  ) : att.type === "image" && att.previewUrl ? (
+                    <img src={att.previewUrl} alt={att.name} className="chatgpt-dock-attachment-thumb" />
+                  ) : (
+                    <Paperclip className="h-5 w-5 text-zinc-500 flex-shrink-0" />
+                  )}
+                </div>
+                <div className="chatgpt-dock-attachment-meta">
+                  <span className="chatgpt-dock-attachment-name" title={att.name}>
+                    {att.name}
+                  </span>
+                  <span className="chatgpt-dock-attachment-size">
+                    {att.type === "pdf" ? "PDF Document" : att.type === "image" ? "Image" : "File"} · {att.size}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveAttachment(att.id)}
+                  className="chatgpt-dock-attachment-remove"
+                  title="Remove attachment"
+                  aria-label={`Remove ${att.name}`}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
-        <input
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          placeholder="Reply, attach a file, or tap the mic to talk"
-          className="chatgpt-dock-input"
-        />
-
-        <div className="chatgpt-dock-right-actions">
-          <input
-            type="file"
-            ref={dockFileInputRef}
-            onChange={handleDockFileUpload}
-            className="hidden"
-            aria-label="Upload file"
-          />
+        <div className="chatgpt-dock-main-row">
           <button
             type="button"
-            onClick={() => dockFileInputRef.current?.click()}
-            className="chatgpt-dock-attach-btn"
-            title="Attach file"
-            aria-label="Attach file"
+            onClick={() => handleSend("Attach a plan")}
+            className="chatgpt-dock-add-btn"
+            title="Add file or actions"
+            aria-label="Add file or actions"
           >
-            <Paperclip className="h-4 w-4" />
+            <Plus className="h-5 w-5" />
           </button>
 
-          {inputValue.trim() ? (
-            <button
-              type="submit"
-              className="chatgpt-dock-send-btn"
-              title="Send message"
-              aria-label="Send message"
-            >
-              <ArrowUp className="h-4 w-4" />
-            </button>
-          ) : (
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="Reply, attach a file, or tap the mic to talk"
+            className="chatgpt-dock-input"
+          />
+
+          <div className="chatgpt-dock-right-actions">
+            <input
+              type="file"
+              ref={dockFileInputRef}
+              onChange={handleDockFileUpload}
+              className="hidden"
+              aria-label="Upload file"
+              accept=".pdf,image/*,.png,.jpg,.jpeg,.webp"
+              multiple
+            />
             <button
               type="button"
-              onClick={() => setIsVoiceActive((prev) => !prev)}
-              className={`chatgpt-dock-voice-btn ${isVoiceActive ? "chatgpt-dock-voice-btn--active" : ""}`}
-              title={isVoiceActive ? "Stop voice mode" : "Start voice mode"}
-              aria-label={isVoiceActive ? "Stop voice mode" : "Start voice mode"}
+              onClick={() => dockFileInputRef.current?.click()}
+              className="chatgpt-dock-attach-btn"
+              title="Attach file"
+              aria-label="Attach file"
             >
-              {isVoiceActive ? (
-                <span className="voice-wave-anim" aria-hidden="true">
-                  <span className="voice-wave-bar bar-1" />
-                  <span className="voice-wave-bar bar-2" />
-                  <span className="voice-wave-bar bar-3" />
-                  <span className="voice-wave-bar bar-4" />
-                  <span className="voice-wave-bar bar-5" />
-                </span>
-              ) : (
-                <AudioLines className="h-4 w-4" />
-              )}
+              <Paperclip className="h-4 w-4" />
             </button>
-          )}
+
+            {inputValue.trim() || attachedFiles.length > 0 ? (
+              <button
+                type="submit"
+                className="chatgpt-dock-send-btn"
+                title="Send message"
+                aria-label="Send message"
+              >
+                <ArrowUp className="h-4 w-4" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsVoiceActive((prev) => !prev)}
+                className={`chatgpt-dock-voice-btn ${isVoiceActive ? "chatgpt-dock-voice-btn--active" : ""}`}
+                title={isVoiceActive ? "Stop voice mode" : "Start voice mode"}
+                aria-label={isVoiceActive ? "Stop voice mode" : "Start voice mode"}
+              >
+                {isVoiceActive ? (
+                  <span className="voice-wave-anim" aria-hidden="true">
+                    <span className="voice-wave-bar bar-1" />
+                    <span className="voice-wave-bar bar-2" />
+                    <span className="voice-wave-bar bar-3" />
+                    <span className="voice-wave-bar bar-4" />
+                    <span className="voice-wave-bar bar-5" />
+                  </span>
+                ) : (
+                  <AudioLines className="h-4 w-4" />
+                )}
+              </button>
+            )}
+          </div>
         </div>
       </form>
     </div>
@@ -4261,8 +5164,13 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
                     </>
                   ) : (
                     <>
-                      <h1 className="chatgpt-greeting">Hey Arun, What is this project about?</h1>
-                      <p className="chatgpt-context-sub">What outcome would make this project worthwhile?</p>
+                      <h1 className="chatgpt-greeting">What would you like to work on next?</h1>
+                      <p className="chatgpt-context-detail">
+                        Your project details are ready. We can review the score or explore a decision.
+                      </p>
+                      <p className="chatgpt-context-sub">
+                        Reply below, or choose where to pick up.
+                      </p>
                     </>
                   )}
 
@@ -4990,6 +5898,29 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
                             className="workspace-message-body whitespace-pre-line"
                             style={m.text.includes("I found market intelligence reports from 2025") ? { color: "#64748b" } : undefined}
                           >
+                            {m.attachments && m.attachments.length > 0 && (
+                              <div className="workspace-message-attachments" aria-label="Attachments">
+                                {m.attachments.map((att) => (
+                                  <div key={att.id} className="workspace-attachment-chip">
+                                    <div className="chatgpt-dock-attachment-icon-wrap">
+                                      {att.type === "pdf" ? (
+                                        <AdobeAcrobatPdfIcon className="h-6 w-6 text-red-500 flex-shrink-0" />
+                                      ) : att.type === "image" && att.previewUrl ? (
+                                        <img src={att.previewUrl} alt={att.name} className="workspace-attachment-thumb" />
+                                      ) : (
+                                        <Paperclip className="h-5 w-5 text-zinc-500 flex-shrink-0" />
+                                      )}
+                                    </div>
+                                    <div className="workspace-attachment-info">
+                                      <span className="workspace-attachment-name">{att.name}</span>
+                                      <span className="workspace-attachment-size">
+                                        {att.type === "pdf" ? "PDF Document" : att.type === "image" ? "Image" : "File"} · {att.size}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                             {m.text ? <div>{m.text}</div> : null}
                             {m.interactiveQuestion && (
                               <div className="agent-question-box" role="region" aria-label={m.interactiveQuestion.question}>
@@ -5005,7 +5936,7 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
                                   {m.interactiveQuestion.options.map((opt) => {
                                     const isSelected =
                                       (m.interactiveQuestion?.answeredOption || selectedAgentOptions[m.id]) === opt;
-                                    const isLocked = Boolean(m.interactiveQuestion?.answeredOption);
+                                    const isLocked = Boolean(m.interactiveQuestion?.answeredOption) || isThinking;
 
                                     return (
                                       <button
@@ -5165,22 +6096,13 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
                         <p className="agent-drawer-card-desc">{agent.description}</p>
                       </div>
 
-                      <div className="agent-drawer-card-footer">
-                        <div className="agent-drawer-card-actions">
-                          {isInvoked && (
-                            <span className="agent-drawer-invoked-status">
-                              Will be Invoked
-                            </span>
-                          )}
-
-                          <span
-                            className={`ai-outcome-radio ${isSelected ? "ai-outcome-radio--selected" : ""}`}
-                            aria-hidden="true"
-                          >
-                            {isSelected && <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />}
+                      {isInvoked && (
+                        <div className="agent-drawer-card-footer">
+                          <span className="agent-drawer-invoked-status">
+                            Will be Invoked
                           </span>
                         </div>
-                      </div>
+                      )}
                     </article>
                   );
                 })}
@@ -5683,91 +6605,12 @@ interface CreateAgentPageProps {
   isEdit?: boolean;
 }
 
-interface TeamMember {
-  id: string;
-  initials: string;
-  name: string;
-  email: string;
-  role: string;
-}
-
-function MemberRoleDropdown({
-  role,
-  onChange,
-  memberName,
-}: {
-  role: string;
-  onChange: (newRole: string) => void;
-  memberName: string;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen]);
-
-  const roles = ["Analyst", "Owner", "Strategist", "Specialist"];
-
-  return (
-    <div className="dark-agent-member-role-select" ref={containerRef}>
-      <button
-        type="button"
-        className="dark-agent-select"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label={`Role for ${memberName}`}
-        aria-expanded={isOpen}
-      >
-        <span>{role}</span>
-        <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
-      </button>
-
-      {isOpen && (
-        <div className="dark-agent-dropdown-menu" role="listbox">
-          {roles.map((r) => (
-            <button
-              key={r}
-              type="button"
-              className={`dark-agent-dropdown-item ${r === role ? "selected" : ""}`}
-              onClick={() => {
-                onChange(r);
-                setIsOpen(false);
-              }}
-              role="option"
-              aria-selected={r === role}
-            >
-              <span>{r}</span>
-              {r === role && <Check className="h-3.5 w-3.5 text-white" />}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 function CreateAgentPage({ onBack, onCreateAgent, initialData, isEdit }: CreateAgentPageProps) {
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [name, setName] = useState(initialData?.name || "");
   const [role, setRole] = useState(initialData?.role || "");
   const [primaryGoal, setPrimaryGoal] = useState(initialData?.goal || "");
   const [projectContext, setProjectContext] = useState(initialData?.context || "");
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [members, setMembers] = useState<TeamMember[]>([
-    { id: "1", initials: "EA", name: "Guy Hawkins", email: "hello@deserve.studio", role: "Analyst" },
-    { id: "2", initials: "TW", name: "Theresa Webb", email: "manhhachkt08@gmail.com", role: "Owner" },
-    { id: "3", initials: "DS", name: "Darrell Steward", email: "bill.sanders@example.com", role: "Analyst" },
-  ]);
   const [responsibilities, setResponsibilities] = useState<string[]>([
     "Synthesize market dynamics and prioritize expansion milestones",
   ]);
@@ -5780,30 +6623,6 @@ function CreateAgentPage({ onBack, onCreateAgent, initialData, isEdit }: CreateA
   const [knowledgeSources, setKnowledgeSources] = useState("");
   const [collaboration, setCollaboration] = useState("");
   const [testPrompt, setTestPrompt] = useState("");
-
-  const handleAddMember = () => {
-    if (!inviteEmail.trim()) {
-      return;
-    }
-    const cleanEmail = inviteEmail.trim();
-    const namePart = cleanEmail.split("@")[0] || "User";
-    const initials = (namePart.slice(0, 2) || "MB").toUpperCase();
-    setMembers((prev) => [
-      ...prev,
-      {
-        id: Date.now().toString(),
-        initials,
-        name: namePart.charAt(0).toUpperCase() + namePart.slice(1),
-        email: cleanEmail,
-        role: "Analyst",
-      },
-    ]);
-    setInviteEmail("");
-  };
-
-  const handleUpdateMemberRole = (id: string, newRole: string) => {
-    setMembers((prev) => prev.map((m) => (m.id === id ? { ...m, role: newRole } : m)));
-  };
 
   const handleAddResponsibility = () => {
     setResponsibilities((prev) => [...prev, ""]);
@@ -5947,59 +6766,6 @@ function CreateAgentPage({ onBack, onCreateAgent, initialData, isEdit }: CreateA
                 <span className="dark-agent-hint">
                   Core domain authority, persona, and functional specialization
                 </span>
-              </div>
-
-              {/* Invite Members */}
-              <div className="dark-agent-field">
-                <label htmlFor="agent-member-input" className="dark-agent-label">
-                  Invite Members
-                </label>
-                <div className="dark-agent-invite-row">
-                  <input
-                    id="agent-member-input"
-                    type="email"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleAddMember();
-                      }
-                    }}
-                    placeholder="Member mail"
-                    className="dark-agent-input"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddMember}
-                    className="dark-agent-invite-btn"
-                  >
-                    Add Users
-                  </button>
-                </div>
-              </div>
-
-              {/* Members List */}
-              <div className="dark-agent-field">
-                <label className="dark-agent-label">Members</label>
-                <div className="dark-agent-members-list">
-                  {members.map((member) => (
-                    <div key={member.id} className="dark-agent-member-row">
-                      <div className="dark-agent-member-left">
-                        <div className="dark-agent-member-avatar">{member.initials}</div>
-                        <div className="dark-agent-member-info">
-                          <span className="dark-agent-member-name">{member.name}</span>
-                          <span className="dark-agent-member-email">{member.email}</span>
-                        </div>
-                      </div>
-                      <MemberRoleDropdown
-                        role={member.role}
-                        onChange={(newRole) => handleUpdateMemberRole(member.id, newRole)}
-                        memberName={member.name}
-                      />
-                    </div>
-                  ))}
-                </div>
               </div>
 
               {/* Primary Goal */}
@@ -6299,8 +7065,6 @@ function CreateAgentPage({ onBack, onCreateAgent, initialData, isEdit }: CreateA
                   </p>
                 )}
                 <div className="dark-agent-summary-stats">
-                  <span>{members.length} Members</span>
-                  <span>•</span>
                   <span>{responsibilities.filter(Boolean).length} Responsibilities</span>
                   <span>•</span>
                   <span>{researchVariables.filter(Boolean).length} Variables</span>

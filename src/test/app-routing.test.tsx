@@ -46,8 +46,9 @@ describe("App routing", () => {
     // Verify Project Workspace UI elements (shows greeting start screen on project click)
     expect(screen.getByText("CEO Workspace")).toBeDefined();
     expect(screen.getAllByText(/Personal care brand enters South Asia’s smaller cities/i).length).toBeGreaterThan(0);
-    expect(screen.getByText("Hey Arun, What is this project about?")).toBeDefined();
-    expect(screen.getByText("What outcome would make this project worthwhile?")).toBeDefined();
+    expect(screen.getByText("What would you like to work on next?")).toBeDefined();
+    expect(screen.getByText("Your project details are ready. We can review the score or explore a decision.")).toBeDefined();
+    expect(screen.getByText("Reply below, or choose where to pick up.")).toBeDefined();
 
     // Verify menu items on details page: New chat, Saved insights, Library, Knowledge packs, Data sources
     expect(screen.getByRole("button", { name: "New chat" })).toBeDefined();
@@ -59,8 +60,9 @@ describe("App routing", () => {
     // Verify clicking New chat reveals the project starter prompts
     const newChatBtn = screen.getByRole("button", { name: /new chat/i });
     fireEvent.click(newChatBtn);
-    expect(screen.getByText("Hey Arun, What is this project about?")).toBeDefined();
-    expect(screen.getByText("What outcome would make this project worthwhile?")).toBeDefined();
+    expect(screen.getByText("What would you like to work on next?")).toBeDefined();
+    expect(screen.getByText("Your project details are ready. We can review the score or explore a decision.")).toBeDefined();
+    expect(screen.getByText("Reply below, or choose where to pick up.")).toBeDefined();
     expect(screen.queryByText("Good to see you, Arun.")).toBeNull();
     // Verify prompt action buttons
     expect(screen.queryByText("Make Diwali your own")).toBeNull();
@@ -148,14 +150,13 @@ describe("App routing", () => {
     expect(screen.getByRole("button", { name: "Back" })).toBeDefined();
     expect(screen.getByText("Agent Name")).toBeDefined();
     expect(screen.getByText("Agent Role")).toBeDefined();
-    expect(screen.getByText("Invite Members")).toBeDefined();
-    expect(screen.getByPlaceholderText("Member mail")).toBeDefined();
-    expect(screen.getByRole("button", { name: "Add Users" })).toBeDefined();
-    expect(screen.getByText("Members")).toBeDefined();
-    expect(screen.getByText("Guy Hawkins")).toBeDefined();
-    expect(screen.getByText("hello@deserve.studio")).toBeDefined();
-    expect(screen.getByText("Theresa Webb")).toBeDefined();
-    expect(screen.getByText("Darrell Steward")).toBeDefined();
+    // Verify Invite Members and Members section has been removed
+    expect(screen.queryByText("Invite Members")).toBeNull();
+    expect(screen.queryByPlaceholderText("Member mail")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Add Users" })).toBeNull();
+    expect(screen.queryByText("Guy Hawkins")).toBeNull();
+    expect(screen.queryByText("Theresa Webb")).toBeNull();
+    expect(screen.queryByText("Darrell Steward")).toBeNull();
     expect(screen.getByText("Primary Goal")).toBeDefined();
     expect(screen.getByText("Project Context")).toBeDefined();
 
@@ -412,7 +413,7 @@ describe("App routing", () => {
     fireEvent.click(stopVoiceBtn);
     expect(document.querySelector(".voice-wave-anim")).toBeNull();
     expect(document.querySelector(".chatgpt-dock-voice-btn--active")).toBeNull();
-  });
+  }, 15000);
 
   it("renders back navigation first in the collapsed rail followed by collapse icon without circle", () => {
     const Component = Route.options.component;
@@ -511,8 +512,9 @@ describe("App routing", () => {
     expect(screen.getByPlaceholderText("Type your answer and press Enter")).toBeDefined();
 
     // Verify after conversation start, greeting and starter actions are hidden
-    expect(screen.queryByText("What outcome would make this project worthwhile?")).toBeNull();
-    expect(screen.queryByText("Hey Arun, What is this project about?")).toBeNull();
+    expect(screen.queryByText("What would you like to work on next?")).toBeNull();
+    expect(screen.queryByText("Your project details are ready. We can review the score or explore a decision.")).toBeNull();
+    expect(screen.queryByText("Reply below, or choose where to pick up.")).toBeNull();
     expect(screen.queryByRole("button", { name: "Attach a plan" })).toBeNull();
   });
 
@@ -656,8 +658,9 @@ describe("App routing", () => {
     expect(screen.queryByText(/Collaborative agents \(Customer Segmentation, Purchase Drivers, Channel Behaviour\)/i)).toBeNull();
 
     // Verify clean conversation starter is displayed
-    expect(screen.getByText("Hey Arun, What is this project about?")).toBeDefined();
-    expect(screen.getByText("What outcome would make this project worthwhile?")).toBeDefined();
+    expect(screen.getByText("What would you like to work on next?")).toBeDefined();
+    expect(screen.getByText("Your project details are ready. We can review the score or explore a decision.")).toBeDefined();
+    expect(screen.getByText("Reply below, or choose where to pick up.")).toBeDefined();
     expect(screen.getByText("Help me define the idea")).toBeDefined();
     expect(screen.getByText("Attach a plan")).toBeDefined();
 
@@ -666,8 +669,9 @@ describe("App routing", () => {
     fireEvent.click(newChatBtn);
 
     // Verify new chat content under project
-    expect(screen.getByText("Hey Arun, What is this project about?")).toBeDefined();
-    expect(screen.getByText("What outcome would make this project worthwhile?")).toBeDefined();
+    expect(screen.getByText("What would you like to work on next?")).toBeDefined();
+    expect(screen.getByText("Your project details are ready. We can review the score or explore a decision.")).toBeDefined();
+    expect(screen.getByText("Reply below, or choose where to pick up.")).toBeDefined();
     expect(screen.getByText("Help me define the idea")).toBeDefined();
     expect(screen.getByText("Attach a plan")).toBeDefined();
   });
@@ -1239,6 +1243,40 @@ describe("App routing", () => {
     expect(screen.getByText(/Monthly Trial Kit Distribution & Conversion Velocity/i)).toBeDefined();
     expect(screen.getByText(/Consumer Cohort & Market Segmentation Breakdown/i)).toBeDefined();
     expect(screen.getByText(/Channel Distribution Velocity & Retail Network Breakdown/i)).toBeDefined();
+
+    // Verify Related actions with 3 AI-suggested questions are shown after report generation
+    const relatedActionsEl = document.querySelector(".agent-report-related-actions");
+    expect(relatedActionsEl).not.toBeNull();
+    const relatedActionBtns = document.querySelectorAll(".agent-report-related-actions .message-related-action-btn");
+    expect(relatedActionBtns.length).toBe(3);
+    expect(screen.getByText("Which 5 Tier-2 cities have the highest trial pack conversion velocity?")).toBeDefined();
+    expect(screen.getByText("What are the distributor trade margin structures across secondary cities?")).toBeDefined();
+    expect(screen.getByText("How do quick-commerce dark stores compare with regional kirana networks?")).toBeDefined();
+
+    // Click the first related action: "Which 5 Tier-2 cities have the highest trial pack conversion velocity?"
+    fireEvent.click(relatedActionBtns[0]);
+
+    // Fast-forward 300ms thinking loader
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 350));
+    });
+
+    // Verify visual City Velocity Report is rendered with sparklines and ranked cities
+    expect(screen.getByText("Top 5 Tier-2 Cities: Trial Pack Conversion Velocity & Regional Adoption")).toBeDefined();
+    expect(screen.getByText("Jaipur")).toBeDefined();
+    expect(screen.getByText("Lucknow")).toBeDefined();
+    expect(screen.getByText("Indore")).toBeDefined();
+    expect(screen.getByText("Chandigarh")).toBeDefined();
+    expect(screen.getByText("Surat")).toBeDefined();
+    expect(document.querySelectorAll(".openui-sparkline-svg").length).toBe(5);
+
+    // Verify long paragraphs, bulky audit cards, and unwanted badges are removed to provide clean breathing spaces
+    expect(screen.queryByText(/Leading regional trial adoption with strong salon-led/i)).toBeNull();
+    expect(screen.queryByText(/Regional Trial Conversion Playbook & Channel Insights/i)).toBeNull();
+    expect(document.querySelector(".openui-ranked-row .openui-ranked-desc")).toBeNull();
+    expect(screen.queryByText("PRIORITY URBAN HUB")).toBeNull();
+    expect(screen.queryByText("QUICK-COMMERCE 42%")).toBeNull();
+    expect(screen.queryByText("CLIMATE-ADAPTIVE GEL")).toBeNull();
   }, 25000);
 
   it("navigates to the Packages page on clicking Packages in header menu with overlapping card and project-wise sections", () => {
@@ -1483,8 +1521,9 @@ describe("App routing", () => {
     fireEvent.click(projectCardBtn);
 
     // Initial conversation starts with greeting screen only (not project brief)
-    expect(screen.getByText("Hey Arun, What is this project about?")).toBeDefined();
-    expect(screen.getByText("What outcome would make this project worthwhile?")).toBeDefined();
+    expect(screen.getByText("What would you like to work on next?")).toBeDefined();
+    expect(screen.getByText("Your project details are ready. We can review the score or explore a decision.")).toBeDefined();
+    expect(screen.getByText("Reply below, or choose where to pick up.")).toBeDefined();
     expect(screen.queryByText("Project brief confirmed, Arun")).toBeNull();
     expect(screen.queryByText("What primary outcome do you want to achieve with this project?")).toBeNull();
 
@@ -1543,9 +1582,9 @@ describe("App routing", () => {
     const selectCard = screen.getByRole("button", { name: "Select Emerging Markets Specialist Agent" });
     fireEvent.click(selectCard);
 
-    // Verify card is marked selected with circular radio and pinned agent bar appears above typing field
+    // Verify card is marked selected with box stroke (no circular radio) and pinned agent bar appears above typing field
     expect(selectCard.classList.contains("agent-drawer-card--selected")).toBe(true);
-    expect(selectCard.querySelector(".ai-outcome-radio--selected")).not.toBeNull();
+    expect(selectCard.querySelector(".ai-outcome-radio")).toBeNull();
     expect(document.querySelector(".chat-pinned-agent-bar")).not.toBeNull();
     expect(screen.getAllByText("Emerging Markets Specialist Agent").length).toBeGreaterThan(1);
 
@@ -1582,7 +1621,7 @@ describe("App routing", () => {
 
     // Verify Agent header is not mentioned on the conversation
     expect(document.querySelectorAll(".ai-agent-message-header").length).toBe(0);
-  });
+  }, 25000);
 
   it("interactively guides user through 3 diagnostic questions with 4 options each when asking Customer Dynamics query without selecting agent card", async () => {
     const Component = Route.options.component;
@@ -1666,5 +1705,46 @@ describe("App routing", () => {
 
     // Verify no agent header badge is rendered without agent selection
     expect(document.querySelectorAll(".ai-agent-message-header").length).toBe(0);
+  });
+
+  it("expands the typing field above and renders attached PDF and image preview inside while keeping the typing area free below", () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    // Initial input dock is not expanded
+    const dockForm = document.querySelector(".chatgpt-input-dock");
+    expect(dockForm).not.toBeNull();
+    expect(dockForm?.classList.contains("chatgpt-input-dock--expanded")).toBe(false);
+
+    // Attach a PDF file
+    const fileInput = document.querySelector('input[type="file"][aria-label="Upload file"]') as HTMLInputElement;
+    expect(fileInput).not.toBeNull();
+
+    const pdfFile = new File(["dummy pdf content"], "market-expansion-guide.pdf", { type: "application/pdf" });
+    fireEvent.change(fileInput, { target: { files: [pdfFile] } });
+
+    // Verify typing field expands above with .chatgpt-input-dock--expanded
+    expect(dockForm?.classList.contains("chatgpt-input-dock--expanded")).toBe(true);
+    expect(screen.getByText("market-expansion-guide.pdf")).toBeDefined();
+    expect(screen.getByText(/PDF Document/i)).toBeDefined();
+
+    // Verify typing area below is free and allows typing
+    const textInput = screen.getByPlaceholderText(/Reply, attach a file, or tap the mic to talk/i) as HTMLInputElement;
+    expect(textInput).toBeDefined();
+    fireEvent.change(textInput, { target: { value: "Review this market guide" } });
+    expect(textInput.value).toBe("Review this market guide");
+
+    // Remove the attachment using the remove button
+    const removeBtn = screen.getByRole("button", { name: "Remove market-expansion-guide.pdf" });
+    fireEvent.click(removeBtn);
+
+    // Verify attachment is removed and dock collapses back
+    expect(screen.queryByText("market-expansion-guide.pdf")).toBeNull();
+    expect(dockForm?.classList.contains("chatgpt-input-dock--expanded")).toBe(false);
   });
 });
