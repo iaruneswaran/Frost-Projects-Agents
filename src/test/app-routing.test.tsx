@@ -1528,7 +1528,7 @@ describe("App routing", () => {
     expect(screen.getByText("Accelerate enterprise sales & revenue growth")).toBeDefined();
   });
 
-  it("allows selecting an agent from the drawer, pins it above the typing field, allows typing free query, and returns detailed agent paragraph response", async () => {
+  it("allows selecting an agent from the drawer, triggers thinking loader, renders executive report without pinned bar, and supports follow-up queries", async () => {
     const Component = Route.options.component;
     if (!Component) throw new Error("Component is not defined on Route");
 
@@ -1547,15 +1547,29 @@ describe("App routing", () => {
     const emergingAgentCard = screen.getByText("Emerging Markets Specialist Agent");
     expect(emergingAgentCard).toBeDefined();
 
-    // Select Emerging Markets Specialist Agent card with radio selector
+    // Select Emerging Markets Specialist Agent card
     const selectCard = screen.getByRole("button", { name: "Select Emerging Markets Specialist Agent" });
     fireEvent.click(selectCard);
 
-    // Verify card is marked selected with box stroke (no circular radio) and pinned agent bar appears above typing field
+    // Verify card is marked selected with box stroke (no circular radio)
     expect(selectCard.classList.contains("agent-drawer-card--selected")).toBe(true);
     expect(selectCard.querySelector(".ai-outcome-radio")).toBeNull();
-    expect(document.querySelector(".chat-pinned-agent-bar")).not.toBeNull();
-    expect(screen.getAllByText("Emerging Markets Specialist Agent").length).toBeGreaterThan(1);
+
+    // Verify pinned agent bar is NOT shown ("dont show this")
+    expect(document.querySelector(".chat-pinned-agent-bar")).toBeNull();
+
+    // Verify Thinking... loader is shown
+    expect(screen.getByText("Thinking...")).toBeDefined();
+
+    // Fast-forward thinking response
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 350));
+    });
+
+    // Verify loader is hidden and report is rendered
+    expect(screen.queryByText("Thinking...")).toBeNull();
+    expect(document.querySelector("#agent-report-section")).not.toBeNull();
+    expect(screen.getByRole("heading", { name: /South Asia Tier-2 & Tier-3 Market Entry Report/i })).toBeDefined();
 
     // Free typing field allows typing any custom query
     const inputField = screen.getByPlaceholderText(/Reply, attach a file, or tap the mic to talk/i);

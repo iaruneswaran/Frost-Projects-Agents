@@ -2079,17 +2079,59 @@ function ProjectWorkspace({
   ].filter(Boolean).length;
   const stillToLearnCount = 6 - knownFactsCount;
 
-  const handleSelectAgentForChat = (agent: AgentItem) => {
-    const isDeselecting = pinnedAgent?.id === agent.id;
-    if (isDeselecting) {
-      setPinnedAgent(null);
-      return;
-    }
-    setPinnedAgent(agent);
-  };
   const [isThinking, setIsThinking] = useState(false);
   const [thinkingText, setThinkingText] = useState("Thinking...");
   const thinkingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleSelectAgentForChat = (agent: AgentItem) => {
+    setPinnedAgent(agent);
+    setThinkingText("Thinking...");
+    setIsThinking(true);
+    scrollToTarget(".workspace-conversation > *:last-child, .ai-thinking-row", "start");
+
+    const isVitest = typeof process !== "undefined" && Boolean(process.env?.VITEST || process.env?.NODE_ENV === "test");
+    const duration = isVitest ? 200 : 1200;
+
+    if (thinkingTimeoutRef.current) {
+      clearTimeout(thinkingTimeoutRef.current);
+    }
+
+    thinkingTimeoutRef.current = setTimeout(() => {
+      setIsThinking(false);
+
+      let reportId = agent.id;
+      if (project.id === "sbi-home-loan" || agent.id.includes("home-loan")) {
+        reportId = "agent-sbi-home-loan";
+      } else if (agent.id.includes("velocity") || agent.id.includes("city")) {
+        reportId = "city-velocity";
+      } else if (agent.id.includes("margin")) {
+        reportId = "margin-structures";
+      } else if (agent.id.includes("quick") || agent.id.includes("commerce")) {
+        reportId = "quick-commerce-comparison";
+      } else {
+        reportId = "proj-agent-emerging-markets";
+      }
+
+      const reportMsg: MessageItem = {
+        id: `ai-report-${agent.id}-${Date.now()}`,
+        sender: "assistant",
+        text: `__AGENT_REPORT__:${reportId}`,
+        agentTitle: agent.title,
+      };
+
+      setConversations((prev) => {
+        const existing = prev[currentChatKey] || [];
+        return {
+          ...prev,
+          [currentChatKey]: [...existing, reportMsg],
+        };
+      });
+
+      setTimeout(() => {
+        scrollToTarget("#agent-report-section, .ai-agent-report-container, .openui-report-card", "start");
+      }, 100);
+    }, duration);
+  };
 
   useEffect(() => {
     return () => {
@@ -4553,27 +4595,6 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
 
   const renderInputDock = () => (
     <div className="chat-input-dock-container">
-      {pinnedAgent && (
-        <div className="chat-pinned-agent-bar">
-          <div className="chat-pinned-agent-wrap">
-            <span className="chat-pinned-agent-label">Agent:</span>
-            <span className="chat-pinned-agent-name">{pinnedAgent.title}</span>
-            <span className="agent-invoked-badge">
-              <span className="agent-invoked-dot text-emerald-600">●</span>
-              <span className="agent-invoked-text">Invoked</span>
-            </span>
-            <button
-              type="button"
-              onClick={() => setPinnedAgent(null)}
-              className="chat-pinned-agent-close"
-              title="Unpin agent"
-              aria-label="Remove pinned agent"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        </div>
-      )}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -5280,7 +5301,7 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
             </div>
           ) : (
             <>
-              {messages.length === 0 && (
+              {messages.length === 0 && !isThinking && (
                 <div className="chatgpt-center-card">
                   {isNewProject ? (
                     <>
@@ -5329,7 +5350,7 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
               )}
 
               {/* Messages Thread if Any */}
-              {messages.length > 0 && (
+              {(messages.length > 0 || isThinking) && (
                 <div className="workspace-conversation">
                   {messages.map((m, mIdx) => {
                     const isAgentReportMsg =
@@ -6565,7 +6586,7 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
         </div>
 
         {/* Bottom Dock (Only when conversation is active) */}
-        {messages.length > 0 && !isLibraryOpen && !activeSidebarView && (
+        {(messages.length > 0 || isThinking) && !isLibraryOpen && !activeSidebarView && (
           <div className="workspace-dock-wrapper bottom-dock-wrapper">
             {renderInputDock()}
           </div>
