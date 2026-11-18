@@ -978,26 +978,59 @@ describe("App routing", () => {
     expect(screen.queryByText("Recommended Agents")).toBeNull();
     expect(screen.queryByRole("button", { name: /^Generate report$/i })).toBeNull();
 
-    // Verify Related actions section is rendered below with 3 actions
-    expect(screen.getByText("Related actions")).toBeDefined();
-    const relatedActionCards = document.querySelectorAll(".ai-related-action-card");
-    expect(relatedActionCards.length).toBe(3);
-
-    // Verify the specific action requested
-    expect(
-      screen.getByText(/Conduct comparative market research on observed BEV penetration, policy incentives, and distribution infrastructure in the Philippines against Thailand and Indonesia/i)
-    ).toBeDefined();
-
-    // Clicking an action card sets the input field
-    fireEvent.click(relatedActionCards[0]);
-    const chatInput = document.querySelector(".chatgpt-dock-input") as HTMLTextAreaElement;
-    expect(chatInput?.value).toContain("Conduct comparative market research on observed BEV penetration");
-
     // Verify Download Report (PDF), Export CSV, and tab buttons are replaced with Save insight
     expect(screen.queryByText("Download Report (PDF)")).toBeNull();
     expect(screen.queryByText("Export CSV")).toBeNull();
     expect(screen.queryByText("Home Loan Report")).toBeNull();
     expect(screen.queryByText("South Asia Market Report")).toBeNull();
+
+    // Verify Related actions is NOT shown before Pack Added
+    expect(screen.queryByText("Related actions")).toBeNull();
+
+    // Click Get Pack on the first knowledge pack
+    const getPackBtn = screen.getAllByRole("button", { name: /Get .* pack/i })[0];
+    expect(getPackBtn).toBeDefined();
+    fireEvent.click(getPackBtn);
+
+    // Verify button updates to Added (single left checkmark, title-cased)
+    expect(screen.getAllByText(/^Added$/i).length).toBeGreaterThan(0);
+
+    // Verify Downloading... loader is rendered
+    expect(screen.getByText("Downloading...")).toBeDefined();
+
+    // Fast-forward downloading duration
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 350));
+    });
+
+    // Verify loader is hidden
+    expect(screen.queryByText("Downloading...")).toBeNull();
+
+    // Verify confirmation message is posted to chat with heading and subline
+    expect(screen.getByRole("heading", { name: "Pack Added to Your Project" })).toBeDefined();
+    expect(
+      screen.getByText("South Asia Tier-2 & Tier-3 City Market Penetration is now integrated")
+    ).toBeDefined();
+    expect(screen.queryByText(/4,000 Credits Applied/i)).toBeNull();
+    expect(screen.queryByText(/Knowledge Status:/i)).toBeNull();
+    expect(screen.queryByText(/Available Balance:/i)).toBeNull();
+
+    // Verify Related actions section is rendered ONLY after Pack Added to Your Project is shown
+    expect(screen.getByText("Related actions")).toBeDefined();
+    const packAddedActionCards = document.querySelectorAll(".ai-pack-added-container .ai-related-action-card");
+    expect(packAddedActionCards.length).toBe(5);
+
+    // Verify the 5 specific actions requested
+    expect(screen.getByText(/Start a Market research/i)).toBeDefined();
+    expect(screen.getByText(/Policy And Regulations Check/i)).toBeDefined();
+    expect(screen.getByText(/Plan a Business model/i)).toBeDefined();
+    expect(screen.getByText(/Competitor Landscape/i)).toBeDefined();
+    expect(screen.getByText(/Geographical market deep drive/i)).toBeDefined();
+
+    // Clicking an action card directly sends it as a user message
+    fireEvent.click(packAddedActionCards[0]);
+    const latestUserMsgs = document.querySelectorAll(".workspace-message.user-message");
+    expect(latestUserMsgs[latestUserMsgs.length - 1].textContent).toContain("Start a Market research");
 
 
   });

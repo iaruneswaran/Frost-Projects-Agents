@@ -4616,10 +4616,10 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 9px 14px;
+  padding: 10px 14px;
   background: transparent;
   border: none;
-  border-radius: 9999px !important;
+  border-radius: 10px !important;
   cursor: pointer;
   transition: background-color 0.12s ease;
   box-sizing: border-box;
@@ -4974,7 +4974,7 @@
 .ai-knowledge-flow-container {
   display: flex;
   flex-direction: column;
-  gap: 64px;
+  gap: 0;
   width: 100%;
 }
 
@@ -10889,8 +10889,7 @@ button:hover,
 .ai-scope-understood-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 600;
   color: #1e4b8d;
   letter-spacing: 0.01em;
@@ -10998,4 +10997,55 @@ button:hover,
 
 .ai-related-action-card:hover .ai-related-action-text {
   color: #0f172a;
+}
+
+/* Knowledge Pack Added Confirmation Card */
+.ai-pack-added-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.ai-pack-added-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 24px;
+  background: #ffffff;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.06);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.ai-pack-added-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ai-pack-added-heading {
+  font-size: 18px;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0;
+}
+
+.ai-pack-added-subline {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e4b8d;
+  margin: 0;
+}
+
+.ai-pack-added-description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #64748b;
+  margin: 0;
+  margin-top: 4px;
 }
