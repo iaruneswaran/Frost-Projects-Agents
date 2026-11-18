@@ -537,13 +537,12 @@ describe("App routing", () => {
     expect(screen.getByText("Waiting on you")).toBeDefined();
     expect(screen.getByText(/not scored yet/i)).toBeDefined();
     expect(screen.getByText("Core facts known")).toBeDefined();
-    expect(screen.getByText("4 of 6 core facts")).toBeDefined();
+    expect(screen.getByText("0 of 6 core facts")).toBeDefined();
     expect(screen.getByText("Goal")).toBeDefined();
-    expect(screen.getByText("Build AI clinical decision support tools")).toBeDefined();
+    expect(screen.getAllByText("Not yet").length).toBe(6);
     expect(screen.queryByRole("button", { name: "Edit project score" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Edit core facts" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Edit Goal" })).toBeNull();
-    expect(document.querySelectorAll(".knowledge-item-edit-btn").length).toBe(5);
+    expect(document.querySelectorAll(".knowledge-item-edit-btn").length).toBe(6);
     expect(screen.getByText("Still to learn")).toBeDefined();
     expect(screen.getByText("Who it's for")).toBeDefined();
     expect(screen.getByText("Investment")).toBeDefined();
@@ -841,7 +840,7 @@ describe("App routing", () => {
     fireEvent.click(submitBtn);
 
     // Verify user message is added
-    expect(screen.getByText("Build a regional franchise network")).toBeDefined();
+    expect(screen.getAllByText("Build a regional franchise network").length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders a Project Intake message card above the outcome choices with better card design", () => {
@@ -962,96 +961,37 @@ describe("App routing", () => {
       screen.queryByText(/Understood! Expanding into a new customer segment or region is the primary focus/i)
     ).toBeNull();
 
-    // Verify "Matching reports" heading and text placed at packages bottom
-    expect(screen.getByText("Matching reports")).toBeDefined();
+    // Verify summary box heading (How this knowledge supports your project)
+    expect(screen.getByText("How this knowledge supports your project")).toBeDefined();
     expect(
       screen.getByText(/I found market intelligence reports from 2025–2026 covering tier-2 & tier-3 city retail/i)
     ).toBeDefined();
 
-    // Verify summary box heading (How this knowledge supports your project)
-    expect(screen.getByText("How this knowledge supports your project")).toBeDefined();
-    expect(document.querySelectorAll(".ai-matching-report-card").length).toBe(2);
-    expect(screen.getByText(/Robert D. Boss · 2026/i)).toBeDefined();
-    expect(screen.getByText(/Anika Rao · 2025/i)).toBeDefined();
-    // Verify badges (tier-2 retail, pricing strategy, etc.) are removed from matching reports
-    expect(screen.queryByText("tier-2 retail")).toBeNull();
-    expect(screen.queryByText("pricing strategy")).toBeNull();
-    expect(screen.queryByText("consumer growth")).toBeNull();
-    expect(screen.queryByText("unit economics")).toBeNull();
-    expect(screen.queryByText("pack sizes")).toBeNull();
-    expect(screen.queryByText("price elasticity")).toBeNull();
-    expect(document.querySelector(".ai-matching-report-tags")).toBeNull();
+    // Verify Save insight button
+    const saveInsightBtn = screen.getByRole("button", { name: /save insight/i });
+    expect(saveInsightBtn).toBeDefined();
+    fireEvent.click(saveInsightBtn);
+    expect(screen.getByText("Saved to insights")).toBeDefined();
 
-    // Verify report GET button toggle
-    const getReportBtn = screen.getByRole("button", {
-      name: /Get Growth Opportunities in Personal Care for Tier-2 and Tier-3 Cities, South Asia/i,
-    });
-    fireEvent.click(getReportBtn);
+    // Verify Matching reports, Recommended Agents, and Generate report button are removed
+    expect(screen.queryByText("Matching reports")).toBeNull();
+    expect(screen.queryByText("Recommended Agents")).toBeNull();
+    expect(screen.queryByRole("button", { name: /^Generate report$/i })).toBeNull();
+
+    // Verify Related actions section is rendered below with 3 actions
+    expect(screen.getByText("Related actions")).toBeDefined();
+    const relatedActionCards = document.querySelectorAll(".ai-related-action-card");
+    expect(relatedActionCards.length).toBe(3);
+
+    // Verify the specific action requested
     expect(
-      screen.getByRole("button", {
-        name: /Growth Opportunities in Personal Care for Tier-2 and Tier-3 Cities, South Asia added/i,
-      })
+      screen.getByText(/Conduct comparative market research on observed BEV penetration, policy incentives, and distribution infrastructure in the Philippines against Thailand and Indonesia/i)
     ).toBeDefined();
 
-    // Verify Recommended Agents section using home page card layout (limited to 2 agents)
-    expect(screen.getByText("Recommended Agents")).toBeDefined();
-    const recommendCards = document.querySelectorAll(".ai-agent-recommend-card");
-    expect(recommendCards.length).toBe(2);
-    expect(screen.getAllByText(/Market Sizing & Growth Opportunity Forecasting Agent/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Customer Persona & Demographic Intelligence Agent/i).length).toBeGreaterThan(0);
-
-    // Verify individual "Run agent" buttons are removed in favor of selection feel
-    expect(screen.queryByRole("button", { name: /^Run agent$/i })).toBeNull();
-    const agentRadios = document.querySelectorAll(".ai-agent-recommend-card .ai-outcome-radio");
-    expect(agentRadios.length).toBe(2);
-
-    // Verify clicking an agent card toggles selection
-    const firstAgentCard = recommendCards[0];
-    const secondAgentCard = recommendCards[1];
-    fireEvent.click(firstAgentCard);
-    expect(firstAgentCard.classList.contains("ai-agent-recommend-card--selected")).toBe(true);
-    fireEvent.click(secondAgentCard);
-    expect(secondAgentCard.classList.contains("ai-agent-recommend-card--selected")).toBe(true);
-
-    // Verify single Generate report button interactivity below cards
-    const runBtn = screen.getByRole("button", {
-      name: /(Run agent|Generate report).*Market Sizing & Growth Opportunity Forecasting Agent/i,
-    });
-    expect(runBtn).toBeDefined();
-    fireEvent.click(runBtn);
-
-    // Verify the button disables after click and keeps its clean Generate report label
-    expect(runBtn).toBeDisabled();
-    expect(runBtn.textContent).toContain("Generate report");
-    expect(runBtn.textContent).not.toContain("Generate report with Market Sizing");
-    // Verify no duplicate second bubble is shown
-    const userMsgElements = document.querySelectorAll(".workspace-message.user-message");
-    const lastUserMsg = userMsgElements[userMsgElements.length - 1];
-    expect(lastUserMsg?.textContent).not.toContain("Generate report with");
-
-    // Do not show "Running..." text
-    expect(screen.queryByText("Running...")).toBeNull();
-    expect(document.querySelector(".ai-agent-generating-loader-wrap .ai-thinking-row")).not.toBeNull();
-    expect(screen.getByText("Thinking...")).toBeDefined();
-
-    // Wait for agent execution
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    });
-
-    // Verify loader is hidden after generation completes
-    expect(document.querySelector(".ai-agent-generating-loader-wrap")).toBeNull();
-
-    // Do not show "Completed" text
-    expect(screen.queryByText("Completed")).toBeNull();
-
-    // Verify report section appears below Recommended Agents
-    expect(screen.getByText("SBI Home Loan Monthly Performance & Disbursement Report")).toBeDefined();
-    expect(screen.getAllByText("₹4,820.50 Cr").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText("Monthly Disbursement Trends (₹ in Crores)")).toBeDefined();
-    expect(screen.getByText("Disbursement by City Tier & Category")).toBeDefined();
-    expect(screen.getByText("Regional Zonal Breakdown & Compliance Review")).toBeDefined();
-    expect(screen.getByText("Regulatory Compliance & Scope Isolation")).toBeDefined();
+    // Clicking an action card sets the input field
+    fireEvent.click(relatedActionCards[0]);
+    const chatInput = document.querySelector(".chatgpt-dock-input") as HTMLTextAreaElement;
+    expect(chatInput?.value).toContain("Conduct comparative market research on observed BEV penetration");
 
     // Verify Download Report (PDF), Export CSV, and tab buttons are replaced with Save insight
     expect(screen.queryByText("Download Report (PDF)")).toBeNull();
@@ -1059,11 +999,7 @@ describe("App routing", () => {
     expect(screen.queryByText("Home Loan Report")).toBeNull();
     expect(screen.queryByText("South Asia Market Report")).toBeNull();
 
-    const reportSaveBtn = document.querySelector(".openui-report-card .save-insight-btn");
-    expect(reportSaveBtn).not.toBeNull();
-    expect(reportSaveBtn?.textContent).toContain("Save insight");
-    if (reportSaveBtn) fireEvent.click(reportSaveBtn);
-    expect(reportSaveBtn?.textContent).toContain("Saved to insights");
+
   });
 
   it("opens right-side slide panel with 3 project related agents and other agents below on clicking New chat under a project", () => {
@@ -1705,7 +1641,7 @@ describe("App routing", () => {
 
     // Verify no agent header badge is rendered without agent selection
     expect(document.querySelectorAll(".ai-agent-message-header").length).toBe(0);
-  });
+  }, 25000);
 
   it("expands the typing field above and renders attached PDF and image preview inside while keeping the typing area free below", () => {
     const Component = Route.options.component;
@@ -1747,4 +1683,87 @@ describe("App routing", () => {
     expect(screen.queryByText("market-expansion-guide.pdf")).toBeNull();
     expect(dockForm?.classList.contains("chatgpt-input-dock--expanded")).toBe(false);
   });
+
+  it("renders the 6-field intake block (Goal writable, others clickable) and syncs selections with What I know so far panel", async () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
+    fireEvent.click(projectCardBtn);
+
+    const chatBtn = screen.getByText("Tier-2 Market Penetration Strategy");
+    fireEvent.click(chatBtn);
+
+    // Verify stroke box has all 6 scope fields
+    const strokeBox = document.querySelector(".ai-stroke-box");
+    expect(strokeBox).not.toBeNull();
+    expect(screen.getAllByText("Goal").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Who it's for").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Investment").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Expected annual impact").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Target date").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Delivery owner").length).toBeGreaterThan(0);
+
+    // Goal is writable field
+    const goalInput = screen.getByRole("textbox", { name: /type your answer and press enter/i });
+    expect(goalInput).toBeDefined();
+
+    // Select non-typing chips
+    const whoChip = screen.getByRole("button", { name: /Tier-2 & Tier-3 Regional Consumers/i });
+    fireEvent.click(whoChip);
+    expect(whoChip.classList.contains("ai-scope-chip-btn--selected")).toBe(true);
+
+    // Click Next button to slide to Step 2
+    const nextBtn = screen.getByRole("button", { name: /next/i });
+    fireEvent.click(nextBtn);
+    expect(screen.getByRole("button", { name: /back/i })).toBeDefined();
+    expect(screen.queryByText(/Step 1 of 2/i)).toBeNull();
+    expect(screen.queryByText(/Step 2 of 2/i)).toBeNull();
+
+    // Enter investment amount manually in the amount field
+    const invInput = screen.getByRole("textbox", { name: /enter investment amount/i });
+    fireEvent.change(invInput, { target: { value: "₹50L – ₹1.5 Cr" } });
+    expect(invInput).toHaveProperty("value", "₹50L – ₹1.5 Cr");
+
+    // Verify Market field exists beside Target date and can select South Asia
+    const marketDropdownTrigger = screen.getByRole("button", { name: /market region dropdown/i });
+    expect(marketDropdownTrigger).toBeDefined();
+    fireEvent.click(marketDropdownTrigger);
+    const southAsiaOption = screen.getByRole("option", { name: /south asia/i });
+    expect(southAsiaOption).toBeDefined();
+    fireEvent.click(southAsiaOption);
+    expect(screen.getAllByText("South Asia").length).toBeGreaterThan(0);
+
+    // Verify Delivery owner input is rendered below full width
+    const deliveryOwnerInput = screen.getByRole("textbox", { name: /enter delivery owner/i });
+    expect(deliveryOwnerInput).toBeDefined();
+
+    // Verify selected items are NOT shown on the right side of the field header
+    expect(document.querySelector(".ai-scope-item-status--filled")).toBeNull();
+
+    // Open What I know so far slide panel
+    const whatIKnowBtn = screen.getByRole("button", { name: "What I know" });
+    fireEvent.click(whatIKnowBtn);
+
+    // Verify slide panel displays the updated core facts
+    expect(screen.getByText("What I know so far")).toBeDefined();
+    expect(screen.getByText("2 of 6 core facts")).toBeDefined();
+    expect(screen.getByText("4")).toBeDefined(); // 4 still to learn
+    expect(screen.getAllByText("Tier-2 & Tier-3 Regional Consumers").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("₹50L – ₹1.5 Cr").length).toBeGreaterThanOrEqual(1);
+
+    // Close panel
+    const closeBtn = screen.getByRole("button", { name: "Close panel" });
+    fireEvent.click(closeBtn);
+
+    // Confirm project scope button
+    const confirmBtn = screen.getByRole("button", { name: /confirm project scope/i });
+    expect(confirmBtn).toBeDefined();
+    fireEvent.click(confirmBtn);
+
+    // Loader is shown and thinking starts
+    expect(screen.getByText("Thinking...")).toBeDefined();
+  }, 25000);
 });

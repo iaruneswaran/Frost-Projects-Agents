@@ -10,6 +10,7 @@ import {
   BookOpen,
   Bookmark,
   Brain,
+  Building2,
   Calendar,
   Check,
   ChevronDown,
@@ -24,6 +25,7 @@ import {
   Library,
   Menu,
   Mic,
+  Minus,
   Moon,
   PanelLeft,
   Paperclip,
@@ -33,10 +35,13 @@ import {
   Search,
   Settings,
   ShieldCheck,
+  ShoppingBag,
   Sparkles,
   SquarePen,
+  Store,
   Sun,
   Trash2,
+  TrendingUp,
   UploadCloud,
   Users,
   X,
@@ -2022,11 +2027,57 @@ function ProjectWorkspace({
       : project.title || "Untitled project"
   );
   const [customOutcome, setCustomOutcome] = useState("");
+  const [projectScope, setProjectScope] = useState<{
+    goal: string;
+    whoItsFor: string;
+    investment: string;
+    annualImpact: string;
+    targetDate: string;
+    deliveryOwner: string;
+    market: string;
+  }>({
+    goal: "",
+    whoItsFor: "",
+    investment: "",
+    annualImpact: "",
+    targetDate: "",
+    deliveryOwner: "",
+    market: "",
+  });
   const [selectedOutcomes, setSelectedOutcomes] = useState<Record<string, string>>({});
   const [selectedRecommendedAgentId, setSelectedRecommendedAgentId] = useState<string | null>(null);
   const [pinnedAgent, setPinnedAgent] = useState<AgentItem | null>(null);
   const [selectedAgentOptions, setSelectedAgentOptions] = useState<Record<string, string>>({});
   const [interactiveFlowAnswers, setInteractiveFlowAnswers] = useState<Record<string, Record<string, string>>>({});
+  const [scopeStep, setScopeStep] = useState<1 | 2>(1);
+  const [isMarketDropdownOpen, setIsMarketDropdownOpen] = useState(false);
+  const marketDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isMarketDropdownOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (
+        isMarketDropdownOpen &&
+        marketDropdownRef.current &&
+        !marketDropdownRef.current.contains(target)
+      ) {
+        setIsMarketDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMarketDropdownOpen]);
+
+  const knownFactsCount = [
+    projectScope.goal,
+    projectScope.whoItsFor,
+    projectScope.investment,
+    projectScope.annualImpact,
+    projectScope.targetDate,
+    projectScope.deliveryOwner,
+  ].filter(Boolean).length;
+  const stillToLearnCount = 6 - knownFactsCount;
 
   const handleSelectAgentForChat = (agent: AgentItem) => {
     const isDeselecting = pinnedAgent?.id === agent.id;
@@ -2450,8 +2501,8 @@ function ProjectWorkspace({
                   packsDisbursed: "32,400 packs",
                   repeatRate: "34.8%",
                   velocityDelta: "+14.2% MoM",
-                  sparklineD: "M 4 42 Q 32 38, 56 34 T 90 22 T 115 16 T 132 10",
-                  sparklineFill: "M 4 42 Q 32 38, 56 34 T 90 22 T 115 16 T 132 10 L 132 48 L 4 48 Z",
+                  sparklineD: "M 8 42 Q 32 38, 56 34 T 88 22 T 106 16 T 116 12",
+                  sparklineFill: "M 8 42 Q 32 38, 56 34 T 88 22 T 106 16 T 116 12 L 116 48 L 8 48 Z",
                 },
                 {
                   name: "Lucknow",
@@ -2460,8 +2511,8 @@ function ProjectWorkspace({
                   packsDisbursed: "27,600 packs",
                   repeatRate: "31.2%",
                   velocityDelta: "+11.8% MoM",
-                  sparklineD: "M 4 43 Q 32 39, 56 33 T 90 25 T 115 18 T 132 13",
-                  sparklineFill: "M 4 43 Q 32 39, 56 33 T 90 25 T 115 18 T 132 13 L 132 48 L 4 48 Z",
+                  sparklineD: "M 8 43 Q 32 39, 56 33 T 88 25 T 106 18 T 116 14",
+                  sparklineFill: "M 8 43 Q 32 39, 56 33 T 88 25 T 106 18 T 116 14 L 116 48 L 8 48 Z",
                 },
                 {
                   name: "Indore",
@@ -2470,8 +2521,8 @@ function ProjectWorkspace({
                   packsDisbursed: "23,800 packs",
                   repeatRate: "29.6%",
                   velocityDelta: "+10.4% MoM",
-                  sparklineD: "M 4 44 Q 32 40, 56 35 T 90 27 T 115 21 T 132 15",
-                  sparklineFill: "M 4 44 Q 32 40, 56 35 T 90 27 T 115 21 T 132 15 L 132 48 L 4 48 Z",
+                  sparklineD: "M 8 44 Q 32 40, 56 35 T 88 27 T 106 21 T 116 16",
+                  sparklineFill: "M 8 44 Q 32 40, 56 35 T 88 27 T 106 21 T 116 16 L 116 48 L 8 48 Z",
                 },
                 {
                   name: "Chandigarh",
@@ -2480,8 +2531,8 @@ function ProjectWorkspace({
                   packsDisbursed: "19,200 packs",
                   repeatRate: "28.1%",
                   velocityDelta: "+9.2% MoM",
-                  sparklineD: "M 4 43 Q 32 39, 56 34 T 90 29 T 115 23 T 132 17",
-                  sparklineFill: "M 4 43 Q 32 39, 56 34 T 90 29 T 115 23 T 132 17 L 132 48 L 4 48 Z",
+                  sparklineD: "M 8 43 Q 32 39, 56 34 T 88 29 T 106 23 T 116 18",
+                  sparklineFill: "M 8 43 Q 32 39, 56 34 T 88 29 T 106 23 T 116 18 L 116 48 L 8 48 Z",
                 },
                 {
                   name: "Surat",
@@ -2490,8 +2541,8 @@ function ProjectWorkspace({
                   packsDisbursed: "18,400 packs",
                   repeatRate: "26.4%",
                   velocityDelta: "+8.6% MoM",
-                  sparklineD: "M 4 45 Q 32 42, 56 37 T 90 31 T 115 25 T 132 19",
-                  sparklineFill: "M 4 45 Q 32 42, 56 37 T 90 31 T 115 25 T 132 19 L 132 48 L 4 48 Z",
+                  sparklineD: "M 8 45 Q 32 42, 56 37 T 88 31 T 106 25 T 116 20",
+                  sparklineFill: "M 8 45 Q 32 42, 56 37 T 88 31 T 106 25 T 116 20 L 116 48 L 8 48 Z",
                 },
               ].map((c) => (
                 <div key={c.name} className="openui-ranked-row">
@@ -2668,17 +2719,9 @@ function ProjectWorkspace({
                       <th scope="col">Incentive Rebate</th>
                       <th scope="col">Credit Cycle</th>
                       <th scope="col">Min Order Value</th>
-                      <th scope="col">SLA / Velocity</th>
-                      <th scope="col">Strategic Viability</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {/* Group 1 Header */}
-                    <tr>
-                      <td colSpan={8} className="openui-table-group-header">
-                        Traditional General Trade & Wholesale Corridors (Tier-2 & Tier-3 Regional Networks)
-                      </td>
-                    </tr>
                     <tr>
                       <td className="agent-table-cell-bold openui-highlight-col">Carrying & Forwarding (C&F) Agents</td>
                       <td>Super C&F State Hubs (Jaipur, Lucknow, Ahmedabad)</td>
@@ -2686,8 +2729,6 @@ function ProjectWorkspace({
                       <td>+1.5% On-Time Dispatch</td>
                       <td>21 Days Net</td>
                       <td>₹15,00,000</td>
-                      <td>99.6% 24h Dispatch</td>
-                      <td className="agent-status-tag verified">Priority Anchor</td>
                     </tr>
                     <tr>
                       <td className="agent-table-cell-bold openui-highlight-col">Regional FMCG Super-Stockists</td>
@@ -2696,8 +2737,6 @@ function ProjectWorkspace({
                       <td>+2.0% Quarterly Rebate</td>
                       <td>14 Days Post-Delivery</td>
                       <td>₹5,00,000</td>
-                      <td>99.2% Secondary Fill</td>
-                      <td className="agent-status-tag verified">High Margin Anchor</td>
                     </tr>
                     <tr>
                       <td className="agent-table-cell-bold openui-highlight-col">High-Frequency Kirana Retailers</td>
@@ -2706,13 +2745,11 @@ function ProjectWorkspace({
                       <td>+2.5% COD Discount</td>
                       <td>7 Days / Weekly Cash</td>
                       <td>₹25,000</td>
-                      <td>98.8% Restock Fill</td>
-                      <td className="agent-status-tag verified">Active Counter Placement</td>
                     </tr>
 
                     {/* Group 2 Header */}
                     <tr>
-                      <td colSpan={8} className="openui-table-group-header">
+                      <td colSpan={6} className="openui-table-group-header">
                         Modern Trade, Quick-Commerce & Healthcare Networks
                       </td>
                     </tr>
@@ -2723,8 +2760,6 @@ function ProjectWorkspace({
                       <td>+1.5% Co-Funded Placement</td>
                       <td>15 Days Electronic Settle</td>
                       <td>₹2,00,000 / pod</td>
-                      <td>99.9% (4h Replenishment)</td>
-                      <td className="agent-status-tag verified">High Velocity Driver</td>
                     </tr>
                     <tr>
                       <td className="agent-table-cell-bold openui-highlight-col">Pharmacy & Dermatologist Corridors</td>
@@ -2733,8 +2768,6 @@ function ProjectWorkspace({
                       <td>+3.0% Sampling Display</td>
                       <td>30 Days Institutional</td>
                       <td>₹1,00,000</td>
-                      <td>99.4% Fulfillment</td>
-                      <td className="agent-status-tag verified">Clinical Trust Anchor</td>
                     </tr>
                     <tr>
                       <td className="agent-table-cell-bold openui-highlight-col">Omnichannel D2C & Regional Hubs</td>
@@ -2743,8 +2776,6 @@ function ProjectWorkspace({
                       <td>91.5% Net Retained</td>
                       <td>T+2 Gateway Settle</td>
                       <td>₹499 (Free Delivery)</td>
-                      <td>99.5% Delivery SLA</td>
-                      <td className="agent-status-tag verified">Validated Margin Driver</td>
                     </tr>
                   </tbody>
                   <tfoot>
@@ -2755,8 +2786,6 @@ function ProjectWorkspace({
                       <td className="agent-table-cell-bold">Active Schemes</td>
                       <td className="agent-table-cell-bold">18.2 Days Avg</td>
                       <td className="agent-table-cell-bold">Multi-Tier MOV</td>
-                      <td className="agent-table-cell-bold">99.4% Overall</td>
-                      <td className="agent-table-cell-bold agent-status-tag verified">100% Margin Compliance</td>
                     </tr>
                   </tfoot>
                 </table>
@@ -4451,6 +4480,10 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
           <div className="chat-pinned-agent-wrap">
             <span className="chat-pinned-agent-label">Agent:</span>
             <span className="chat-pinned-agent-name">{pinnedAgent.title}</span>
+            <span className="agent-invoked-badge">
+              <span className="agent-invoked-dot text-emerald-600">●</span>
+              <span className="agent-invoked-text">Invoked</span>
+            </span>
             <button
               type="button"
               onClick={() => setPinnedAgent(null)}
@@ -4994,19 +5027,35 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
           </div>
 
           <div className="chatgpt-topbar-right">
-            {!isKnowledgeOpen && !activeSidebarView && (
-              <button
-                type="button"
-                onClick={() => {
-                  setIsKnowledgeOpen(true);
-                }}
-                className="chatgpt-what-i-know-btn"
-                title="What I know so far"
-                aria-label="What I know"
-              >
-                <BookOpen className="h-4 w-4 mr-1.5" />
-                <span>What I know</span>
-              </button>
+            {!activeSidebarView && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAgentsDrawerOpen((prev) => !prev);
+                  }}
+                  className={`chatgpt-what-i-know-btn chatgpt-topbar-agents-btn ${isAgentsDrawerOpen ? "active" : ""}`}
+                  title="Agents"
+                  aria-label="Agents"
+                >
+                  <Sparkles className="h-4 w-4 mr-1.5" />
+                  <span>Agents</span>
+                </button>
+                {!isKnowledgeOpen && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsKnowledgeOpen(true);
+                    }}
+                    className="chatgpt-what-i-know-btn"
+                    title="What I know so far"
+                    aria-label="What I know"
+                  >
+                    <BookOpen className="h-4 w-4 mr-1.5" />
+                    <span>What I know</span>
+                  </button>
+                )}
+              </>
             )}
           </div>
         </header>
@@ -5279,91 +5328,478 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
                               <div className="ai-intake-and-outcome-container">
                                 {/* Project brief message section above the box */}
                                 {isDefineObjective ? (
-                                  <p className="ai-unwrapped-objective-text">
-                                    Let's define the core objective of this project to start building the business case.
-                                  </p>
+                                  <div className="ai-scope-outside-header">
+                                    <div className="ai-scope-title-row">
+                                      <h3 className="ai-outcome-question ai-scope-card-title">
+                                        Project goals
+                                      </h3>
+                                      <div className="ai-scope-step-dots" aria-hidden="true">
+                                        <span
+                                          className={`ai-scope-step-dot ${
+                                            scopeStep === 1
+                                              ? "ai-scope-step-dot--active"
+                                              : "ai-scope-step-dot--done"
+                                          }`}
+                                        />
+                                        <span
+                                          className={`ai-scope-step-dot ${
+                                            scopeStep === 2 ? "ai-scope-step-dot--active" : ""
+                                          }`}
+                                        />
+                                      </div>
+                                    </div>
+                                    <p className="ai-unwrapped-objective-text">
+                                      Let's define the core objective of this project to start building the business case.
+                                    </p>
+                                  </div>
                                 ) : (
                                   <div className="ai-intake-card">
-                                    <h4 className="ai-intake-title">
-                                      Project brief confirmed, Arun
-                                    </h4>
+                                    <div className="ai-scope-title-row">
+                                      <h4 className="ai-intake-title">
+                                        Project brief confirmed, Arun
+                                      </h4>
+                                      <div className="ai-scope-step-dots" aria-hidden="true">
+                                        <span
+                                          className={`ai-scope-step-dot ${
+                                            scopeStep === 1
+                                              ? "ai-scope-step-dot--active"
+                                              : "ai-scope-step-dot--done"
+                                          }`}
+                                        />
+                                        <span
+                                          className={`ai-scope-step-dot ${
+                                            scopeStep === 2 ? "ai-scope-step-dot--active" : ""
+                                          }`}
+                                        />
+                                      </div>
+                                    </div>
                                     <p className="ai-intake-text">
                                       We've received your project brief for "{project.title}". Autonomous collaborative agents are ready to coordinate market dynamics, unit economics, and execution milestones. To configure the optimal agent workflow, let's establish your direction:
                                     </p>
                                   </div>
                                 )}
 
-                                {/* Outcome Choice Box */}
+                                {/* Outcome / Project Scope Intake Box */}
                                 <div className="ai-stroke-box">
-                                  <div className="ai-outcome-container">
-                                    <h3 className="ai-outcome-question">
+                                  <div className="ai-outcome-container ai-scope-intake-container">
+                                    <span className="sr-only">
                                       What primary outcome do you want to achieve with this project?
-                                    </h3>
+                                    </span>
 
-                                    <div className="ai-outcome-options-grid" role="radiogroup" aria-label="Primary project outcome">
-                                      {outcomeOptions.map((opt) => {
-                                        const isSelected = selectedOutcomes[m.id] === opt;
-
-                                        return (
-                                          <button
-                                            key={opt}
-                                            type="button"
-                                            role="radio"
-                                            aria-checked={isSelected}
-                                            onClick={() => {
-                                              handleOutcomeSelect(m.id, opt);
-                                            }}
-                                            className={`ai-outcome-option-btn ${isSelected ? "ai-outcome-option-btn--selected" : ""}`}
-                                          >
-                                            <div className="ai-outcome-option-content">
-                                              <span
-                                                className={`ai-outcome-radio ${isSelected ? "ai-outcome-radio--selected" : ""}`}
-                                                aria-hidden="true"
-                                              >
-                                                {isSelected && <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />}
-                                              </span>
-                                              <span className="ai-outcome-option-text">{opt}</span>
-                                            </div>
-                                          </button>
-                                        );
-                                      })}
-                                    </div>
-
-                                    <div className="ai-outcome-divider-row">
-                                      <div className="ai-outcome-divider-line" />
-                                      <span className="ai-outcome-footer-label">Or in your own words</span>
-                                      <div className="ai-outcome-divider-line" />
-                                    </div>
-
-                                    <form
-                                      onSubmit={(e) => {
-                                        e.preventDefault();
-                                        if (customOutcome.trim()) {
-                                          handleSend(customOutcome.trim());
-                                          setCustomOutcome("");
-                                        }
-                                      }}
-                                      className="ai-outcome-input-form"
-                                    >
-                                      <input
-                                        type="text"
-                                        value={customOutcome}
-                                        onChange={(e) => setCustomOutcome(e.target.value)}
-                                        placeholder="Type your answer and press Enter"
-                                        className="ai-outcome-input-field"
-                                        aria-label="Type your answer and press Enter"
-                                      />
-                                      <span className="sr-only">Type your answer and press Enter</span>
-                                      <button
-                                        type="submit"
-                                        disabled={!customOutcome.trim()}
-                                        className="ai-outcome-submit-btn"
-                                        aria-label="Submit answer"
-                                        title="Send"
+                                    {/* Sliding Viewport for Multi-Step Intake Flow */}
+                                    <div className="ai-scope-slider-viewport">
+                                      <div
+                                        className={`ai-scope-slider-track ai-scope-slider-track--step${scopeStep}`}
                                       >
-                                        <ArrowUp className="h-4 w-4" />
-                                      </button>
-                                    </form>
+                                        {/* Step 1: Goal & Who it's for */}
+                                        <div
+                                          className="ai-scope-step-slide ai-scope-step-slide--1"
+                                          aria-hidden={scopeStep !== 1}
+                                        >
+                                          {/* 1. Goal (Quick clickable chips + Writable text field below) */}
+                                          <div className="ai-scope-item ai-scope-item--unwrapped">
+                                            <div className="ai-scope-item-header">
+                                              <span className="ai-scope-field-label">Goal</span>
+                                            </div>
+                                            <div
+                                              className="ai-scope-chips-group ai-outcome-options-grid ai-scope-goal-grid"
+                                              role="radiogroup"
+                                              aria-label="Primary project outcome"
+                                            >
+                                              {outcomeOptions.map((opt) => {
+                                                const isSelected =
+                                                  selectedOutcomes[m.id] === opt ||
+                                                  projectScope.goal === opt ||
+                                                  customOutcome === opt;
+
+                                                return (
+                                                  <button
+                                                    key={opt}
+                                                    type="button"
+                                                    role="radio"
+                                                    aria-checked={isSelected}
+                                                    onClick={() => {
+                                                      setCustomOutcome(opt);
+                                                      setProjectScope((prev) => ({ ...prev, goal: opt }));
+                                                      handleOutcomeSelect(m.id, opt);
+                                                    }}
+                                                    className={`ai-scope-chip-btn ai-outcome-option-btn ${
+                                                      isSelected
+                                                        ? "ai-scope-chip-btn--selected ai-outcome-option-btn--selected"
+                                                        : ""
+                                                    }`}
+                                                  >
+                                                    <div className="ai-outcome-option-content">
+                                                      <span
+                                                        className={`ai-outcome-radio ${
+                                                          isSelected ? "ai-outcome-radio--selected" : ""
+                                                        }`}
+                                                        aria-hidden="true"
+                                                      >
+                                                        {isSelected && (
+                                                          <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
+                                                        )}
+                                                      </span>
+                                                      <span className="ai-scope-chip-text ai-outcome-option-text">
+                                                        {opt}
+                                                      </span>
+                                                    </div>
+                                                  </button>
+                                                );
+                                              })}
+                                            </div>
+                                            <div className="ai-scope-writable-wrap">
+                                              <form
+                                                onSubmit={(e) => {
+                                                  e.preventDefault();
+                                                  const val = (customOutcome || projectScope.goal || "").trim();
+                                                  if (val) {
+                                                    handleOutcomeSelect(m.id, val);
+                                                    setCustomOutcome("");
+                                                  }
+                                                }}
+                                                className="ai-scope-input-form ai-outcome-input-form"
+                                              >
+                                                <input
+                                                  type="text"
+                                                  value={customOutcome}
+                                                  onChange={(e) => {
+                                                    setCustomOutcome(e.target.value);
+                                                    setProjectScope((prev) => ({ ...prev, goal: e.target.value }));
+                                                  }}
+                                                  placeholder="Type your answer and press Enter"
+                                                  className="ai-scope-text-input ai-outcome-input-field"
+                                                  aria-label="Type your answer and press Enter"
+                                                />
+                                                <span className="sr-only">Type your answer and press Enter</span>
+                                                <span className="sr-only">Or in your own words</span>
+                                                <button
+                                                  type="submit"
+                                                  disabled={!customOutcome.trim() && !projectScope.goal}
+                                                  className="sr-only"
+                                                  aria-label="Submit answer"
+                                                >
+                                                  Submit answer
+                                                </button>
+                                              </form>
+                                            </div>
+                                          </div>
+
+                                          {/* 2. Who it's for (Interactive 2-Column Persona Segment Cards - matching Goal option style & height) */}
+                                          <div className="ai-scope-item ai-scope-item--unwrapped">
+                                            <div className="ai-scope-item-header">
+                                              <span className="ai-scope-field-label">Who it's for</span>
+                                            </div>
+                                            <div
+                                              className="ai-scope-who-grid ai-scope-chips-group"
+                                              aria-label="Who it's for"
+                                            >
+                                              {[
+                                                "Tier-2 & Tier-3 Regional Consumers",
+                                                "Regional FMCG Super-Stockists",
+                                                "High-Frequency Kirana Retailers",
+                                                "Modern Trade & Quick-Commerce",
+                                              ].map((label) => {
+                                                const isSelected = projectScope.whoItsFor === label;
+                                                return (
+                                                  <button
+                                                    key={label}
+                                                    type="button"
+                                                    aria-pressed={isSelected}
+                                                    onClick={() =>
+                                                      setProjectScope((prev) => ({
+                                                        ...prev,
+                                                        whoItsFor: isSelected ? "" : label,
+                                                      }))
+                                                    }
+                                                    className={`ai-scope-chip-btn ai-scope-who-card ${
+                                                      isSelected
+                                                        ? "ai-scope-chip-btn--selected ai-scope-who-card--selected"
+                                                        : ""
+                                                    }`}
+                                                  >
+                                                    <div className="ai-scope-who-content">
+                                                      <span
+                                                        className={`ai-scope-who-radio ${
+                                                          isSelected ? "ai-scope-who-radio--selected" : ""
+                                                        }`}
+                                                        aria-hidden="true"
+                                                      >
+                                                        {isSelected && (
+                                                          <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
+                                                        )}
+                                                      </span>
+                                                      <span className="ai-scope-chip-text ai-scope-who-text">
+                                                        {label}
+                                                      </span>
+                                                    </div>
+                                                  </button>
+                                                );
+                                              })}
+                                            </div>
+                                          </div>
+
+                                          {/* Step 1 Footer: Next Button */}
+                                          <div className="ai-scope-footer">
+                                            <button
+                                              type="button"
+                                              onClick={() => setScopeStep(2)}
+                                              className="ai-scope-submit-btn ai-scope-next-btn"
+                                              aria-label="Next"
+                                            >
+                                              Next
+                                              <ArrowRight className="h-4 w-4" />
+                                            </button>
+                                          </div>
+                                        </div>
+
+                                        {/* Step 2: Investment, Expected annual impact, Target date, Delivery owner */}
+                                        <div
+                                          className="ai-scope-step-slide ai-scope-step-slide--2"
+                                          aria-hidden={scopeStep !== 2}
+                                        >
+                                          {/* 3 & 4. Investment & Expected annual impact (Side-by-side Half Width Row - Unwrapped) */}
+                                           <div className="ai-scope-split-row">
+                                             {/* 3. Investment (Manually Enterable Amount Field - USD) */}
+                                             <div className="ai-scope-item ai-scope-item--half ai-scope-item--unwrapped">
+                                               <div className="ai-scope-item-header">
+                                                 <span className="ai-scope-field-label">Investment</span>
+                                               </div>
+                                               <div className="ai-scope-manual-amount-wrap">
+                                                 <div className="ai-scope-amount-input-box">
+                                                   <span className="ai-scope-currency-symbol">$</span>
+                                                   <input
+                                                     type="text"
+                                                     value={projectScope.investment}
+                                                     onChange={(e) =>
+                                                       setProjectScope((prev) => ({
+                                                         ...prev,
+                                                         investment: e.target.value,
+                                                       }))
+                                                     }
+                                                     placeholder="Enter amount (e.g. $500K or $1.5M)"
+                                                     className="ai-scope-amount-input"
+                                                     aria-label="Enter investment amount"
+                                                   />
+                                                 </div>
+                                               </div>
+                                             </div>
+
+                                             {/* 4. Expected annual impact (Typing Field - Unwrapped) */}
+                                             <div className="ai-scope-item ai-scope-item--half ai-scope-item--unwrapped">
+                                               <div className="ai-scope-item-header">
+                                                 <span className="ai-scope-field-label">Expected annual impact</span>
+                                               </div>
+                                               <div className="ai-scope-impact-input-box">
+                                                 <input
+                                                   type="text"
+                                                   value={projectScope.annualImpact}
+                                                   onChange={(e) =>
+                                                     setProjectScope((prev) => ({
+                                                       ...prev,
+                                                       annualImpact: e.target.value,
+                                                     }))
+                                                   }
+                                                   placeholder="Enter expected impact (e.g. $2.5M ARR or +25% growth)"
+                                                   className="ai-scope-impact-input"
+                                                   aria-label="Enter expected annual impact"
+                                                 />
+                                               </div>
+                                             </div>
+                                           </div>
+
+                                           {/* 5 & 6. Target date & Market (Side-by-side Half Width Row - Unwrapped) */}
+                                           <div className="ai-scope-split-row">
+                                             {/* 5. Target date (Left Side Half Width - Unwrapped) */}
+                                             <div className="ai-scope-item ai-scope-item--half ai-scope-item--unwrapped">
+                                               <div className="ai-scope-item-header">
+                                                 <span className="ai-scope-field-label">Target date</span>
+                                               </div>
+                                               {(() => {
+                                                 const parsedQuarterMatch = projectScope.targetDate.match(/Q[1-4]/i);
+                                                 const currentQuarter = parsedQuarterMatch ? parsedQuarterMatch[0].toUpperCase() : "Q1";
+                                                 const currentYear = projectScope.targetDate.replace(/Q[1-4]/i, "").trim();
+
+                                                 return (
+                                                   <div className="ai-scope-year-quarter-box">
+                                                     <div className="ai-scope-year-input-wrap">
+                                                       <input
+                                                         type="text"
+                                                         value={currentYear}
+                                                         onChange={(e) => {
+                                                           const newYear = e.target.value;
+                                                           const quarterToUse = currentQuarter || "Q1";
+                                                           setProjectScope((prev) => ({
+                                                             ...prev,
+                                                             targetDate: newYear.trim() ? `${quarterToUse} ${newYear.trim()}` : "",
+                                                           }));
+                                                         }}
+                                                         placeholder="YYYY"
+                                                         className="ai-scope-year-input"
+                                                         aria-label="Enter target year"
+                                                       />
+                                                     </div>
+                                                     {currentYear.trim() && (
+                                                       <div className="ai-scope-single-quarter-wrap">
+                                                         <button
+                                                           type="button"
+                                                           onClick={() => {
+                                                             const quarters = ["Q1", "Q2", "Q3", "Q4"];
+                                                             const currentIdx = quarters.indexOf(currentQuarter || "Q1");
+                                                             const nextQ = quarters[(currentIdx + 1) % quarters.length];
+                                                             setProjectScope((prev) => ({
+                                                               ...prev,
+                                                               targetDate: `${nextQ} ${currentYear.trim()}`,
+                                                             }));
+                                                           }}
+                                                           className="ai-scope-single-quarter-text"
+                                                           title="Click to change quarter"
+                                                           aria-label={`Target quarter: ${currentQuarter}. Click to change.`}
+                                                         >
+                                                           {currentQuarter}
+                                                         </button>
+                                                       </div>
+                                                     )}
+                                                   </div>
+                                                 );
+                                               })()}
+                                             </div>
+
+                                             {/* 6. Market (Right Side Half Width - Select Region Dropdown) */}
+                                             <div className="ai-scope-item ai-scope-item--half ai-scope-item--unwrapped">
+                                               <div className="ai-scope-item-header">
+                                                 <span className="ai-scope-field-label">Market</span>
+                                               </div>
+                                               <div className="ai-scope-dropdown-wrap" ref={marketDropdownRef}>
+                                                 <button
+                                                   type="button"
+                                                   onClick={() => setIsMarketDropdownOpen((prev) => !prev)}
+                                                   className={`ai-scope-dropdown-trigger ${
+                                                     isMarketDropdownOpen ? "ai-scope-dropdown-trigger--open" : ""
+                                                   }`}
+                                                   aria-haspopup="listbox"
+                                                   aria-expanded={isMarketDropdownOpen}
+                                                   aria-label="Market region dropdown"
+                                                 >
+                                                   <div className="ai-scope-dropdown-trigger-left">
+                                                     <span
+                                                       className={
+                                                         projectScope.market
+                                                           ? "ai-scope-dropdown-selected-val"
+                                                           : "ai-scope-dropdown-placeholder"
+                                                       }
+                                                     >
+                                                       {projectScope.market || "Select region"}
+                                                     </span>
+                                                   </div>
+                                                   <ChevronDown
+                                                     className={`h-4 w-4 text-zinc-500 shrink-0 transition-transform duration-200 ${
+                                                       isMarketDropdownOpen ? "rotate-180 text-primary" : ""
+                                                     }`}
+                                                   />
+                                                 </button>
+
+                                                 {isMarketDropdownOpen && (
+                                                   <div
+                                                     className="ai-scope-dropdown-menu"
+                                                     role="listbox"
+                                                     aria-label="Market region options"
+                                                   >
+                                                     {[
+                                                       "South Asia",
+                                                       "South India",
+                                                       "North India",
+                                                       "West & Central India",
+                                                       "East India & Northeast",
+                                                       "Southeast Asia",
+                                                     ].map((region) => {
+                                                       const isSelected = projectScope.market === region;
+                                                       return (
+                                                         <button
+                                                           key={region}
+                                                           type="button"
+                                                           role="option"
+                                                           aria-selected={isSelected}
+                                                           onClick={() => {
+                                                             setProjectScope((prev) => ({
+                                                               ...prev,
+                                                               market: region,
+                                                             }));
+                                                             setIsMarketDropdownOpen(false);
+                                                           }}
+                                                           className={`ai-scope-dropdown-option ${
+                                                             isSelected ? "ai-scope-dropdown-option--selected" : ""
+                                                           }`}
+                                                         >
+                                                           <div className="ai-scope-dropdown-option-left">
+                                                             <span className="ai-scope-dropdown-option-bullet">
+                                                               {isSelected && (
+                                                                 <Check className="h-3.5 w-3.5 text-primary" strokeWidth={2.5} />
+                                                               )}
+                                                             </span>
+                                                             <span className="ai-scope-dropdown-option-text">{region}</span>
+                                                           </div>
+                                                         </button>
+                                                       );
+                                                     })}
+                                                   </div>
+                                                 )}
+                                               </div>
+                                             </div>
+                                           </div>
+
+                                           {/* 7. Delivery owner (Full Width - Below) */}
+                                           <div className="ai-scope-item ai-scope-item--unwrapped">
+                                             <div className="ai-scope-item-header">
+                                               <span className="ai-scope-field-label">Delivery owner</span>
+                                             </div>
+                                             <div className="ai-scope-owner-input-box">
+                                               <input
+                                                 type="text"
+                                                 value={projectScope.deliveryOwner}
+                                                 onChange={(e) =>
+                                                   setProjectScope((prev) => ({
+                                                     ...prev,
+                                                     deliveryOwner: e.target.value,
+                                                   }))
+                                                 }
+                                                 placeholder="Enter delivery owner (e.g. Arun Eswaran)"
+                                                 className="ai-scope-owner-input"
+                                                 aria-label="Enter delivery owner"
+                                               />
+                                             </div>
+                                           </div>
+
+                                           {/* Step 2 Footer: Back & Confirm Buttons */}
+                                          <div className="ai-scope-footer ai-scope-footer--split">
+                                            <button
+                                              type="button"
+                                              onClick={() => setScopeStep(1)}
+                                              className="ai-scope-back-btn"
+                                              aria-label="Back"
+                                            >
+                                              <ArrowLeft className="h-4 w-4" />
+                                              Back
+                                            </button>
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                const chosenGoal =
+                                                  projectScope.goal ||
+                                                  customOutcome ||
+                                                  outcomeOptions[0];
+                                                handleOutcomeSelect(m.id, chosenGoal);
+                                                setCustomOutcome("");
+                                              }}
+                                              className="ai-scope-submit-btn"
+                                            >
+                                              Confirm Project Scope
+                                              <ArrowRight className="h-4 w-4" />
+                                            </button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -5608,6 +6044,99 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
                           </div>
                         ) : isKnowledgePackMsg ? (
                           <div className="ai-knowledge-flow-container">
+                            {/* AI Scope Understood Executive Summary (Above Matching Knowledge Packs) */}
+                            {(() => {
+                              const hasCustomInputs =
+                                projectScope.goal ||
+                                projectScope.market ||
+                                projectScope.investment ||
+                                projectScope.annualImpact ||
+                                projectScope.targetDate;
+
+                              const summaryText = hasCustomInputs
+                                ? (() => {
+                                    const rawGoal =
+                                      projectScope.goal ||
+                                      selectedOutcomes[m.id] ||
+                                      customOutcome ||
+                                      "launch a passenger BEV distribution pilot";
+                                    const goalText =
+                                      rawGoal.toLowerCase().startsWith("launch") ||
+                                      rawGoal.toLowerCase().startsWith("expand") ||
+                                      rawGoal.toLowerCase().startsWith("accelerate") ||
+                                      rawGoal.toLowerCase().startsWith("automate")
+                                        ? rawGoal.toLowerCase()
+                                        : `pursue ${rawGoal}`;
+                                    const marketText = projectScope.market ? `in ${projectScope.market}` : "in the Philippines";
+                                    const investText = projectScope.investment
+                                      ? `with a ${
+                                          projectScope.investment.toUpperCase().includes("USD") ||
+                                          projectScope.investment.startsWith("$")
+                                            ? projectScope.investment
+                                            : `USD ${projectScope.investment}`
+                                        } investment budget`
+                                      : "with a USD 500,000 investment budget";
+                                    const impactText = projectScope.annualImpact
+                                      ? `targeting ${
+                                          projectScope.annualImpact.toUpperCase().includes("USD") ||
+                                          projectScope.annualImpact.startsWith("$")
+                                            ? projectScope.annualImpact
+                                            : `USD ${projectScope.annualImpact}`
+                                        } in annual impact`
+                                      : "targeting USD 1,200,000 in annual impact";
+                                    const dateText = projectScope.targetDate ? `by ${projectScope.targetDate}` : "by mid-2027";
+
+                                    return `Project Aurora evaluates whether to ${goalText} ${marketText} ${investText} ${impactText} ${dateText}.`;
+                                  })()
+                                : "Project Aurora evaluates whether to launch a passenger BEV distribution pilot in the Philippines with a USD 500,000 investment budget targeting USD 1,200,000 in annual impact by mid-2027.";
+
+                              return (
+                                <div className="ai-scope-understood-card">
+                                  <div className="ai-scope-understood-main">
+                                    <div className="ai-scope-understood-badge">
+                                      <Sparkles className="h-4 w-4 text-primary shrink-0" />
+                                      <span>Scope Confirmed</span>
+                                    </div>
+                                    <p className="ai-scope-understood-title">
+                                      {summaryText}
+                                    </p>
+                                  </div>
+
+                                  <div className="ai-scope-score-container" aria-label="Score: 75 out of 100">
+                                    <div className="ai-scope-score-gauge">
+                                      <svg width="76" height="76" viewBox="0 0 76 76" className="ai-scope-score-svg">
+                                        <circle
+                                          cx="38"
+                                          cy="38"
+                                          r="30"
+                                          stroke="rgba(16, 185, 129, 0.15)"
+                                          strokeWidth="6"
+                                          fill="transparent"
+                                        />
+                                        <circle
+                                          cx="38"
+                                          cy="38"
+                                          r="30"
+                                          stroke="#10b981"
+                                          strokeWidth="6"
+                                          strokeDasharray="188.5"
+                                          strokeDashoffset="47.12"
+                                          strokeLinecap="round"
+                                          fill="transparent"
+                                          transform="rotate(-90 38 38)"
+                                        />
+                                      </svg>
+                                      <div className="ai-scope-score-center-text">
+                                        <span className="ai-scope-score-value">75</span>
+                                        <span className="ai-scope-score-denom">/100</span>
+                                      </div>
+                                    </div>
+                                    <span className="ai-scope-score-title">Score</span>
+                                  </div>
+                                </div>
+                              );
+                            })()}
+
                             {/* Matching Knowledge Packages */}
                             <div className="ai-knowledge-packs-wrapper">
                               <div className="ai-knowledge-packs-header">
@@ -5715,150 +6244,38 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
                               </div>
                             </div>
 
-                            {/* Matching reports Section */}
-                            <div className="ai-matching-reports-wrapper">
-                              <div className="ai-matching-reports-header">
-                                <h3 className="ai-matching-reports-title">Matching reports</h3>
+                            {/* Related Actions Section */}
+                            <div className="ai-related-actions-wrapper">
+                              <div className="ai-related-actions-header">
+                                <h4 className="ai-related-actions-title">Related actions</h4>
                               </div>
-
-                              <div className="ai-matching-reports-grid">
-                                {defaultMatchingReports.slice(0, 2).map((report) => {
-                                  const isAdded = !!obtainedReports[report.id];
-                                  return (
-                                    <div key={report.id} className="ai-matching-report-card">
-                                      <div className="ai-matching-report-top">
-                                        <div className="ai-matching-report-header-info">
-                                          <h4 className="ai-matching-report-title">{report.title}</h4>
-                                          <p className="ai-matching-report-meta">
-                                            {report.author} · {report.year}
-                                          </p>
-                                        </div>
-
-                                        <button
-                                          type="button"
-                                          onClick={() => handleToggleReport(report.id)}
-                                          className={`ai-pack-get-btn ${isAdded ? "ai-pack-get-btn--added" : ""}`}
-                                          aria-label={isAdded ? `${report.title} added` : `Get ${report.title}`}
-                                          title={isAdded ? "Report added to project context" : "Add report to project context"}
-                                        >
-                                          {isAdded ? (
-                                            <>
-                                              <Check className="h-3.5 w-3.5 mr-1 text-emerald-600" />
-                                              <span>ADDED ✓</span>
-                                            </>
-                                          ) : (
-                                            <span>GET</span>
-                                          )}
-                                        </button>
-                                      </div>
-
-                                      <p className="ai-matching-report-summary">{report.summary}</p>
+                              <div className="ai-related-actions-list">
+                                {[
+                                  "Conduct comparative market research on observed BEV penetration, policy incentives, and distribution infrastructure in the Philippines against Thailand and Indonesia.",
+                                  "Evaluate commercial fleet and passenger BEV charging density, utility tariff structures, and grid readiness across Philippine growth clusters.",
+                                  "Model unit economics, landed vehicle tariffs, and regional dealer margin requirements for pilot distribution partnerships.",
+                                ].map((actionText, actionIdx) => (
+                                  <button
+                                    key={actionIdx}
+                                    type="button"
+                                    onClick={() => {
+                                      setInputValue(actionText);
+                                      const inputEl = document.querySelector(".chatgpt-dock-input") as HTMLTextAreaElement | null;
+                                      if (inputEl) {
+                                        inputEl.focus();
+                                      }
+                                    }}
+                                    className="ai-related-action-card group"
+                                    title={actionText}
+                                  >
+                                    <div className="ai-related-action-left">
+                                      <ArrowRight className="h-4 w-4 text-primary shrink-0 ai-related-action-icon" />
+                                      <span className="ai-related-action-text">{actionText}</span>
                                     </div>
-                                  );
-                                })}
+                                    <ArrowUpRight className="h-4 w-4 text-zinc-400 group-hover:text-primary shrink-0 transition-colors" />
+                                  </button>
+                                ))}
                               </div>
-                            </div>
-
-                            {/* Recommended Agents Section */}
-                            <div className="ai-recommended-agents-wrapper">
-                              <div className="ai-recommended-agents-header">
-                                <h3 className="ai-recommended-agents-title">Recommended Agents</h3>
-                              </div>
-
-                              <div className="ai-recommended-agents-grid" role="radiogroup" aria-label="Recommended Agents">
-                                {(agents && agents.length > 0 ? agents : initialAgents).slice(0, 2).map((agent) => {
-                                  const isSelected = selectedRecommendedAgentId === agent.id;
-
-                                  return (
-                                    <article
-                                      key={agent.id}
-                                      role="radio"
-                                      aria-checked={isSelected}
-                                      className={`project-card agent-card ai-agent-recommend-card ${isSelected ? "ai-agent-recommend-card--selected" : ""}`}
-                                      onClick={() => {
-                                        setSelectedRecommendedAgentId(agent.id);
-                                      }}
-                                    >
-                                      <div className="project-card-main">
-                                        <div className="project-card-header">
-                                          <h3 className="project-card-title">
-                                            <span className="project-title-link">
-                                              {agent.title}
-                                            </span>
-                                          </h3>
-                                        </div>
-
-                                        <p className="project-card-description">{agent.description}</p>
-                                      </div>
-
-                                      <div className="agent-card-footer">
-                                        <span className="agent-last-used">
-                                          <Clock className="agent-clock-icon" aria-hidden="true" />
-                                          <span>Last used {agent.lastUsed || "recently"}</span>
-                                        </span>
-
-                                        <span
-                                          className={`ai-outcome-radio ${isSelected ? "ai-outcome-radio--selected" : ""}`}
-                                          aria-hidden="true"
-                                        >
-                                          {isSelected && <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />}
-                                        </span>
-                                      </div>
-                                    </article>
-                                  );
-                                })}
-                              </div>
-
-                              {/* Single Generate report button after selection */}
-                              {(() => {
-                                const recommendedList = (agents && agents.length > 0 ? agents : initialAgents).slice(0, 2);
-                                const selectedAgent =
-                                  recommendedList.find((a) => a.id === selectedRecommendedAgentId) || null;
-                                const isGenerating = !!(selectedAgent && generatingAgentId === selectedAgent.id);
-                                const isGenerated = !!(selectedAgent && generatedAgents[selectedAgent.id]);
-                                const isRunDisabled = Boolean(!selectedAgent || generatingAgentId || isGenerated);
-
-                                return (
-                                  <>
-                                    <div className="ai-recommended-agents-footer">
-                                      <button
-                                        type="button"
-                                        className={`ai-generate-report-btn project-action-btn--generate-report ${isGenerated ? "project-action-btn--completed" : ""}`}
-                                        onClick={() => {
-                                          if (selectedAgent) {
-                                            handleGenerateWithAgent(selectedAgent);
-                                          }
-                                        }}
-                                        disabled={isRunDisabled}
-                                        aria-label={selectedAgent ? `Generate report with ${selectedAgent.title}` : "Generate report"}
-                                        title={!selectedAgent ? "Please select an agent first" : isGenerated ? "Agent already run" : `Generate report with ${selectedAgent.title}`}
-                                      >
-                                        <span>Generate report</span>
-                                        <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5 ml-1.5 flex-shrink-0" />
-                                      </button>
-                                    </div>
-
-                                    {/* Gradient Ring thinking animation while generating */}
-                                    {isGenerating && (
-                                      <div className="ai-agent-generating-loader-wrap" style={{ marginTop: "16px" }}>
-                                        <div className="ai-thinking-row" role="status" aria-label="Thinking">
-                                          <div className="ai-thinking-spinner" aria-hidden="true">
-                                            <GradientRingSpinner />
-                                          </div>
-                                          <span className="ai-thinking-text">Thinking...</span>
-                                        </div>
-                                      </div>
-                                    )}
-
-                                    {/* Generated Report Section */}
-                                    {!generatingAgentId && activeReportAgentId && (
-                                      <div className="ai-agent-report-container" id="agent-report-section" style={{ marginTop: "16px" }}>
-                                        {renderAgentReport(activeReportAgentId)}
-                                      </div>
-                                    )}
-                                  </>
-                                );
-                              })()}
                             </div>
                           </div>
                         ) : isStrokeBox ? (
@@ -6079,6 +6496,7 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
                   const isKyc = agent.id === "agent-sbi-kyc" || agent.title.includes("KYC");
                   const isInvoked = isAgentInvokedForRequest(agent.id);
                   const isSelected = pinnedAgent?.id === agent.id;
+                  const showInvokedStatus = isSelected || isInvoked;
 
                   return (
                     <article
@@ -6096,10 +6514,10 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
                         <p className="agent-drawer-card-desc">{agent.description}</p>
                       </div>
 
-                      {isInvoked && (
+                      {showInvokedStatus && (
                         <div className="agent-drawer-card-footer">
                           <span className="agent-drawer-invoked-status">
-                            Will be Invoked
+                            {isSelected ? "Invoked" : "Will be Invoked"}
                           </span>
                         </div>
                       )}
@@ -6149,15 +6567,12 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
             <div className="knowledge-panel-section">
               <div className="knowledge-section-title">Core facts known</div>
               <div className="knowledge-facts-progress">
-                <div className="knowledge-facts-bar" style={{ width: "66.66%" }} />
+                <div
+                  className="knowledge-facts-bar"
+                  style={{ width: `${(knownFactsCount / 6) * 100}%` }}
+                />
               </div>
-              <div className="knowledge-facts-sub">4 of 6 core facts</div>
-
-              <div className="knowledge-goal-block">
-                <div className="knowledge-field-label">Goal</div>
-                <div className="knowledge-goal-title">Build AI clinical decision support tools</div>
-                <div className="knowledge-field-source">You</div>
-              </div>
+              <div className="knowledge-facts-sub">{knownFactsCount} of 6 core facts</div>
               <div className="knowledge-divider" />
             </div>
 
@@ -6167,10 +6582,26 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
                 <span className="knowledge-still-left">
                   <span>Still to learn</span>
                 </span>
-                <span className="knowledge-still-count">2</span>
+                <span className="knowledge-still-count">{stillToLearnCount}</span>
               </div>
 
               <div className="knowledge-still-list">
+                <div className="knowledge-still-row">
+                  <div className="knowledge-field-header">
+                    <span className="knowledge-field-label">Goal</span>
+                    <button
+                      type="button"
+                      onClick={(e) => e.preventDefault()}
+                      className="knowledge-item-edit-btn"
+                      title="Edit Goal"
+                      aria-label="Edit Goal"
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </button>
+                  </div>
+                  <div className="knowledge-field-value">{projectScope.goal || "Not yet"}</div>
+                  <div className="knowledge-divider" />
+                </div>
                 <div className="knowledge-still-row">
                   <div className="knowledge-field-header">
                     <span className="knowledge-field-label">Who it's for</span>
@@ -6184,9 +6615,7 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
                       <Pencil className="h-3 w-3" />
                     </button>
                   </div>
-                  <div className="knowledge-field-value">
-                    Inpatient clinical reviewers, chief medical officers & regional healthcare providers
-                  </div>
+                  <div className="knowledge-field-value">{projectScope.whoItsFor || "Not yet"}</div>
                   <div className="knowledge-divider" />
                 </div>
                 <div className="knowledge-still-row">
@@ -6202,9 +6631,7 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
                       <Pencil className="h-3 w-3" />
                     </button>
                   </div>
-                  <div className="knowledge-field-value">
-                    ₹4.2 Cr phased deployment & clinical trial infrastructure
-                  </div>
+                  <div className="knowledge-field-value">{projectScope.investment || "Not yet"}</div>
                   <div className="knowledge-divider" />
                 </div>
                 <div className="knowledge-still-row">
@@ -6220,9 +6647,7 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
                       <Pencil className="h-3 w-3" />
                     </button>
                   </div>
-                  <div className="knowledge-field-value">
-                    38% reduction in diagnostic turnaround & ₹14.2 Cr annual savings
-                  </div>
+                  <div className="knowledge-field-value">{projectScope.annualImpact || "Not yet"}</div>
                   <div className="knowledge-divider" />
                 </div>
                 <div className="knowledge-still-row">
@@ -6238,7 +6663,7 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
                       <Pencil className="h-3 w-3" />
                     </button>
                   </div>
-                  <div className="knowledge-field-value">Q4 2026</div>
+                  <div className="knowledge-field-value">{projectScope.targetDate || "Not yet"}</div>
                   <div className="knowledge-divider" />
                 </div>
                 <div className="knowledge-still-row">
@@ -6254,7 +6679,7 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
                       <Pencil className="h-3 w-3" />
                     </button>
                   </div>
-                  <div className="knowledge-field-value">Not yet</div>
+                  <div className="knowledge-field-value">{projectScope.deliveryOwner || "Not yet"}</div>
                   <div className="knowledge-divider" />
                 </div>
               </div>
