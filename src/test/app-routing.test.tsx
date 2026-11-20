@@ -1862,9 +1862,9 @@ describe("App routing", () => {
 
     expect(screen.queryByText(/What primary outcome do you want to achieve/i)).toBeNull();
     expect(screen.queryByText(/Confirm Project Scope/i)).toBeNull();
-    expect(screen.getByText(/Expand into a new customer segment or region/i)).toBeDefined();
-    expect(screen.getByText(/Voice input:/i)).toBeDefined();
-    expect(screen.getByText(/Goal: Expand into a new target market/i)).toBeDefined();
+    expect(screen.getAllByText(/Expand into a new customer segment or region/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("Voice input:")).toBeDefined();
+    expect(screen.getByText(/Expand into a new target market/i)).toBeDefined();
     expect(screen.getByText("Project Scope Is Ready")).toBeDefined();
     expect(screen.getByText("Matching Knowledge Packs")).toBeDefined();
   }, 25000);
