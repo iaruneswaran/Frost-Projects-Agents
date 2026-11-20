@@ -2922,17 +2922,134 @@
 /* ==========================================================================
    Talk About Your Vision Stroke Box (Smooth in-place upward expansion wrapping typing field)
    ========================================================================== */
-.chatgpt-center-card--vision {
-  max-width: 900px !important;
+.chatgpt-center-card--vision,
+.chatgpt-center-card--voice-active {
+  max-width: 1028px !important;
+  width: 100% !important;
   align-items: center !important;
   top: 0 !important;
-  transition: max-width 0.35s ease, top 0.35s ease !important;
+  margin: auto auto 24px auto !important;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.center-dock-wrapper--voice {
+  width: 100% !important;
+  max-width: 1028px !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.center-dock-wrapper--voice .chat-input-dock-container {
+  width: 100% !important;
+  max-width: 1028px !important;
+}
+
+.workspace-dock-wrapper.center-dock-wrapper.center-dock-wrapper--voice .chatgpt-input-dock,
+.workspace-dock-wrapper.center-dock-wrapper .chatgpt-input-dock.chatgpt-input-dock--voice,
+.chatgpt-input-dock.chatgpt-input-dock--voice {
+  width: 100% !important;
+  max-width: 1028px !important;
+  border-radius: 28px !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  background: #ffffff !important;
+  padding: 32px 32px 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  box-shadow: 0 4px 30px -4px rgba(0, 0, 0, 0.06) !important;
+  transform-origin: bottom center;
+  animation: dockVoiceExpand 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  box-sizing: border-box !important;
+}
+
+@keyframes dockVoiceExpand {
+  0% {
+    opacity: 0;
+    transform: scaleY(0.7) translateY(30px);
+    max-height: 90px;
+  }
+
+  60% {
+    opacity: 0.95;
+  }
+
+  100% {
+    opacity: 1;
+    transform: scaleY(1) translateY(0);
+    max-height: 900px;
+  }
+}
+
+.chatgpt-dock-voice-inside {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start !important;
+  text-align: left !important;
+  margin-bottom: 20px;
+  animation: dockVoiceContentFade 0.3s ease-out forwards;
+}
+
+@keyframes dockVoiceContentFade {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Home page typing field capsule inside voice mode - NO divider line */
+.chatgpt-input-dock--voice .chatgpt-dock-main-row {
+  width: 100%;
+  border-top: none !important;
+  margin-top: 16px;
+  min-height: 54px;
+  height: 54px;
+  border-radius: 9999px !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 10px 0 16px !important;
+  box-sizing: border-box !important;
+  box-shadow: none !important;
+  transition: border-color 0.15s ease;
+}
+
+.chatgpt-input-dock--voice .chatgpt-dock-main-row:focus-within {
+  border-color: rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Home page send button color on voice mode */
+.chatgpt-dock-send-btn--voice,
+.chatgpt-input-dock--voice .chatgpt-dock-send-btn {
+  background: #1e4b8d !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+.chatgpt-dock-send-btn--voice:hover,
+.chatgpt-input-dock--voice .chatgpt-dock-send-btn:hover {
+  background: #16386b !important;
+  opacity: 0.95 !important;
+}
+
+.chatgpt-dock-send-btn--voice:disabled,
+.chatgpt-input-dock--voice .chatgpt-dock-send-btn:disabled {
+  background: #1e4b8d !important;
+  color: #ffffff !important;
+  opacity: 0.85 !important;
+  cursor: pointer !important;
 }
 
 .vision-modal-container {
   position: relative;
   width: 100%;
-  max-width: 900px;
+  max-width: 1028px;
   margin: 0 auto;
   background: #ffffff !important;
   border: 1px solid rgba(0, 0, 0, 0.1) !important;
@@ -2954,9 +3071,11 @@
     transform: scaleY(0.7) translateY(40px);
     max-height: 120px;
   }
+
   60% {
     opacity: 0.95;
   }
+
   100% {
     opacity: 1;
     transform: scaleY(1) translateY(0);
@@ -2964,7 +3083,7 @@
   }
 }
 
-.vision-modal-container > *:not(.vision-modal-input-capsule) {
+.vision-modal-container>*:not(.vision-modal-input-capsule) {
   animation: visionContentFadeIn 0.35s ease-out forwards;
 }
 
@@ -2973,6 +3092,7 @@
     opacity: 0;
     transform: translateY(12px);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -2981,11 +3101,10 @@
 
 .vision-modal-header {
   width: 100%;
-  position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin-bottom: 24px;
+  justify-content: space-between !important;
+  margin-bottom: 8px;
 }
 
 .vision-modal-title {
@@ -2994,29 +3113,127 @@
   color: #0f172a;
   margin: 0;
   letter-spacing: -0.02em;
+  text-align: left !important;
 }
 
 .vision-modal-close-btn {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+  position: relative;
   width: 32px;
   height: 32px;
+  min-width: 32px;
+  min-height: 32px;
   border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.09);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   background: #ffffff;
   color: #64748b;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  flex-shrink: 0;
+  margin-left: auto;
+  transform: none !important;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .vision-modal-close-btn:hover {
   background: #f8fafc;
   color: #0f172a;
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Main Action Capsule (44px height x 189.94px width with Listening.. and right side wave) */
+.vision-modal-main-action-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.vision-modal-main-action {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  width: auto !important;
+  min-width: unset !important;
+  max-width: unset !important;
+  border-radius: 9999px !important;
+  background: linear-gradient(90deg, #d8e5ff 0%, #e8eeff 45%, #f6f9dd 80%, #fef4ad 100%) !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 18px !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  transition: transform 0.15s ease, opacity 0.15s ease !important;
+}
+
+.vision-modal-main-action:hover {
+  background: linear-gradient(90deg, #cde0ff 0%, #dee7ff 45%, #f1f6d0 80%, #feeea0 100%) !important;
+}
+
+.vision-modal-main-action:active {
+  transform: scale(0.98) !important;
+}
+
+.vision-modal-main-action-text {
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  color: #004880 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  letter-spacing: -0.01em !important;
+}
+
+.vision-modal-main-action .voice-wave-anim {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 2.5px !important;
+  height: 20px !important;
+  width: auto !important;
+  margin-left: 2px !important;
+}
+
+.vision-modal-main-action .voice-wave-bar {
+  display: block !important;
+  width: 3px !important;
+  background-color: #004c8c !important;
+  border-radius: 9999px !important;
+  animation: visionWavePulse 0.9s ease-in-out infinite alternate !important;
+}
+
+.vision-modal-main-action .voice-wave-bar.bar-1 {
+  height: 8px !important;
+  animation-delay: 0.15s !important;
+}
+
+.vision-modal-main-action .voice-wave-bar.bar-2 {
+  height: 16px !important;
+  animation-delay: 0.3s !important;
+}
+
+.vision-modal-main-action .voice-wave-bar.bar-3 {
+  height: 20px !important;
+  animation-delay: 0s !important;
+}
+
+.vision-modal-main-action .voice-wave-bar.bar-4 {
+  height: 16px !important;
+  animation-delay: 0.25s !important;
+}
+
+.vision-modal-main-action .voice-wave-bar.bar-5 {
+  height: 8px !important;
+  animation-delay: 0.4s !important;
+}
+
+.vision-modal-main-action--paused .voice-wave-bar {
+  animation-play-state: paused !important;
+  opacity: 0.45 !important;
 }
 
 .vision-modal-orb-wrap {
@@ -3126,17 +3343,21 @@
 }
 
 .vision-modal-subtitle {
-  font-size: 15px;
+  font-size: 14.5px;
   color: #475569;
-  max-width: 560px;
-  line-height: 1.5;
-  margin: 0 0 24px;
+  max-width: 100% !important;
+  width: 100% !important;
+  white-space: nowrap !important;
+  line-height: 1.4;
+  margin: 0 0 24px !important;
+  text-align: left !important;
 }
 
 .vision-modal-actions-row {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start !important;
+  width: 100% !important;
   gap: 12px;
   margin-bottom: 28px;
 }
@@ -3144,17 +3365,17 @@
 .vision-modal-pause-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  height: 40px;
-  padding: 0 20px;
-  border-radius: 9999px;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
   border: 1px solid rgba(0, 0, 0, 0.12);
   background: #ffffff;
   color: #0f172a;
-  font-size: 14px;
-  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .vision-modal-pause-btn:hover {
@@ -3165,27 +3386,28 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 40px;
-  padding: 0 22px;
+  height: 44px;
+  padding: 0 20px;
   border-radius: 9999px;
-  border: none;
-  background: #1d4ed8;
-  color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #ffffff;
+  color: #0f172a;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .vision-modal-end-btn:hover {
-  background: #1e40af;
+  background: #f8fafc;
+  border-color: rgba(0, 0, 0, 0.2);
 }
 
 .vision-modal-progress-section {
   width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start !important;
   gap: 12px;
   margin-bottom: 28px;
 }
@@ -3197,12 +3419,14 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  text-align: left !important;
+  align-self: flex-start !important;
 }
 
 .vision-modal-chips-row {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start !important;
   flex-wrap: nowrap;
   gap: 10px;
   width: 100%;
@@ -3218,8 +3442,9 @@
   min-width: 120px;
   padding: 0 14px;
   border-radius: 9999px;
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #f1f5f9;
+  border: none !important;
+  outline: none !important;
   color: #334155;
   font-size: 13.5px;
   font-weight: 500;
@@ -3227,7 +3452,8 @@
   overflow: hidden;
   isolation: isolate;
   flex-shrink: 0;
-  transition: border-color 0.4s ease, color 0.35s ease, box-shadow 0.4s ease;
+  box-shadow: none !important;
+  transition: background-color 0.2s ease, color 0.35s ease;
   user-select: none;
 }
 
@@ -3243,8 +3469,7 @@
 }
 
 .vision-modal-chip:hover {
-  border-color: rgba(0, 0, 0, 0.25);
-  background: #f8fafc;
+  background: #e2e8f0;
 }
 
 .vision-modal-chip--done::before {
@@ -3252,10 +3477,12 @@
 }
 
 .vision-modal-chip--done {
-  border-color: #0f172a !important;
+  border: none !important;
+  outline: none !important;
+  background: #0f172a !important;
   color: #ffffff !important;
   font-weight: 500 !important;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18) !important;
+  box-shadow: none !important;
 }
 
 .vision-modal-chip-check {

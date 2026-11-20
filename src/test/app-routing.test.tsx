@@ -1851,8 +1851,8 @@ describe("App routing", () => {
     expect(screen.queryByText("Save insight")).toBeNull();
     expect(screen.queryByText("Related actions")).toBeNull();
 
-    // Click End conversation
-    const endConvBtn = screen.getByRole("button", { name: "End conversation" });
+    // Click End Session
+    const endConvBtn = screen.getByRole("button", { name: /end session|end conversation/i });
     fireEvent.click(endConvBtn);
 
     // Thinking loader runs, then confirmed scope and matching packages appear directly (brief / outcome form is hidden)

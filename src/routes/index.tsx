@@ -4279,6 +4279,10 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
     setInputValue("");
 
     if (isVisionModalOpen) {
+      if (text.toLowerCase().startsWith("completed goal") || understoodFacts.length >= 6) {
+        handleEndVisionConversation(text);
+        return;
+      }
       const allChips = ["Goal", "Industry", "Market", "Audience", "Challenges", "Outcomes"];
       const lower = text.toLowerCase();
       const matchedChip = allChips.find((c) => lower.includes(c.toLowerCase()));
@@ -4625,24 +4629,27 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
         clearTimeout(voiceTimeoutRef.current);
         voiceTimeoutRef.current = null;
       }
+      setInputValue("");
       setIsThinking(false);
       setIsVoiceActive(false);
       setIsVisionModalOpen(false);
       return;
     }
 
+    setInputValue("");
     setIsVoiceActive(true);
     setIsVisionModalOpen(true);
     setIsVisionPaused(false);
     setUnderstoodFacts([]);
-    startVoiceIntakeFlow();
+    startVoiceIntakeFlow(0);
   };
 
-  const handleEndVisionConversation = () => {
+  const handleEndVisionConversation = (customSummary?: string) => {
     if (voiceTimeoutRef.current) {
       clearTimeout(voiceTimeoutRef.current);
       voiceTimeoutRef.current = null;
     }
+    setInputValue("");
     setIsVisionModalOpen(false);
     setIsVoiceActive(false);
 
@@ -4670,7 +4677,9 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
         deliveryOwner: prev.deliveryOwner || "Arun Eswaran",
       }));
 
-      const summaryText = `Expand into a new customer segment or region\n\nVoice input:\n• Goal: Expand into a new target market\n• Industry: Beauty & personal care\n• Market: India, Tier-2 & Tier-3 cities\n• Audience: Urban working women aged 22–35\n• Challenges: Unclear which cities, price points and channels to prioritise\n• Outcomes: Prioritised city shortlist and go-to-market plan`;
+      const summaryText = customSummary
+        ? `${customSummary}\n\nExpand into a new customer segment or region\n\nVoice input:\n• Goal: Expand into a new target market\n• Industry: Beauty & personal care\n• Market: India, Tier-2 & Tier-3 cities\n• Audience: Urban working women aged 22–35\n• Challenges: Unclear which cities, price points and channels to prioritise\n• Outcomes: Prioritised city shortlist and go-to-market plan`
+        : `Expand into a new customer segment or region\n\nVoice input:\n• Goal: Expand into a new target market\n• Industry: Beauty & personal care\n• Market: India, Tier-2 & Tier-3 cities\n• Audience: Urban working women aged 22–35\n• Challenges: Unclear which cities, price points and channels to prioritise\n• Outcomes: Prioritised city shortlist and go-to-market plan`;
 
       const summaryMsg: MessageItem = {
         id: `voice-scope-summary-${Date.now()}`,
@@ -4712,7 +4721,7 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
         }
       } else {
         if (isVoiceActive) {
-          startVoiceIntakeFlow();
+          startVoiceIntakeFlow(understoodFacts.length);
         }
       }
       return next;
@@ -4753,7 +4762,7 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
     }));
   };
 
-  const startVoiceIntakeFlow = () => {
+  const startVoiceIntakeFlow = (initialStep = 0) => {
     if (voiceTimeoutRef.current) {
       clearTimeout(voiceTimeoutRef.current);
       voiceTimeoutRef.current = null;
@@ -4762,7 +4771,7 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
     const isVitest = typeof process !== "undefined" && Boolean(process.env?.VITEST || process.env?.NODE_ENV === "test");
     const stepDelay = isVitest ? 40 : 900;
 
-    let step = 0;
+    let step = initialStep;
 
     const runNextStep = () => {
       step++;
@@ -4783,7 +4792,30 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
         voiceTimeoutRef.current = setTimeout(runNextStep, stepDelay);
       } else if (step >= 6) {
         setUnderstoodFacts(["Goal", "Industry", "Market", "Audience", "Challenges", "Outcomes"]);
-        // Do not auto-end: wait for user to click "End conversation" button
+        
+        const autoSummary = "Completed goals: Expand personal care brand into Tier-2 & Tier-3 cities targeting urban working women aged 22–35.";
+
+        if (isVitest) {
+          setInputValue(autoSummary);
+          voiceTimeoutRef.current = setTimeout(() => {
+            handleEndVisionConversation(autoSummary);
+          }, 80);
+        } else {
+          // Animate writing into the typing field, then automatically submit
+          let charIndex = 0;
+          const typeNextChars = () => {
+            charIndex = Math.min(charIndex + 3, autoSummary.length);
+            setInputValue(autoSummary.slice(0, charIndex));
+            if (charIndex < autoSummary.length) {
+              voiceTimeoutRef.current = setTimeout(typeNextChars, 20);
+            } else {
+              voiceTimeoutRef.current = setTimeout(() => {
+                handleEndVisionConversation(autoSummary);
+              }, 700);
+            }
+          };
+          voiceTimeoutRef.current = setTimeout(typeNextChars, 350);
+        }
       }
     };
 
@@ -4795,7 +4827,11 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          handleSend();
+          if (isVisionModalOpen && inputValue.trim()) {
+            handleEndVisionConversation(inputValue.trim());
+          } else {
+            handleSend();
+          }
         }}
         className={`chatgpt-input-dock ${attachedFiles.length > 0 ? "chatgpt-input-dock--expanded" : ""} ${isVisionModalOpen ? "chatgpt-input-dock--voice" : ""}`}
       >
@@ -4812,6 +4848,7 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
                     clearTimeout(voiceTimeoutRef.current);
                     voiceTimeoutRef.current = null;
                   }
+                  setInputValue("");
                   setIsVisionModalOpen(false);
                   setIsVoiceActive(false);
                 }}
@@ -4822,9 +4859,23 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
               </button>
             </div>
 
-            {/* Animated Orb */}
-            <div className="vision-modal-orb-wrap">
-              <div className={`vision-modal-orb ${isVisionPaused ? "vision-modal-orb--paused" : ""}`}>
+            {/* Subtitle (comes below heading on a single line) */}
+            <p className="vision-modal-subtitle">
+              Tell me about your vision, your goal, industry, market, audience, challenges and expected outcomes.
+            </p>
+
+            {/* Actions Row: Listening Capsule on left + Pause and End conversation on right */}
+            <div className="vision-modal-actions-row">
+              <button
+                type="button"
+                onClick={handleToggleVisionPause}
+                className={`vision-modal-main-action ${isVisionPaused ? "vision-modal-main-action--paused" : ""}`}
+                title={isVisionPaused ? "Resume listening" : "Pause listening"}
+                aria-label={isVisionPaused ? "Resume listening" : "Listening..."}
+              >
+                <span className="vision-modal-main-action-text">
+                  {isVisionPaused ? "Paused" : "Listening.."}
+                </span>
                 <span className="voice-wave-anim" aria-hidden="true">
                   <span className="voice-wave-bar bar-1" />
                   <span className="voice-wave-bar bar-2" />
@@ -4832,26 +4883,13 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
                   <span className="voice-wave-bar bar-4" />
                   <span className="voice-wave-bar bar-5" />
                 </span>
-              </div>
-            </div>
+              </button>
 
-            {/* Status Badge */}
-            <div className="vision-modal-status-badge">
-              <span className="vision-modal-status-dot" />
-              <span>{isVisionPaused ? "Paused" : "Speaking"}</span>
-            </div>
-
-            {/* Subtitle */}
-            <p className="vision-modal-subtitle">
-              Tell me about your vision, your goal, industry, market, audience, challenges and expected outcomes.
-            </p>
-
-            {/* Action Buttons: Pause & End Conversation */}
-            <div className="vision-modal-actions-row">
               <button
                 type="button"
                 onClick={handleToggleVisionPause}
                 className="vision-modal-pause-btn"
+                title={isVisionPaused ? "Resume conversation" : "Pause conversation"}
                 aria-label={isVisionPaused ? "Resume conversation" : "Pause conversation"}
               >
                 {isVisionPaused ? (
@@ -4859,16 +4897,15 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
                 ) : (
                   <Pause className="h-4 w-4 fill-current" />
                 )}
-                <span>{isVisionPaused ? "Resume" : "Pause"}</span>
               </button>
               <button
                 type="button"
                 onClick={handleEndVisionConversation}
                 className="vision-modal-end-btn"
-                aria-label="End conversation"
+                aria-label="End Session"
               >
                 <Square className="h-3.5 w-3.5 fill-current" />
-                <span>End conversation</span>
+                <span>End Session</span>
               </button>
             </div>
 
@@ -4889,7 +4926,7 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
                       aria-pressed={isDone}
                     >
                       {isDone && (
-                        <Check className="vision-modal-chip-check h-3.5 w-3.5 text-white" strokeWidth={3} />
+                        <Check className="vision-modal-chip-check h-3.5 w-3.5 text-white" strokeWidth={2.2} />
                       )}
                       <span>{chip}</span>
                     </button>
@@ -4966,7 +5003,7 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
           <div className="chatgpt-dock-right-actions">
             <button
               type="submit"
-              className="chatgpt-dock-send-btn"
+              className={`chatgpt-dock-send-btn ${isVisionModalOpen ? "chatgpt-dock-send-btn--voice" : ""}`}
               title="Send message"
               aria-label="Send message"
               disabled={!inputValue.trim() && attachedFiles.length === 0}
@@ -5641,116 +5678,13 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
                         </button>
                       </div>
 
-                      {/* Center Input Dock */}
-                      <div className="workspace-dock-wrapper center-dock-wrapper">
-                        {renderInputDock()}
-                      </div>
                     </>
-                  ) : (
-                    /* When Voice Mode is Active: greeting and action buttons hidden, stroke box wraps typing field and expands to top */
-                    <div className="vision-modal-container vision-modal-stroke-box" role="region" aria-label="Talk About Your Vision">
-                      {/* Header */}
-                      <div className="vision-modal-header">
-                        <h2 className="vision-modal-title">Talk About Your Vision</h2>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (voiceTimeoutRef.current) {
-                              clearTimeout(voiceTimeoutRef.current);
-                              voiceTimeoutRef.current = null;
-                            }
-                            setIsVisionModalOpen(false);
-                            setIsVoiceActive(false);
-                          }}
-                          className="vision-modal-close-btn"
-                          aria-label="Stop voice mode"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
+                  ) : null}
 
-                      {/* Animated Orb */}
-                      <div className="vision-modal-orb-wrap">
-                        <div className={`vision-modal-orb ${isVisionPaused ? "vision-modal-orb--paused" : ""}`}>
-                          <span className="voice-wave-anim" aria-hidden="true">
-                            <span className="voice-wave-bar bar-1" />
-                            <span className="voice-wave-bar bar-2" />
-                            <span className="voice-wave-bar bar-3" />
-                            <span className="voice-wave-bar bar-4" />
-                            <span className="voice-wave-bar bar-5" />
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Status Badge */}
-                      <div className="vision-modal-status-badge">
-                        <span className="vision-modal-status-dot" />
-                        <span>{isVisionPaused ? "Paused" : "Speaking"}</span>
-                      </div>
-
-                      {/* Subtitle */}
-                      <p className="vision-modal-subtitle">
-                        Tell me about your vision, your goal, industry, market, audience, challenges and expected outcomes.
-                      </p>
-
-                      {/* Action Buttons: Pause & End Conversation */}
-                      <div className="vision-modal-actions-row">
-                        <button
-                          type="button"
-                          onClick={handleToggleVisionPause}
-                          className="vision-modal-pause-btn"
-                          aria-label={isVisionPaused ? "Resume conversation" : "Pause conversation"}
-                        >
-                          {isVisionPaused ? (
-                            <Play className="h-4 w-4 fill-current" />
-                          ) : (
-                            <Pause className="h-4 w-4 fill-current" />
-                          )}
-                          <span>{isVisionPaused ? "Resume" : "Pause"}</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleEndVisionConversation}
-                          className="vision-modal-end-btn"
-                          aria-label="End conversation"
-                        >
-                          <Square className="h-3.5 w-3.5 fill-current" />
-                          <span>End conversation</span>
-                        </button>
-                      </div>
-
-                      {/* Progress Counter & 6 Chips */}
-                      <div className="vision-modal-progress-section">
-                        <div className="vision-modal-progress-label">
-                          <span>What we've understood so far</span>
-                        </div>
-                        <div className="vision-modal-chips-row">
-                          {["Goal", "Industry", "Market", "Audience", "Challenges", "Outcomes"].map((chip) => {
-                            const isDone = understoodFacts.includes(chip);
-                            return (
-                              <button
-                                key={chip}
-                                type="button"
-                                onClick={() => handleToggleChip(chip)}
-                                className={`vision-modal-chip ${isDone ? "vision-modal-chip--done" : ""}`}
-                                aria-pressed={isDone}
-                              >
-                                {isDone && (
-                                  <Check className="vision-modal-chip-check h-3.5 w-3.5 text-white" strokeWidth={3} />
-                                )}
-                                <span>{chip}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Home Page Typing Field at the bottom of the stroke box */}
-                      <div className="vision-modal-dock-wrap">
-                        {renderInputDock()}
-                      </div>
-                    </div>
-                  )}
+                  {/* Center Input Dock (expands in-place to 1100px with voice UI inside) */}
+                  <div className={`workspace-dock-wrapper center-dock-wrapper ${isVisionModalOpen ? "center-dock-wrapper--voice" : ""}`}>
+                    {renderInputDock()}
+                  </div>
                 </div>
               )}
 
