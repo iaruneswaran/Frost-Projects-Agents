@@ -1832,11 +1832,11 @@ describe("App routing", () => {
     const voiceBtn = screen.getByRole("button", { name: /define your vision|voice mode/i });
     fireEvent.click(voiceBtn);
 
-    // Initial greeting, Help me define idea, Attach a plan, and typing field are hidden
+    // Initial greeting, Help me define idea, Attach a plan are hidden, and home page typing field is kept below inside the stroke box
     expect(screen.queryByText("Tell me what you'd like to build, and we'll assemble the right agents.")).toBeNull();
     expect(screen.queryByText("Help me define the idea")).toBeNull();
     expect(screen.queryByText("Attach a plan")).toBeNull();
-    expect(screen.queryByPlaceholderText("Reply, attach a file, or tap the mic to talk")).toBeNull();
+    expect(screen.getByPlaceholderText("Reply, attach a file, or tap the mic to talk")).toBeDefined();
 
     // Talk About Your Vision modal card is displayed with badges
     expect(screen.getByText("Talk About Your Vision")).toBeDefined();

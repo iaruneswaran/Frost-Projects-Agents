@@ -4278,6 +4278,21 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
     setAttachedFiles([]);
     setInputValue("");
 
+    if (isVisionModalOpen) {
+      const allChips = ["Goal", "Industry", "Market", "Audience", "Challenges", "Outcomes"];
+      const lower = text.toLowerCase();
+      const matchedChip = allChips.find((c) => lower.includes(c.toLowerCase()));
+      if (matchedChip) {
+        setUnderstoodFacts((prev) => Array.from(new Set([...prev, matchedChip])));
+      } else {
+        const remaining = allChips.filter((c) => !understoodFacts.includes(c));
+        if (remaining.length > 0) {
+          setUnderstoodFacts((prev) => [...prev, remaining[0]]);
+        }
+      }
+      return;
+    }
+
     // If chat title is still "New chat", update it to the first message text
     if (selectedChat === "New chat") {
       const cleanTitle = text.length > 28 ? text.slice(0, 28) + "..." : text;
@@ -4782,8 +4797,109 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
           e.preventDefault();
           handleSend();
         }}
-        className={`chatgpt-input-dock ${attachedFiles.length > 0 ? "chatgpt-input-dock--expanded" : ""}`}
+        className={`chatgpt-input-dock ${attachedFiles.length > 0 ? "chatgpt-input-dock--expanded" : ""} ${isVisionModalOpen ? "chatgpt-input-dock--voice" : ""}`}
       >
+        {/* When Voice Mode is Active: Voice UI is inside the typing field dock expanding to the top */}
+        {isVisionModalOpen && (
+          <div className="chatgpt-dock-voice-inside" role="region" aria-label="Talk About Your Vision">
+            {/* Header */}
+            <div className="vision-modal-header">
+              <h2 className="vision-modal-title">Talk About Your Vision</h2>
+              <button
+                type="button"
+                onClick={() => {
+                  if (voiceTimeoutRef.current) {
+                    clearTimeout(voiceTimeoutRef.current);
+                    voiceTimeoutRef.current = null;
+                  }
+                  setIsVisionModalOpen(false);
+                  setIsVoiceActive(false);
+                }}
+                className="vision-modal-close-btn"
+                aria-label="Stop voice mode"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Animated Orb */}
+            <div className="vision-modal-orb-wrap">
+              <div className={`vision-modal-orb ${isVisionPaused ? "vision-modal-orb--paused" : ""}`}>
+                <span className="voice-wave-anim" aria-hidden="true">
+                  <span className="voice-wave-bar bar-1" />
+                  <span className="voice-wave-bar bar-2" />
+                  <span className="voice-wave-bar bar-3" />
+                  <span className="voice-wave-bar bar-4" />
+                  <span className="voice-wave-bar bar-5" />
+                </span>
+              </div>
+            </div>
+
+            {/* Status Badge */}
+            <div className="vision-modal-status-badge">
+              <span className="vision-modal-status-dot" />
+              <span>{isVisionPaused ? "Paused" : "Speaking"}</span>
+            </div>
+
+            {/* Subtitle */}
+            <p className="vision-modal-subtitle">
+              Tell me about your vision, your goal, industry, market, audience, challenges and expected outcomes.
+            </p>
+
+            {/* Action Buttons: Pause & End Conversation */}
+            <div className="vision-modal-actions-row">
+              <button
+                type="button"
+                onClick={handleToggleVisionPause}
+                className="vision-modal-pause-btn"
+                aria-label={isVisionPaused ? "Resume conversation" : "Pause conversation"}
+              >
+                {isVisionPaused ? (
+                  <Play className="h-4 w-4 fill-current" />
+                ) : (
+                  <Pause className="h-4 w-4 fill-current" />
+                )}
+                <span>{isVisionPaused ? "Resume" : "Pause"}</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleEndVisionConversation}
+                className="vision-modal-end-btn"
+                aria-label="End conversation"
+              >
+                <Square className="h-3.5 w-3.5 fill-current" />
+                <span>End conversation</span>
+              </button>
+            </div>
+
+            {/* Progress Counter & 6 Chips */}
+            <div className="vision-modal-progress-section">
+              <div className="vision-modal-progress-label">
+                <span>What we've understood so far</span>
+              </div>
+              <div className="vision-modal-chips-row">
+                {["Goal", "Industry", "Market", "Audience", "Challenges", "Outcomes"].map((chip) => {
+                  const isDone = understoodFacts.includes(chip);
+                  return (
+                    <button
+                      key={chip}
+                      type="button"
+                      onClick={() => handleToggleChip(chip)}
+                      className={`vision-modal-chip ${isDone ? "vision-modal-chip--done" : ""}`}
+                      aria-pressed={isDone}
+                    >
+                      {isDone && (
+                        <Check className="vision-modal-chip-check h-3.5 w-3.5 text-white" strokeWidth={3} />
+                      )}
+                      <span>{chip}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
         {attachedFiles.length > 0 && (
           <div className="chatgpt-dock-attachments-row" aria-label="Attached files">
             {attachedFiles.map((att) => (
@@ -5452,201 +5568,189 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
             </div>
           ) : (
             <>
-              {isVisionModalOpen && (
-                <div className="vision-modal-container" role="region" aria-label="Talk About Your Vision">
-                  {/* Header */}
-                  <div className="vision-modal-header">
-                    <h2 className="vision-modal-title">Talk About Your Vision</h2>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (voiceTimeoutRef.current) {
-                          clearTimeout(voiceTimeoutRef.current);
-                          voiceTimeoutRef.current = null;
-                        }
-                        setIsVisionModalOpen(false);
-                        setIsVoiceActive(false);
-                      }}
-                      className="vision-modal-close-btn"
-                      aria-label="Stop voice mode"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-
-                  {/* Dark Orb with Animated Wave Bars */}
-                  <div className="vision-modal-orb-wrap">
-                    <div className={`vision-modal-orb ${isVisionPaused ? "vision-modal-orb--paused" : ""}`}>
-                      <span className="voice-wave-anim" aria-hidden="true">
-                        <span className="voice-wave-bar bar-1" />
-                        <span className="voice-wave-bar bar-2" />
-                        <span className="voice-wave-bar bar-3" />
-                        <span className="voice-wave-bar bar-4" />
-                        <span className="voice-wave-bar bar-5" />
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Status Badge */}
-                  <div className="vision-modal-status-badge">
-                    <span className="vision-modal-status-dot" />
-                    <span>{isVisionPaused ? "Paused" : "Speaking"}</span>
-                  </div>
-
-                  {/* Subtitle */}
-                  <p className="vision-modal-subtitle">
-                    Tell me about your vision — your goal, industry, market, audience, challenges and expected outcomes.
-                  </p>
-
-                  {/* Action Buttons: Pause & End Conversation */}
-                  <div className="vision-modal-actions-row">
-                    <button
-                      type="button"
-                      onClick={handleToggleVisionPause}
-                      className="vision-modal-pause-btn"
-                      aria-label={isVisionPaused ? "Resume conversation" : "Pause conversation"}
-                    >
-                      {isVisionPaused ? (
-                        <Play className="h-4 w-4 fill-current" />
-                      ) : (
-                        <Pause className="h-4 w-4 fill-current" />
-                      )}
-                      <span>{isVisionPaused ? "Resume" : "Pause"}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleEndVisionConversation}
-                      className="vision-modal-end-btn"
-                      aria-label="End conversation"
-                    >
-                      <Square className="h-3.5 w-3.5 fill-current" />
-                      <span>End conversation</span>
-                    </button>
-                  </div>
-
-                  {/* Progress Counter & 6 Chips */}
-                  <div className="vision-modal-progress-section">
-                    <div className="vision-modal-progress-label">
-                      <span>What we've understood so far</span>
-                    </div>
-                    <div className="vision-modal-chips-row">
-                      {["Goal", "Industry", "Market", "Audience", "Challenges", "Outcomes"].map((chip) => {
-                        const isDone = understoodFacts.includes(chip);
-                        return (
-                          <button
-                            key={chip}
-                            type="button"
-                            onClick={() => handleToggleChip(chip)}
-                            className={`vision-modal-chip ${isDone ? "vision-modal-chip--done" : ""}`}
-                            aria-pressed={isDone}
-                          >
-                            {isDone && (
-                              <Check className="vision-modal-chip-check h-3.5 w-3.5 text-white" strokeWidth={3} />
-                            )}
-                            <span>{chip}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Input Capsule */}
-                  <form onSubmit={handleVisionSubmit} className="vision-modal-input-capsule">
-                    <input
-                      type="text"
-                      value={visionInput}
-                      onChange={(e) => setVisionInput(e.target.value)}
-                      placeholder='Speak or type — try “Goal”, “Industry” or “Market”'
-                      className="vision-modal-input-field"
-                      aria-label="Speak or type vision details"
-                    />
-                    <button
-                      type="submit"
-                      disabled={!visionInput.trim()}
-                      className="vision-modal-input-send-btn"
-                      aria-label="Submit message"
-                    >
-                      <ArrowUp className="h-4 w-4" />
-                    </button>
-                  </form>
-                </div>
-              )}
-
-              {messages.length === 0 && !isThinking && !isVoiceActive && !isVisionModalOpen && (
-                <div className="chatgpt-center-card">
-                  {isNewProject ? (
+              {messages.length === 0 && !isThinking && (
+                <div className={`chatgpt-center-card ${isVisionModalOpen ? "chatgpt-center-card--vision" : ""}`}>
+                  {!isVisionModalOpen && !isVoiceActive ? (
                     <>
-                      <h1 className="chatgpt-greeting">Hey Arun, what project is on your mind?</h1>
-                      <p className="chatgpt-context-sub">
-                        Tell me what you'd like to build, and we'll assemble the right agents.
-                      </p>
+                      {isNewProject ? (
+                        <>
+                          <h1 className="chatgpt-greeting">Hey Arun, what project is on your mind?</h1>
+                          <p className="chatgpt-context-sub">
+                            Tell me what you'd like to build, and we'll assemble the right agents.
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <h1 className="chatgpt-greeting">What would you like to work on next?</h1>
+                          <p className="chatgpt-context-detail">
+                            Your project details are ready. We can review the score or explore a decision.
+                          </p>
+                          <p className="chatgpt-context-sub">
+                            Reply below, or choose where to pick up.
+                          </p>
+                        </>
+                      )}
+
+                      {/* Action Buttons */}
+                      <div className="workspace-actions">
+                        <button
+                          type="button"
+                          onClick={() => handleSend("Help me define the idea")}
+                          className="workspace-btn-primary"
+                        >
+                          <span>Help me define the idea</span>
+                          <ArrowUpRight className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (dockFileInputRef.current) {
+                              dockFileInputRef.current.click();
+                            } else {
+                              handleSend("Attach a plan");
+                            }
+                          }}
+                          className="workspace-btn-secondary"
+                        >
+                          <Paperclip className="h-4 w-4" />
+                          <span>Attach a plan</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleToggleVoiceMode}
+                          className={`workspace-vision-btn workspace-voice-btn chatgpt-dock-voice-btn ${isVoiceActive ? "chatgpt-dock-voice-btn--active" : ""}`}
+                          title={isVoiceActive ? "Stop voice mode" : "Define Your Vision"}
+                          aria-label={isVoiceActive ? "Stop voice mode" : "Define Your Vision (Voice Mode)"}
+                          style={{
+                            background: "linear-gradient(90deg, #d8e5ff 0%, #e8eeff 45%, #f6f9dd 80%, #fef4ad 100%)",
+                            border: "none",
+                            color: "#004c8c",
+                          }}
+                        >
+                          <Mic className="vision-btn-mic-icon h-4 w-4" strokeWidth={2.2} style={{ color: "#003e73" }} />
+                          <span className="vision-btn-text" style={{ color: "#004880" }}>Define Your Vision</span>
+                          {isVoiceActive && (
+                            <span className="voice-wave-anim" aria-hidden="true">
+                              <span className="voice-wave-bar bar-1" />
+                              <span className="voice-wave-bar bar-2" />
+                              <span className="voice-wave-bar bar-3" />
+                              <span className="voice-wave-bar bar-4" />
+                              <span className="voice-wave-bar bar-5" />
+                            </span>
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Center Input Dock */}
+                      <div className="workspace-dock-wrapper center-dock-wrapper">
+                        {renderInputDock()}
+                      </div>
                     </>
                   ) : (
-                    <>
-                      <h1 className="chatgpt-greeting">What would you like to work on next?</h1>
-                      <p className="chatgpt-context-detail">
-                        Your project details are ready. We can review the score or explore a decision.
+                    /* When Voice Mode is Active: greeting and action buttons hidden, stroke box wraps typing field and expands to top */
+                    <div className="vision-modal-container vision-modal-stroke-box" role="region" aria-label="Talk About Your Vision">
+                      {/* Header */}
+                      <div className="vision-modal-header">
+                        <h2 className="vision-modal-title">Talk About Your Vision</h2>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (voiceTimeoutRef.current) {
+                              clearTimeout(voiceTimeoutRef.current);
+                              voiceTimeoutRef.current = null;
+                            }
+                            setIsVisionModalOpen(false);
+                            setIsVoiceActive(false);
+                          }}
+                          className="vision-modal-close-btn"
+                          aria-label="Stop voice mode"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+
+                      {/* Animated Orb */}
+                      <div className="vision-modal-orb-wrap">
+                        <div className={`vision-modal-orb ${isVisionPaused ? "vision-modal-orb--paused" : ""}`}>
+                          <span className="voice-wave-anim" aria-hidden="true">
+                            <span className="voice-wave-bar bar-1" />
+                            <span className="voice-wave-bar bar-2" />
+                            <span className="voice-wave-bar bar-3" />
+                            <span className="voice-wave-bar bar-4" />
+                            <span className="voice-wave-bar bar-5" />
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Status Badge */}
+                      <div className="vision-modal-status-badge">
+                        <span className="vision-modal-status-dot" />
+                        <span>{isVisionPaused ? "Paused" : "Speaking"}</span>
+                      </div>
+
+                      {/* Subtitle */}
+                      <p className="vision-modal-subtitle">
+                        Tell me about your vision, your goal, industry, market, audience, challenges and expected outcomes.
                       </p>
-                      <p className="chatgpt-context-sub">
-                        Reply below, or choose where to pick up.
-                      </p>
-                    </>
+
+                      {/* Action Buttons: Pause & End Conversation */}
+                      <div className="vision-modal-actions-row">
+                        <button
+                          type="button"
+                          onClick={handleToggleVisionPause}
+                          className="vision-modal-pause-btn"
+                          aria-label={isVisionPaused ? "Resume conversation" : "Pause conversation"}
+                        >
+                          {isVisionPaused ? (
+                            <Play className="h-4 w-4 fill-current" />
+                          ) : (
+                            <Pause className="h-4 w-4 fill-current" />
+                          )}
+                          <span>{isVisionPaused ? "Resume" : "Pause"}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleEndVisionConversation}
+                          className="vision-modal-end-btn"
+                          aria-label="End conversation"
+                        >
+                          <Square className="h-3.5 w-3.5 fill-current" />
+                          <span>End conversation</span>
+                        </button>
+                      </div>
+
+                      {/* Progress Counter & 6 Chips */}
+                      <div className="vision-modal-progress-section">
+                        <div className="vision-modal-progress-label">
+                          <span>What we've understood so far</span>
+                        </div>
+                        <div className="vision-modal-chips-row">
+                          {["Goal", "Industry", "Market", "Audience", "Challenges", "Outcomes"].map((chip) => {
+                            const isDone = understoodFacts.includes(chip);
+                            return (
+                              <button
+                                key={chip}
+                                type="button"
+                                onClick={() => handleToggleChip(chip)}
+                                className={`vision-modal-chip ${isDone ? "vision-modal-chip--done" : ""}`}
+                                aria-pressed={isDone}
+                              >
+                                {isDone && (
+                                  <Check className="vision-modal-chip-check h-3.5 w-3.5 text-white" strokeWidth={3} />
+                                )}
+                                <span>{chip}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Home Page Typing Field at the bottom of the stroke box */}
+                      <div className="vision-modal-dock-wrap">
+                        {renderInputDock()}
+                      </div>
+                    </div>
                   )}
-
-                  {/* Action Buttons */}
-                  <div className="workspace-actions">
-                    <button
-                      type="button"
-                      onClick={() => handleSend("Help me define the idea")}
-                      className="workspace-btn-primary"
-                    >
-                      <span>Help me define the idea</span>
-                      <ArrowUpRight className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (dockFileInputRef.current) {
-                          dockFileInputRef.current.click();
-                        } else {
-                          handleSend("Attach a plan");
-                        }
-                      }}
-                      className="workspace-btn-secondary"
-                    >
-                      <span>Attach a plan</span>
-                      <Paperclip className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleToggleVoiceMode}
-                      className={`workspace-vision-btn workspace-voice-btn chatgpt-dock-voice-btn ${isVoiceActive ? "chatgpt-dock-voice-btn--active" : ""}`}
-                      title={isVoiceActive ? "Stop voice mode" : "Define Your Vision"}
-                      aria-label={isVoiceActive ? "Stop voice mode" : "Define Your Vision (Voice Mode)"}
-                      style={{
-                        background: "linear-gradient(90deg, #edf3ff 0%, #f4f6ff 48%, #fbfdf2 82%, #fefee8 100%)",
-                        borderColor: "rgba(0, 0, 0, 0.14)",
-                        color: "#004c8c",
-                      }}
-                    >
-                      <Mic className="vision-btn-mic-icon h-4 w-4" strokeWidth={2.2} style={{ color: "#003e73" }} />
-                      <span className="vision-btn-text" style={{ color: "#004880" }}>Define Your Vision</span>
-                      {isVoiceActive && (
-                        <span className="voice-wave-anim" aria-hidden="true">
-                          <span className="voice-wave-bar bar-1" />
-                          <span className="voice-wave-bar bar-2" />
-                          <span className="voice-wave-bar bar-3" />
-                          <span className="voice-wave-bar bar-4" />
-                          <span className="voice-wave-bar bar-5" />
-                        </span>
-                      )}
-                    </button>
-                  </div>
-
-                  {/* Center Input Dock */}
-                  <div className="workspace-dock-wrapper center-dock-wrapper">
-                    {renderInputDock()}
-                  </div>
                 </div>
               )}
 

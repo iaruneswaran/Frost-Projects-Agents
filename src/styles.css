@@ -2864,8 +2864,8 @@
   width: auto !important;
   padding: 0 20px !important;
   border-radius: 9999px !important;
-  background: linear-gradient(90deg, #edf3ff 0%, #f4f6ff 48%, #fbfdf2 82%, #fefee8 100%) !important;
-  border: 1px solid rgba(0, 0, 0, 0.14) !important;
+  background: linear-gradient(90deg, #d8e5ff 0%, #e8eeff 45%, #f6f9dd 80%, #fef4ad 100%) !important;
+  border: none !important;
   color: #004c8c !important;
   font-size: 15px !important;
   font-weight: 500 !important;
@@ -2880,8 +2880,8 @@
 
 .workspace-vision-btn:hover,
 .workspace-vision-btn.chatgpt-dock-voice-btn:hover {
-  background: linear-gradient(90deg, #e5edff 0%, #edf1ff 48%, #f8fce5 82%, #fdfdc8 100%) !important;
-  border-color: rgba(0, 0, 0, 0.25) !important;
+  background: linear-gradient(90deg, #cde0ff 0%, #dee7ff 45%, #f1f6d0 80%, #feeea0 100%) !important;
+  border: none !important;
   transform: none !important;
   box-shadow: none !important;
 }
@@ -2920,34 +2920,62 @@
 }
 
 /* ==========================================================================
-   Talk About Your Vision Modal Card (100% matched to media_1795156912913_787b7004.jpg)
+   Talk About Your Vision Stroke Box (Smooth in-place upward expansion wrapping typing field)
    ========================================================================== */
+.chatgpt-center-card--vision {
+  max-width: 900px !important;
+  align-items: center !important;
+  top: 0 !important;
+  transition: max-width 0.35s ease, top 0.35s ease !important;
+}
+
 .vision-modal-container {
   position: relative;
   width: 100%;
   max-width: 900px;
-  margin: 16px auto 24px;
+  margin: 0 auto;
   background: #ffffff !important;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 28px;
-  padding: 36px 48px 32px;
-  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.07);
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  border-radius: 28px !important;
+  padding: 36px 44px 28px !important;
+  box-shadow: 0 4px 30px -4px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  animation: visionModalFadeIn 0.25s ease-out;
+  transform-origin: bottom center;
+  animation: visionStrokeBoxExpand 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  overflow: hidden;
 }
 
-@keyframes visionModalFadeIn {
-  from {
+@keyframes visionStrokeBoxExpand {
+  0% {
     opacity: 0;
-    transform: scale(0.98);
+    transform: scaleY(0.7) translateY(40px);
+    max-height: 120px;
   }
-
-  to {
+  60% {
+    opacity: 0.95;
+  }
+  100% {
     opacity: 1;
-    transform: scale(1);
+    transform: scaleY(1) translateY(0);
+    max-height: 900px;
+  }
+}
+
+.vision-modal-container > *:not(.vision-modal-input-capsule) {
+  animation: visionContentFadeIn 0.35s ease-out forwards;
+}
+
+@keyframes visionContentFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -2996,10 +3024,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: 0;
   border-radius: 50%;
-  background: #f1f5f9;
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  background: transparent;
+  border: none;
+  box-shadow: none !important;
   margin-bottom: 20px;
 }
 
@@ -3008,11 +3037,12 @@
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: radial-gradient(circle at 38% 32%, #2d3748 0%, #1a202c 45%, #0d1117 100%);
+  background: linear-gradient(135deg, #bcd9ff 0%, #d5e4ff 42%, #eff5b8 78%, #fee868 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.35);
+  box-shadow: none !important;
+  border: none;
 }
 
 .vision-modal-orb .voice-wave-anim {
@@ -3027,7 +3057,7 @@
 .vision-modal-orb .voice-wave-bar {
   display: block;
   width: 4px;
-  background-color: #ffffff;
+  background-color: #3b82f6;
   border-radius: 9999px;
   animation: visionWavePulse 0.9s ease-in-out infinite alternate;
 }
@@ -3256,6 +3286,25 @@
   }
 }
 
+.vision-modal-dock-wrap {
+  width: 100%;
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.vision-modal-dock-wrap .chat-input-dock-container {
+  width: 100%;
+  max-width: 100%;
+}
+
+.vision-modal-dock-wrap .chatgpt-input-dock {
+  width: 100%;
+  max-width: 100%;
+  background: #ffffff;
+}
+
 .vision-modal-input-capsule {
   width: 100%;
   display: flex;
@@ -3319,8 +3368,8 @@
   width: auto !important;
   padding: 0 20px !important;
   border-radius: 9999px !important;
-  background: linear-gradient(90deg, #edf3ff 0%, #f4f6ff 48%, #fbfdf2 82%, #fefee8 100%) !important;
-  border: 1px solid rgba(0, 0, 0, 0.14) !important;
+  background: linear-gradient(90deg, #d8e5ff 0%, #e8eeff 45%, #f6f9dd 80%, #fef4ad 100%) !important;
+  border: none !important;
   color: #004c8c !important;
   font-size: 15px !important;
   font-weight: 500 !important;
