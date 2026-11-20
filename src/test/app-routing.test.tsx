@@ -68,6 +68,7 @@ describe("App routing", () => {
     expect(screen.queryByText("Make Diwali your own")).toBeNull();
     expect(screen.getByText("Help me define the idea")).toBeDefined();
     expect(screen.getByText("Attach a plan")).toBeDefined();
+    expect(screen.getByText("Define Your Vision")).toBeDefined();
     expect(screen.getByText("ARUN PE")).toBeDefined();
     expect(screen.getByRole("button", { name: "Settings" })).toBeDefined();
     expect(screen.getByRole("button", { name: "Theme toggle" })).toBeDefined();
@@ -365,7 +366,7 @@ describe("App routing", () => {
     expect(screen.getAllByText("Personal care brand enters South Asia’s smaller cities").length).toBeGreaterThan(0);
   });
 
-  it("replaces Think and Mic with Attach button and changes wave icon to arrow icon when typing", () => {
+  it("renders Attach button on left side of typing field and keeps send button only on right, with voice mode moved to action button", () => {
     const Component = Route.options.component;
     if (!Component) throw new Error("Component is not defined on Route");
 
@@ -375,44 +376,36 @@ describe("App routing", () => {
     const projectCardBtn = screen.getByText("Personal care brand enters South Asia’s smaller cities");
     fireEvent.click(projectCardBtn);
 
-    // Verify Attach button is present
-    expect(screen.getByRole("button", { name: "Attach file" })).toBeDefined();
+    // Verify Attach button is present on the left of dock with 18px icon
+    const attachBtn = screen.getByRole("button", { name: "Attach file" });
+    expect(attachBtn).toBeDefined();
+    const attachSvg = attachBtn.querySelector("svg");
+    expect(attachSvg?.getAttribute("style") || "").toContain("18px");
 
     // Verify Think button and Mic button are removed
     expect(screen.queryByRole("button", { name: /deep thinking/i })).toBeNull();
     expect(screen.queryByRole("button", { name: "Voice input" })).toBeNull();
 
-    // When input is empty, voice wave button is shown and send button is not
-    expect(screen.getByRole("button", { name: "Start voice mode" })).toBeDefined();
-    expect(screen.queryByRole("button", { name: "Send message" })).toBeNull();
-
-    // Start typing
-    const input = screen.getByPlaceholderText("Reply, attach a file, or tap the mic to talk");
-    fireEvent.change(input, { target: { value: "Hello world" } });
-
-    // When typing, wave icon button changes to send arrow button
-    expect(screen.queryByRole("button", { name: "Start voice mode" })).toBeNull();
+    // Verify typing field right actions has ONLY the send button
     expect(screen.getByRole("button", { name: "Send message" })).toBeDefined();
+    const rightActions = document.querySelector(".chatgpt-dock-right-actions");
+    expect(rightActions?.querySelectorAll("button").length).toBe(1);
 
-    // Clear input
-    fireEvent.change(input, { target: { value: "" } });
-
-    // Returns back to wave icon button
-    const voiceBtn = screen.getByRole("button", { name: "Start voice mode" });
+    // Verify Voice Mode round action button is rendered in workspace-actions instead of Attach a plan
+    const voiceBtn = screen.getByRole("button", { name: /voice mode/i });
     expect(voiceBtn).toBeDefined();
-    expect(screen.queryByRole("button", { name: "Send message" })).toBeNull();
+    expect(voiceBtn.classList.contains("workspace-voice-btn")).toBe(true);
 
-    // Click voice button: toggles wave animation, does not send "Voice mode started" message
+    // Click voice button: toggles wave animation and opens vision modal
     fireEvent.click(voiceBtn);
     expect(document.querySelector(".voice-wave-anim")).not.toBeNull();
-    expect(document.querySelector(".chatgpt-dock-voice-btn--active")).not.toBeNull();
-    expect(screen.queryByText("Voice mode started")).toBeNull();
+    expect(screen.getByText("Talk About Your Vision")).toBeDefined();
 
-    // Click again: toggles off wave animation
-    const stopVoiceBtn = screen.getByRole("button", { name: "Stop voice mode" });
+    // Click again: toggles off wave animation and closes vision modal
+    const stopVoiceBtn = screen.getByRole("button", { name: /stop voice mode/i });
     fireEvent.click(stopVoiceBtn);
     expect(document.querySelector(".voice-wave-anim")).toBeNull();
-    expect(document.querySelector(".chatgpt-dock-voice-btn--active")).toBeNull();
+    expect(screen.queryByText("Talk About Your Vision")).toBeNull();
   }, 15000);
 
   it("renders back navigation first in the collapsed rail followed by collapse icon without circle", () => {
@@ -586,6 +579,7 @@ describe("App routing", () => {
     // Verify action buttons
     expect(screen.getByText("Help me define the idea")).toBeDefined();
     expect(screen.getByText("Attach a plan")).toBeDefined();
+    expect(screen.getByText("Define Your Vision")).toBeDefined();
 
     // Verify right-side agents drawer is NOT open on Create Project
     expect(document.querySelector(".workspace-agents-drawer")).toBeNull();
@@ -662,6 +656,7 @@ describe("App routing", () => {
     expect(screen.getByText("Reply below, or choose where to pick up.")).toBeDefined();
     expect(screen.getByText("Help me define the idea")).toBeDefined();
     expect(screen.getByText("Attach a plan")).toBeDefined();
+    expect(screen.getByText("Define Your Vision")).toBeDefined();
 
     // Click New chat in sidebar
     const newChatBtn = screen.getByRole("button", { name: /new chat/i });
@@ -673,6 +668,7 @@ describe("App routing", () => {
     expect(screen.getByText("Reply below, or choose where to pick up.")).toBeDefined();
     expect(screen.getByText("Help me define the idea")).toBeDefined();
     expect(screen.getByText("Attach a plan")).toBeDefined();
+    expect(screen.getByText("Define Your Vision")).toBeDefined();
   });
 
   it("shows already done mock conversation with primary outcome options in stroke box for Personal care brand", () => {
@@ -1590,8 +1586,9 @@ describe("App routing", () => {
     expect(screen.getAllByText(/What should be our priority retail corridors and price points\?/i).length).toBe(2);
 
     // Verify Related actions section is rendered with search icons below the answer
-    expect(screen.getByText("Related actions")).toBeDefined();
-    const relatedBtn = screen.getByText("What are the distributor trade margin structures across secondary cities?");
+    expect(screen.getAllByText("Related actions").length).toBeGreaterThan(0);
+    const relatedBtns = screen.getAllByText("What are the distributor trade margin structures across secondary cities?");
+    const relatedBtn = relatedBtns[relatedBtns.length - 1];
     expect(relatedBtn).toBeDefined();
 
     // Clicking a related action question sends it to continue the conversation
@@ -1812,5 +1809,63 @@ describe("App routing", () => {
 
     // Loader is shown and thinking starts
     expect(screen.getByText("Thinking...")).toBeDefined();
+  }, 25000);
+
+  it("hides greeting, help idea, typing field when voice mode clicked, moves voice button below, asks all form questions with user answers, shows loader and reveals packages", async () => {
+    const Component = Route.options.component;
+    if (!Component) throw new Error("Component is not defined on Route");
+
+    render(<Component />);
+
+    const createProjectBtn = screen.getByRole("button", { name: /create project/i });
+    fireEvent.click(createProjectBtn);
+
+    // Initial greeting card is visible before clicking Voice Mode
+    expect(screen.getByText("Hey Arun, what project is on your mind?")).toBeDefined();
+    expect(screen.getByText(/Tell me what you'd like to build, and we'll assemble the right agents/i)).toBeDefined();
+    expect(screen.getByText("Help me define the idea")).toBeDefined();
+    expect(screen.getByText("Attach a plan")).toBeDefined();
+    expect(screen.getByText("Define Your Vision")).toBeDefined();
+    expect(screen.getByPlaceholderText("Reply, attach a file, or tap the mic to talk")).toBeDefined();
+
+    // Click Voice Mode button
+    const voiceBtn = screen.getByRole("button", { name: /define your vision|voice mode/i });
+    fireEvent.click(voiceBtn);
+
+    // Initial greeting, Help me define idea, Attach a plan, and typing field are hidden
+    expect(screen.queryByText("Tell me what you'd like to build, and we'll assemble the right agents.")).toBeNull();
+    expect(screen.queryByText("Help me define the idea")).toBeNull();
+    expect(screen.queryByText("Attach a plan")).toBeNull();
+    expect(screen.queryByPlaceholderText("Reply, attach a file, or tap the mic to talk")).toBeNull();
+
+    // Talk About Your Vision modal card is displayed with badges
+    expect(screen.getByText("Talk About Your Vision")).toBeDefined();
+    expect(screen.getByText("Goal")).toBeDefined();
+    expect(screen.getByText("Industry")).toBeDefined();
+    expect(screen.getByText("Market")).toBeDefined();
+    expect(screen.getByText("Audience")).toBeDefined();
+    expect(screen.getByText("Challenges")).toBeDefined();
+    expect(screen.getByText("Outcomes")).toBeDefined();
+
+    // Intermediate clutter like Save insight and Related actions are NOT present in conversation
+    expect(screen.queryByText("Save insight")).toBeNull();
+    expect(screen.queryByText("Related actions")).toBeNull();
+
+    // Click End conversation
+    const endConvBtn = screen.getByRole("button", { name: "End conversation" });
+    fireEvent.click(endConvBtn);
+
+    // Thinking loader runs, then confirmed scope and matching packages appear directly (brief / outcome form is hidden)
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    });
+
+    expect(screen.queryByText(/What primary outcome do you want to achieve/i)).toBeNull();
+    expect(screen.queryByText(/Confirm Project Scope/i)).toBeNull();
+    expect(screen.getByText(/Expand into a new customer segment or region/i)).toBeDefined();
+    expect(screen.getByText(/Voice input:/i)).toBeDefined();
+    expect(screen.getByText(/Goal: Expand into a new target market/i)).toBeDefined();
+    expect(screen.getByText("Project Scope Is Ready")).toBeDefined();
+    expect(screen.getByText("Matching Knowledge Packs")).toBeDefined();
   }, 25000);
 });

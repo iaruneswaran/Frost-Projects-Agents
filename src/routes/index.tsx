@@ -29,14 +29,17 @@ import {
   Moon,
   PanelLeft,
   Paperclip,
+  Pause,
   Pencil,
   Pin,
+  Play,
   Plus,
   Search,
   Settings,
   ShieldCheck,
   ShoppingBag,
   Sparkles,
+  Square,
   SquarePen,
   Store,
   Sun,
@@ -2015,6 +2018,10 @@ function ProjectWorkspace({
   const [searchFilter, setSearchFilter] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [isVoiceActive, setIsVoiceActive] = useState(false);
+  const [isVisionModalOpen, setIsVisionModalOpen] = useState(false);
+  const [isVisionPaused, setIsVisionPaused] = useState(false);
+  const [understoodFacts, setUnderstoodFacts] = useState<string[]>([]);
+  const [visionInput, setVisionInput] = useState("");
   const [currentProjectTitle, setCurrentProjectTitle] = useState(
     isNewProject && (project.title === "New project" || !project.title)
       ? "Untitled project"
@@ -2082,6 +2089,7 @@ function ProjectWorkspace({
   const [isThinking, setIsThinking] = useState(false);
   const [thinkingText, setThinkingText] = useState("Thinking...");
   const thinkingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const voiceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleSelectAgentForChat = (agent: AgentItem) => {
     setPinnedAgent(agent);
@@ -2137,6 +2145,9 @@ function ProjectWorkspace({
     return () => {
       if (thinkingTimeoutRef.current) {
         clearTimeout(thinkingTimeoutRef.current);
+      }
+      if (voiceTimeoutRef.current) {
+        clearTimeout(voiceTimeoutRef.current);
       }
     };
   }, []);
@@ -4593,6 +4604,177 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
     }, duration);
   };
 
+  const handleToggleVoiceMode = () => {
+    if (isVoiceActive) {
+      if (voiceTimeoutRef.current) {
+        clearTimeout(voiceTimeoutRef.current);
+        voiceTimeoutRef.current = null;
+      }
+      setIsThinking(false);
+      setIsVoiceActive(false);
+      setIsVisionModalOpen(false);
+      return;
+    }
+
+    setIsVoiceActive(true);
+    setIsVisionModalOpen(true);
+    setIsVisionPaused(false);
+    setUnderstoodFacts([]);
+    startVoiceIntakeFlow();
+  };
+
+  const handleEndVisionConversation = () => {
+    if (voiceTimeoutRef.current) {
+      clearTimeout(voiceTimeoutRef.current);
+      voiceTimeoutRef.current = null;
+    }
+    setIsVisionModalOpen(false);
+    setIsVoiceActive(false);
+
+    setIsThinking(true);
+    setThinkingText("Thinking...");
+    scrollToTarget(".workspace-conversation > *:last-child, .ai-thinking-row", "start");
+
+    const isVitest = typeof process !== "undefined" && Boolean(process.env?.VITEST || process.env?.NODE_ENV === "test");
+    const thinkDelay = isVitest ? 150 : 2500;
+
+    setTimeout(() => {
+      setIsThinking(false);
+
+      setProjectScope((prev) => ({
+        ...prev,
+        goal: prev.goal || "expand into a new customer segment or region",
+        industry: prev.industry || "Beauty & personal care",
+        market: prev.market || "South Asia",
+        audience: prev.audience || "Urban working women aged 22–35",
+        challenges: prev.challenges || "Unclear which cities, price points and channels to prioritise",
+        outcomes: prev.outcomes || "Prioritised city shortlist and go-to-market plan",
+        investment: prev.investment || "$500,000",
+        annualImpact: prev.annualImpact || "$1,200,000",
+        targetDate: prev.targetDate || "Q2 2027",
+        deliveryOwner: prev.deliveryOwner || "Arun Eswaran",
+      }));
+
+      const summaryText = `Expand into a new customer segment or region\n\nVoice input:\n• Goal: Expand into a new target market\n• Industry: Beauty & personal care\n• Market: India, Tier-2 & Tier-3 cities\n• Audience: Urban working women aged 22–35\n• Challenges: Unclear which cities, price points and channels to prioritise\n• Outcomes: Prioritised city shortlist and go-to-market plan`;
+
+      const summaryMsg: MessageItem = {
+        id: `voice-scope-summary-${Date.now()}`,
+        sender: "user",
+        text: summaryText,
+      };
+
+      const packagesMsg: MessageItem = {
+        id: `voice-packages-${Date.now()}`,
+        sender: "assistant",
+        text: `I found market intelligence reports from 2025–2026 covering tier-2 & tier-3 city retail, price elasticity, active ingredients, and channel distribution. The most relevant are “Growth Opportunities in Personal Care for Tier-2 and Tier-3 Cities, South Asia” and “Price-Point & Pack-Size Strategy for Mass-Premium Skincare”. Together they discuss how these themes connect, from consumer price sensitivity and local retailer margins to climate-adaptive formulations for regional market penetration.`,
+      };
+
+      setConversations((prev) => ({
+        ...prev,
+        [currentChatKey]: [
+          ...(prev[currentChatKey] || []).filter(
+            (m) =>
+              !m.id.startsWith("voice-") &&
+              !m.text.includes("What primary outcome do you want to achieve") &&
+              !m.text.includes("Project brief confirmed")
+          ),
+          summaryMsg,
+          packagesMsg,
+        ],
+      }));
+
+      scrollToTarget(".ai-knowledge-flow-container", "start");
+    }, thinkDelay);
+  };
+
+  const handleToggleVisionPause = () => {
+    setIsVisionPaused((prev) => {
+      const next = !prev;
+      if (next) {
+        if (voiceTimeoutRef.current) {
+          clearTimeout(voiceTimeoutRef.current);
+          voiceTimeoutRef.current = null;
+        }
+      } else {
+        if (isVoiceActive) {
+          startVoiceIntakeFlow();
+        }
+      }
+      return next;
+    });
+  };
+
+  const handleToggleChip = (chip: string) => {
+    setUnderstoodFacts((prev) =>
+      prev.includes(chip) ? prev.filter((c) => c !== chip) : [...prev, chip]
+    );
+  };
+
+  const handleVisionSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const val = visionInput.trim();
+    if (!val) return;
+    setVisionInput("");
+
+    const allChips = ["Goal", "Industry", "Market", "Audience", "Challenges", "Outcomes"];
+    const matchedChip = allChips.find((c) => val.toLowerCase().includes(c.toLowerCase()));
+    if (matchedChip) {
+      setUnderstoodFacts((prev) => Array.from(new Set([...prev, matchedChip])));
+    } else {
+      const remaining = allChips.filter((c) => !understoodFacts.includes(c));
+      if (remaining.length > 0) {
+        setUnderstoodFacts((prev) => [...prev, remaining[0]]);
+      }
+    }
+
+    const userMsg: MessageItem = {
+      id: `voice-user-${Date.now()}`,
+      sender: "user",
+      text: val,
+    };
+    setConversations((prev) => ({
+      ...prev,
+      [currentChatKey]: [...(prev[currentChatKey] || []), userMsg],
+    }));
+  };
+
+  const startVoiceIntakeFlow = () => {
+    if (voiceTimeoutRef.current) {
+      clearTimeout(voiceTimeoutRef.current);
+      voiceTimeoutRef.current = null;
+    }
+
+    const isVitest = typeof process !== "undefined" && Boolean(process.env?.VITEST || process.env?.NODE_ENV === "test");
+    const stepDelay = isVitest ? 40 : 900;
+
+    let step = 0;
+
+    const runNextStep = () => {
+      step++;
+      if (step === 1) {
+        setUnderstoodFacts(["Goal"]);
+        voiceTimeoutRef.current = setTimeout(runNextStep, stepDelay);
+      } else if (step === 2) {
+        setUnderstoodFacts(["Goal", "Industry"]);
+        voiceTimeoutRef.current = setTimeout(runNextStep, stepDelay);
+      } else if (step === 3) {
+        setUnderstoodFacts(["Goal", "Industry", "Market"]);
+        voiceTimeoutRef.current = setTimeout(runNextStep, stepDelay);
+      } else if (step === 4) {
+        setUnderstoodFacts(["Goal", "Industry", "Market", "Audience"]);
+        voiceTimeoutRef.current = setTimeout(runNextStep, stepDelay);
+      } else if (step === 5) {
+        setUnderstoodFacts(["Goal", "Industry", "Market", "Audience", "Challenges"]);
+        voiceTimeoutRef.current = setTimeout(runNextStep, stepDelay);
+      } else if (step >= 6) {
+        setUnderstoodFacts(["Goal", "Industry", "Market", "Audience", "Challenges", "Outcomes"]);
+        // Do not auto-end: wait for user to click "End conversation" button
+      }
+    };
+
+    voiceTimeoutRef.current = setTimeout(runNextStep, stepDelay);
+  };
+
   const renderInputDock = () => (
     <div className="chat-input-dock-container">
       <form
@@ -4638,14 +4820,23 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
         )}
 
         <div className="chatgpt-dock-main-row">
+          <input
+            type="file"
+            ref={dockFileInputRef}
+            onChange={handleDockFileUpload}
+            className="hidden"
+            aria-label="Upload file"
+            accept=".pdf,image/*,.png,.jpg,.jpeg,.webp"
+            multiple
+          />
           <button
             type="button"
-            onClick={() => handleSend("Attach a plan")}
-            className="chatgpt-dock-add-btn"
-            title="Add file or actions"
-            aria-label="Add file or actions"
+            onClick={() => dockFileInputRef.current?.click()}
+            className="chatgpt-dock-attach-btn"
+            title="Add attachment"
+            aria-label="Attach file"
           >
-            <Plus className="h-5 w-5" />
+            <Plus style={{ width: 18, height: 18 }} className="h-[18px] w-[18px]" />
           </button>
 
           <input
@@ -4657,55 +4848,15 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
           />
 
           <div className="chatgpt-dock-right-actions">
-            <input
-              type="file"
-              ref={dockFileInputRef}
-              onChange={handleDockFileUpload}
-              className="hidden"
-              aria-label="Upload file"
-              accept=".pdf,image/*,.png,.jpg,.jpeg,.webp"
-              multiple
-            />
             <button
-              type="button"
-              onClick={() => dockFileInputRef.current?.click()}
-              className="chatgpt-dock-attach-btn"
-              title="Attach file"
-              aria-label="Attach file"
+              type="submit"
+              className="chatgpt-dock-send-btn"
+              title="Send message"
+              aria-label="Send message"
+              disabled={!inputValue.trim() && attachedFiles.length === 0}
             >
-              <Paperclip className="h-4 w-4" />
+              <ArrowUp className="h-4 w-4" />
             </button>
-
-            {inputValue.trim() || attachedFiles.length > 0 ? (
-              <button
-                type="submit"
-                className="chatgpt-dock-send-btn"
-                title="Send message"
-                aria-label="Send message"
-              >
-                <ArrowUp className="h-4 w-4" />
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setIsVoiceActive((prev) => !prev)}
-                className={`chatgpt-dock-voice-btn ${isVoiceActive ? "chatgpt-dock-voice-btn--active" : ""}`}
-                title={isVoiceActive ? "Stop voice mode" : "Start voice mode"}
-                aria-label={isVoiceActive ? "Stop voice mode" : "Start voice mode"}
-              >
-                {isVoiceActive ? (
-                  <span className="voice-wave-anim" aria-hidden="true">
-                    <span className="voice-wave-bar bar-1" />
-                    <span className="voice-wave-bar bar-2" />
-                    <span className="voice-wave-bar bar-3" />
-                    <span className="voice-wave-bar bar-4" />
-                    <span className="voice-wave-bar bar-5" />
-                  </span>
-                ) : (
-                  <AudioLines className="h-4 w-4" />
-                )}
-              </button>
-            )}
           </div>
         </div>
       </form>
@@ -5301,7 +5452,127 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
             </div>
           ) : (
             <>
-              {messages.length === 0 && !isThinking && (
+              {isVisionModalOpen && (
+                <div className="vision-modal-container" role="region" aria-label="Talk About Your Vision">
+                  {/* Header */}
+                  <div className="vision-modal-header">
+                    <h2 className="vision-modal-title">Talk About Your Vision</h2>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (voiceTimeoutRef.current) {
+                          clearTimeout(voiceTimeoutRef.current);
+                          voiceTimeoutRef.current = null;
+                        }
+                        setIsVisionModalOpen(false);
+                        setIsVoiceActive(false);
+                      }}
+                      className="vision-modal-close-btn"
+                      aria-label="Stop voice mode"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  {/* Dark Orb with Animated Wave Bars */}
+                  <div className="vision-modal-orb-wrap">
+                    <div className={`vision-modal-orb ${isVisionPaused ? "vision-modal-orb--paused" : ""}`}>
+                      <span className="voice-wave-anim" aria-hidden="true">
+                        <span className="voice-wave-bar bar-1" />
+                        <span className="voice-wave-bar bar-2" />
+                        <span className="voice-wave-bar bar-3" />
+                        <span className="voice-wave-bar bar-4" />
+                        <span className="voice-wave-bar bar-5" />
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Status Badge */}
+                  <div className="vision-modal-status-badge">
+                    <span className="vision-modal-status-dot" />
+                    <span>{isVisionPaused ? "Paused" : "Speaking"}</span>
+                  </div>
+
+                  {/* Subtitle */}
+                  <p className="vision-modal-subtitle">
+                    Tell me about your vision — your goal, industry, market, audience, challenges and expected outcomes.
+                  </p>
+
+                  {/* Action Buttons: Pause & End Conversation */}
+                  <div className="vision-modal-actions-row">
+                    <button
+                      type="button"
+                      onClick={handleToggleVisionPause}
+                      className="vision-modal-pause-btn"
+                      aria-label={isVisionPaused ? "Resume conversation" : "Pause conversation"}
+                    >
+                      {isVisionPaused ? (
+                        <Play className="h-4 w-4 fill-current" />
+                      ) : (
+                        <Pause className="h-4 w-4 fill-current" />
+                      )}
+                      <span>{isVisionPaused ? "Resume" : "Pause"}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleEndVisionConversation}
+                      className="vision-modal-end-btn"
+                      aria-label="End conversation"
+                    >
+                      <Square className="h-3.5 w-3.5 fill-current" />
+                      <span>End conversation</span>
+                    </button>
+                  </div>
+
+                  {/* Progress Counter & 6 Chips */}
+                  <div className="vision-modal-progress-section">
+                    <div className="vision-modal-progress-label">
+                      <span>What we've understood so far</span>
+                    </div>
+                    <div className="vision-modal-chips-row">
+                      {["Goal", "Industry", "Market", "Audience", "Challenges", "Outcomes"].map((chip) => {
+                        const isDone = understoodFacts.includes(chip);
+                        return (
+                          <button
+                            key={chip}
+                            type="button"
+                            onClick={() => handleToggleChip(chip)}
+                            className={`vision-modal-chip ${isDone ? "vision-modal-chip--done" : ""}`}
+                            aria-pressed={isDone}
+                          >
+                            {isDone && (
+                              <Check className="vision-modal-chip-check h-3.5 w-3.5 text-white" strokeWidth={3} />
+                            )}
+                            <span>{chip}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Input Capsule */}
+                  <form onSubmit={handleVisionSubmit} className="vision-modal-input-capsule">
+                    <input
+                      type="text"
+                      value={visionInput}
+                      onChange={(e) => setVisionInput(e.target.value)}
+                      placeholder='Speak or type — try “Goal”, “Industry” or “Market”'
+                      className="vision-modal-input-field"
+                      aria-label="Speak or type vision details"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!visionInput.trim()}
+                      className="vision-modal-input-send-btn"
+                      aria-label="Submit message"
+                    >
+                      <ArrowUp className="h-4 w-4" />
+                    </button>
+                  </form>
+                </div>
+              )}
+
+              {messages.length === 0 && !isThinking && !isVoiceActive && !isVisionModalOpen && (
                 <div className="chatgpt-center-card">
                   {isNewProject ? (
                     <>
@@ -5334,11 +5605,41 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleSend("Attach a plan")}
+                      onClick={() => {
+                        if (dockFileInputRef.current) {
+                          dockFileInputRef.current.click();
+                        } else {
+                          handleSend("Attach a plan");
+                        }
+                      }}
                       className="workspace-btn-secondary"
                     >
-                      <Paperclip className="h-4 w-4" />
                       <span>Attach a plan</span>
+                      <Paperclip className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleToggleVoiceMode}
+                      className={`workspace-vision-btn workspace-voice-btn chatgpt-dock-voice-btn ${isVoiceActive ? "chatgpt-dock-voice-btn--active" : ""}`}
+                      title={isVoiceActive ? "Stop voice mode" : "Define Your Vision"}
+                      aria-label={isVoiceActive ? "Stop voice mode" : "Define Your Vision (Voice Mode)"}
+                      style={{
+                        background: "linear-gradient(90deg, #edf3ff 0%, #f4f6ff 48%, #fbfdf2 82%, #fefee8 100%)",
+                        borderColor: "rgba(0, 0, 0, 0.14)",
+                        color: "#004c8c",
+                      }}
+                    >
+                      <Mic className="vision-btn-mic-icon h-4 w-4" strokeWidth={2.2} style={{ color: "#003e73" }} />
+                      <span className="vision-btn-text" style={{ color: "#004880" }}>Define Your Vision</span>
+                      {isVoiceActive && (
+                        <span className="voice-wave-anim" aria-hidden="true">
+                          <span className="voice-wave-bar bar-1" />
+                          <span className="voice-wave-bar bar-2" />
+                          <span className="voice-wave-bar bar-3" />
+                          <span className="voice-wave-bar bar-4" />
+                          <span className="voice-wave-bar bar-5" />
+                        </span>
+                      )}
                     </button>
                   </div>
 
@@ -5397,10 +5698,15 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
                         m.text.includes("Success Criteria") ||
                         m.text.includes("primary goal"));
 
+                    const isVoiceSummaryUserMsg =
+                      m.sender === "user" &&
+                      (m.id.startsWith("voice-scope-summary-") || m.text.includes("Voice input:"));
+
                     return (
                       <div
                         key={m.id}
-                        className={`workspace-message ${m.sender === "user" ? "user-message" : "ai-message"}`}
+                        className={`workspace-message ${m.sender === "user" ? "user-message" : "ai-message"} ${isVoiceSummaryUserMsg ? "user-message--voice-summary" : ""}`}
+                        aria-label={isVoiceSummaryUserMsg ? "Voice input summary" : undefined}
                       >
                         {isAgentReportMsg ? (
                           <div className="ai-agent-report-container" id="agent-report-section">
@@ -6457,7 +6763,22 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
                                 ))}
                               </div>
                             )}
-                            {m.text ? <div>{m.text}</div> : null}
+                            {isVoiceSummaryUserMsg ? (
+                              <div className="workspace-voice-summary-bubble" role="region" aria-label="Voice input summary">
+                                <div className="voice-summary-title">Expand into a new customer segment or region</div>
+                                <div className="voice-summary-subtitle">Voice input:</div>
+                                <ul className="voice-summary-list">
+                                  <li><span className="voice-summary-bullet">•</span> <strong className="voice-summary-key">Goal:</strong> Expand into a new target market</li>
+                                  <li><span className="voice-summary-bullet">•</span> <strong className="voice-summary-key">Industry:</strong> Beauty & personal care</li>
+                                  <li><span className="voice-summary-bullet">•</span> <strong className="voice-summary-key">Market:</strong> India, Tier-2 & Tier-3 cities</li>
+                                  <li><span className="voice-summary-bullet">•</span> <strong className="voice-summary-key">Audience:</strong> Urban working women aged 22–35</li>
+                                  <li><span className="voice-summary-bullet">•</span> <strong className="voice-summary-key">Challenges:</strong> Unclear which cities, price points and channels to prioritise</li>
+                                  <li><span className="voice-summary-bullet">•</span> <strong className="voice-summary-key">Outcomes:</strong> Prioritised city shortlist and go-to-market plan</li>
+                                </ul>
+                              </div>
+                            ) : m.text ? (
+                              <div>{m.text}</div>
+                            ) : null}
                             {m.interactiveQuestion && (
                               <div className="agent-question-box" role="region" aria-label={m.interactiveQuestion.question}>
                                 <div className="agent-question-header">
@@ -6585,12 +6906,12 @@ Positioning your product portfolio around ${opt3.split(" (")[0]} creates a clear
           )}
         </div>
 
-        {/* Bottom Dock (Only when conversation is active) */}
-        {(messages.length > 0 || isThinking) && !isLibraryOpen && !activeSidebarView && (
+        {/* Bottom Dock (Only when conversation is active and not in voice mode) */}
+        {!isVoiceActive && !isVisionModalOpen && (messages.length > 0 || isThinking) && !isLibraryOpen && !activeSidebarView ? (
           <div className="workspace-dock-wrapper bottom-dock-wrapper">
             {renderInputDock()}
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Right Side Slide-In Panel (Project Agents) */}
